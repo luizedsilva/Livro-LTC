@@ -22,7 +22,7 @@ book:
     - chapters/7-semantico-geracao.qmd
     - chapters/8-projetos.qmd
     - chapters/9-sumario.qmd
-    - chapters/referencias.bib
+    - chapters/referencias.qmd
 
 bibliography: chapters/referencias.bib
 
