@@ -1,0 +1,47 @@
+name: Publish Quarto Book (HTML only)
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Cache Quarto
+        uses: actions/cache@v4
+        with:
+          path: ~/.quarto
+          key: ${{ runner.os }}-quarto
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+
+      # ✅ Renderiza SOMENTE HTML
+      - name: Render HTML only
+        run: quarto render --to html
+
+      # ✅ Publica SEM renderizar novamente
+      - name: Publish to GitHub Pages
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          render: false
