@@ -21,10 +21,10 @@ book:
     - chapters/6-maquinas.qmd
     - chapters/7-semantico-geracao.qmd
     - chapters/8-projetos.qmd
-    - summary.qmd
-    - references.qmd
+    - chapters/9-sumario.qmd.qmd
+    - chapters/referencias.bib
 
-bibliography: references.bib
+bibliography: chapters/referencias.bib
 
 format:
   html:
