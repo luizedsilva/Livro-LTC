@@ -1,0 +1,44 @@
+# Prefácio {.unnumbered}
+
+Este livro não tem a pretensão de abordar, em profundidade, todos os temas relacionados à **Teoria de Linguagens e à Construção de Compiladores**. Trata-se de uma obra de caráter introdutório, cujo objetivo principal é apresentar, de forma gradual e integrada, os conceitos fundamentais necessários à compreensão das linguagens formais, dos autômatos, das gramáticas e das principais etapas envolvidas no processo de compilação.
+
+Os capítulos foram organizados de modo a estabelecer uma relação progressiva entre os conceitos teóricos e sua aplicação na construção de compiladores. Inicialmente, são apresentados os fundamentos de linguagens formais, expressões regulares, autômatos finitos e gramáticas. Esses conceitos constituem a base para o estudo das diferentes fases de um compilador, incluindo a análise léxica, a análise sintática, a análise semântica e a geração de código.
+
+Os materiais reunidos neste livro foram desenvolvidos e utilizados pelo autor ao longo de vários anos em atividades de ensino. A organização e a seleção dos conteúdos refletem, portanto, a experiência adquirida em sala de aula e procuram privilegiar os conceitos que se mostram mais relevantes para uma primeira compreensão da área. Sempre que possível, os conceitos são acompanhados de exemplos, algoritmos, representações gráficas e exercícios, de modo a aproximar a fundamentação teórica da implementação dos mecanismos estudados.
+
+Para evitar que os detalhes de linguagens de programação complexas e de arquiteturas reais de computadores desviem inicialmente a atenção dos conceitos fundamentais, os exemplos de compilação apresentados ao longo do livro utilizam uma linguagem de programação simplificada, denominada **Linguagem Simples**. A tradução dos programas dessa linguagem é direcionada para uma arquitetura também simplificada, denominada **Máquina Virtual Simples (MVS)**. Essa abordagem permite estudar as diferentes etapas de um compilador mantendo sob controle a complexidade dos exemplos e concentrando a atenção nos princípios e nas técnicas envolvidos em sua construção.
+
+A proposta do livro é, portanto, estabelecer uma conexão entre a fundamentação matemática da **Teoria de Linguagens Formais** e os mecanismos utilizados na implementação de compiladores. Conceitos como linguagens regulares, autômatos finitos, gramáticas livres de contexto, autômatos com pilha, análise sintática e técnicas de geração de código são apresentados não apenas como construções teóricas, mas também como elementos que participam de um processo computacional concreto.
+
+Ao longo dos capítulos, são utilizados diversos exemplos de programas, gramáticas e estruturas de dados, além de algoritmos apresentados de forma detalhada. Sempre que apropriado, são também disponibilizados simuladores e recursos interativos que permitem experimentar os conceitos estudados. Esses recursos têm como objetivo complementar a exposição teórica e proporcionar ao leitor uma forma mais visual e experimental de compreender o funcionamento dos algoritmos e das estruturas estudadas.
+
+Alguns dos exemplos e simuladores apresentados no livro foram desenvolvidos utilizando **JavaScript** e a biblioteca **p5.js**. A p5.js é uma biblioteca JavaScript de código aberto, inspirada na linguagem *Processing*, que facilita a criação de aplicações visuais e interativas. Sua utilização neste livro permite representar graficamente estruturas como autômatos, árvores de derivação, tabelas de análise sintática e outras estruturas relacionadas ao processamento de linguagens.
+
+A utilização de recursos interativos é particularmente importante no estudo de Teoria de Linguagens e Compiladores, pois muitos dos conceitos apresentados possuem uma natureza dinâmica. A execução passo a passo de um algoritmo, a visualização da evolução de uma pilha durante uma análise sintática ou a construção progressiva de um autômato podem contribuir significativamente para a compreensão dos mecanismos envolvidos.
+
+Os exemplos em **p5.js** podem ser executados diretamente no navegador, sem a necessidade de instalação de ambientes de desenvolvimento específicos. Um exemplo de simulador interativo utilizado no livro é apresentado a seguir:
+
+::: {.simulacao url="[https://pdi-book.netlify.app/p5js/negative/](https://pdi-book.netlify.app/p5js/negative/)" height="400" imagem="p5js-negative.png" qrcode="qrcode-negative.png"}
+
+Para obter mais informações sobre a biblioteca, consulte a documentação oficial da [p5.js](https://p5js.org/).
+
+Além dos exemplos interativos, os diagramas e ilustrações utilizados ao longo do livro foram elaborados com ferramentas apropriadas para a representação de estruturas formais e algoritmos. Entre elas encontra-se o **Excalidraw**, utilizado na elaboração de diagramas e ilustrações didáticas. Mais informações sobre a ferramenta podem ser encontradas em [https://excalidraw.com](https://excalidraw.com).
+
+A produção deste livro teve como ponto de partida materiais didáticos, exemplos e apresentações utilizados pelo autor na disciplina de **Teoria de Linguagens e Compiladores**. Esses materiais foram posteriormente reorganizados, ampliados e adaptados para constituir uma obra estruturada em capítulos, com o objetivo de proporcionar uma sequência de estudos mais adequada ao formato de livro.
+
+A elaboração e a revisão do material contaram também com o auxílio de ferramentas de **Inteligência Artificial**, utilizadas como apoio à organização, revisão e aprimoramento de textos, exemplos e códigos. Todo o conteúdo foi revisado, adaptado e validado pelo autor, que é responsável pelo conteúdo apresentado e pelas decisões relativas à sua organização e abordagem didática.
+
+O livro foi produzido utilizando o **Quarto**, uma ferramenta de publicação científica e técnica que permite gerar documentos e livros em diferentes formatos a partir de arquivos de texto estruturados. A versão em formato de livro foi construída utilizando o **Quarto Book**. Para conhecer mais sobre essa ferramenta e suas possibilidades de publicação, consulte [https://quarto.org/docs/books](https://quarto.org/docs/books).
+
+Para um estudo mais aprofundado dos temas apresentados, recomenda-se a consulta às obras clássicas e especializadas da área de linguagens formais, teoria da computação, análise sintática e construção de compiladores. Essas referências apresentam os fundamentos matemáticos e os algoritmos discutidos neste livro com diferentes níveis de formalismo e abrangência e constituem importantes fontes para o aprofundamento dos estudos.
+
+Espera-se que este livro possa servir como um primeiro contato sistemático com a Teoria de Linguagens e a Construção de Compiladores, oferecendo ao leitor não apenas os fundamentos teóricos necessários, mas também oportunidades para experimentar, implementar e visualizar os conceitos estudados. A combinação entre teoria, algoritmos, exemplos e ferramentas interativas pretende tornar o estudo da área mais concreto e favorecer a compreensão dos mecanismos que estão por trás do processamento das linguagens de programação.
+
+::: {.license}
+![](/cc-by-sa.png)
+
+Este trabalho está licenciado sob a Licença Creative Commons CC BY-SA 4.0.
+:::
+:::
+
+

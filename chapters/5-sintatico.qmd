@@ -1,0 +1,3 @@
+# As Gramáticas e a Análise Sintática {#sec-analise-sintatica}
+
+![](/chapters/images/sintatico.png){fig-align="center" width=70%}

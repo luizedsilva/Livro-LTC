@@ -1,0 +1,13 @@
+{
+  "name": "simulador-arvore-sintatica-jison",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Simulador de construção de árvore sintática usando Jison e Viz.js",
+  "scripts": {
+    "build": "jison -m js compilador.jison -o parser.js && node build-browser.js",
+    "build:debug": "jison -m js -t compilador.jison -o parser.js && node build-browser.js"
+  },
+  "dependencies": {
+    "jison": "0.4.18"
+  }
+}

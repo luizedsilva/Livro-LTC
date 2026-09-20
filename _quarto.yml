@@ -1,0 +1,39 @@
+project:
+  type: book
+
+lang: pt-BR
+
+licence: "CC BY-SA 4.0"
+
+number-depth: 2
+
+book:
+  title: "Teoria de Linguagens e Compiladores"
+  author: "Luiz Eduardo da Silva"
+  date: "20/05/2026"
+  chapters:
+    - index.qmd
+    - chapters/1-introducao.qmd
+    - chapters/2-fundamentos.qmd
+    - chapters/3-compilador.qmd
+    - chapters/4-lexico.qmd
+    - chapters/5-sintatico.qmd
+    - chapters/6-maquinas.qmd
+    - chapters/7-semantico-geracao.qmd
+    - chapters/8-projetos.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: book    
+    geometry:
+      - paperwidth=17cm
+      - paperheight=24cm
+      - margin=2cm

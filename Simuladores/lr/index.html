@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador de Análise LR</title>
+
+    <!-- p5.js -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f6f8;
+        color: #17202a;
+      }
+
+      header {
+        background: #17202a;
+        color: white;
+        padding: 18px 24px;
+      }
+
+      header h1 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
+
+      header p {
+        margin: 0;
+        color: #d0d5dd;
+      }
+
+      main {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 18px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 390px 1fr;
+        gap: 18px;
+      }
+
+      .card {
+        background: white;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
+
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        font-weight: bold;
+      }
+
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        border: 1px solid #98a2b3;
+        border-radius: 7px;
+        padding: 9px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        background: white;
+      }
+
+      textarea {
+        min-height: 180px;
+        resize: vertical;
+      }
+
+      button {
+        border: 0;
+        border-radius: 7px;
+        padding: 9px 12px;
+        margin: 5px 4px 0 0;
+        cursor: pointer;
+        font-weight: bold;
+        background: #e4e7ec;
+        color: #17202a;
+      }
+
+      button:hover {
+        filter: brightness(0.96);
+      }
+
+      button.primary {
+        background: #2563eb;
+        color: white;
+      }
+
+      button.step {
+        background: #7c3aed;
+        color: white;
+      }
+
+      .hint {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #667085;
+      }
+
+      #status {
+        margin-top: 12px;
+        padding: 10px;
+        border-radius: 7px;
+        background: #eef2ff;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 12px;
+      }
+
+      .tab-button {
+        background: #e8ecf2;
+      }
+
+      .tab-button.active {
+        background: #17202a;
+        color: white;
+      }
+
+      .panel {
+        display: none;
+      }
+
+      .panel.active {
+        display: block;
+      }
+
+      .scroll {
+        overflow: auto;
+        max-height: 300px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        border: 1px solid #d0d5dd;
+        padding: 6px 8px;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      th {
+        background: #f2f4f7;
+      }
+
+      .item {
+        font-family: "Courier New", monospace;
+        white-space: pre;
+        line-height: 0.5;
+      }
+
+      .state-box {
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .state-title {
+        font-weight: bold;
+        color: #2563eb;
+        margin-bottom: 2px;
+      }
+
+      #afd-container {
+        width: 100%;
+        overflow: auto;
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        background: #fbfcfe;
+        min-height: 500px;
+      }
+
+      #afd-canvas {
+        display: block;
+      }
+
+      .simulation-grid {
+        display: grid;
+        /* grid-template-columns: 1fr 1fr; */
+        gap: 14px;
+      }
+
+      .big-value {
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        word-break: break-word;
+      }
+
+      .ok {
+        color: #16803c;
+        font-weight: bold;
+      }
+
+      .error {
+        color: #c62828;
+        font-weight: bold;
+      }
+
+      .warning {
+        color: #a15c00;
+        font-weight: bold;
+      }
+
+      @media (max-width: 950px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .simulation-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    
+      .derivation-box {
+        margin-top: 16px;
+        padding: 10px;
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+
+      .derivation-sequence {
+        font-family: "Courier New", monospace;
+        font-size: 15px;
+        line-height: 1.8;
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        padding: 8px 4px;
+      }
+
+      .derivation-item,
+      .derivation-arrow {
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Simulador de Análise Sintática LR</h1>
+    </header>
+
+    <main>
+      <div class="layout">
+        <!-- ======================================================
+         CONTROLES
+         ====================================================== -->
+        <section class="card">
+          <h2>Entrada</h2>
+
+          <label for="grammar"> Gramática </label>
+
+          <textarea id="grammar">
+S -> a
+S -> [L]
+L -> S
+L -> L,S</textarea
+          >
+
+          <div class="hint">
+            Uma produção por linha. Formatos aceitos: <code>S::=a</code>,
+            <code>S-&gt;a</code> ou <code>S→a</code>. Cada símbolo deve ser
+            representado por uma única letra. Para ε, use <code>ε</code> ou
+            deixe o lado direito vazio.
+          </div>
+
+          <label for="sentence"> Sentença </label>
+
+          <input id="sentence" type="text" value="[a,a]" />
+
+          <div>
+            <button id="build-button" class="primary">
+              Construir analisador
+            </button>
+
+            <button id="list-button">Exemplo: listas</button>
+
+            <button id="expression-button">Exemplo: expressões</button>
+          </div>
+
+          <div id="status">Clique em <b>Construir analisador</b>.</div>
+
+          <h3 style="margin-top: 18px">Simulação</h3>
+
+          <button id="step-button" class="step">Próximo passo</button>
+
+          <button id="run-button">Executar</button>
+
+          <button id="reset-button">Reiniciar</button>
+        </section>
+
+        <!-- ======================================================
+         RESULTADOS
+         ====================================================== -->
+        <section>
+          <div class="tabs">
+            <button class="tab-button active" data-tab="states">
+              Estados LR(0)
+            </button>
+
+            <!-- <button class="tab-button" data-tab="afd">AFD</button>
+
+            <button class="tab-button" data-tab="table">Tabela SLR(1)</button> -->
+
+            <button class="tab-button" data-tab="first-follow">
+              FIRST / FOLLOW
+            </button>
+
+            <button class="tab-button" data-tab="simulation">Simulação</button>
+          </div>
+
+          <div id="states-panel" class="panel active card">
+            <h2>Conjunto canônico de estados LR(0)</h2>
+            <div id="states-content"></div>
+          </div>
+
+          <!-- <div id="afd-panel" class="panel card">
+            <h2>AFD dos itens LR(0)</h2>
+
+            <p class="hint">
+              Transições por terminais correspondem a SHIFT. Transições por não
+              terminais correspondem a GOTO. Os estados podem ser arrastados com
+              o mouse.
+            </p>
+
+            <div id="transitions-content" style="margin-top: 12px"></div>
+          </div> -->
+
+          <!-- <div id="table-panel" class="panel card">
+            <h2>Tabela de análise SLR(1)</h2>
+            <div id="table-content"></div>
+          </div> -->
+
+          <div id="first-follow-panel" class="panel card">
+            <h2>FIRST e FOLLOW</h2>
+            <div id="first-follow-content"></div>
+          </div>
+
+          <div id="simulation-panel" class="panel card">
+            <!-- <h2>Tabela de análise SLR(1)</h2> -->
+            <h3 style="margin-top: 10px">Tabela de análise SLR(1)</h3>
+            <div id="table-content"></div>
+
+            <!-- <h2>Simulação da análise LR</h2> -->
+            <h3 style="margin-top: 10px">Simulação da análise LR</h3>
+            <div class="simulation-grid">
+              <!-- <div class="card">
+                <div id="sim-state" class="big-value">—</div>
+                <div id="sim-lookahead" class="big-value">—</div>
+              </div> -->
+
+              <div class="card">
+                <div id="sim-action" class="big-value">—</div>
+                <div id="sim-message" class="big-value">—</div>
+              </div>
+            </div>
+
+            <h3 style="margin-top: 10px">Traço da análise</h3>
+
+            <div class="scroll">
+              <table id="trace-table">
+                <thead>
+                  <tr>
+                    <th>Passo</th>
+                    <th>Pilha</th>
+                    <th>Símbolo Reduzido</th>
+                    <th>Entrada</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div class="derivation-box">
+              <h3 style="margin-top: 0">Sequência de derivações mais à direita</h3>
+              <div id="derivation-content"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- O código da aplicação -->
+    <script src="sketch.js"></script>
+  </body>
+</html>

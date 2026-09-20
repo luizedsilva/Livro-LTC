@@ -1,0 +1,4 @@
+# A Análise Semântica e a Geração de Código
+
+![](/chapters/images/semantico.png){fig-align="center" width=70%}
+

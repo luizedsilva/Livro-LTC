@@ -1,0 +1,7 @@
+# As Máquinas
+
+![](/chapters/images/maquinas.png){fig-align="center" width=70%}
+
+## Máquina de Turing
+
+## Máquinas Virtuais e Ambiente de Execução

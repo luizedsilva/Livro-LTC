@@ -1,0 +1,15 @@
+graph {
+   node [shape = circle]
+   a -- b
+   a -- c
+   b -- d
+   c -- e
+   c -- f
+   c -- g
+   e -- h
+   e -- i
+   { rank = same a }
+   { rank = same b c }
+   { rank = same d e f g }
+   { rank = same h i }
+}

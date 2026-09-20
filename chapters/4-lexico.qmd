@@ -1,0 +1,3 @@
+# As Linguagens Regulares e a Analise Léxica
+
+![](/chapters/images/lexico.png){fig-align="center" width=70%}

@@ -1,0 +1,17 @@
+/_book/
+/_site/
+*.log
+*.aux
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+
+
+/.quarto/
+**/*.quarto_ipynb
+
+/.luarc.json
+
+/papers
+/Simuladores/syntaxTree/node_modules

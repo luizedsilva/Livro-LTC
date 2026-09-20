@@ -1,0 +1,59 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw.com",
+  "elements": [
+    {
+      "type": "line",
+      "version": 1,
+      "versionNonce": 12345678,
+      "isDeleted": false,
+      "id": "varepsilon-line-id",
+      "fillStyle": "hachure",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "angle": 0,
+      "x": 300,
+      "y": 300,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "width": 30,
+      "height": 90,
+      "seed": 424242,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 2
+      },
+      "boundElements": [],
+      "updated": 1710000000000,
+      "link": null,
+      "locked": false,
+      "points": [
+        [0, 0],
+        [-10, 2],
+        [-20, 8],
+        [-28, 18],
+        [-30, 30],
+        [-25, 40],
+        [-15, 45],
+        [-5, 45],
+        [-15, 45],
+        [-25, 50],
+        [-30, 60],
+        [-28, 72],
+        [-20, 82],
+        [-10, 88],
+        [0, 90]
+      ]
+    }
+  ],
+  "appState": {
+    "gridSize": null,
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
+}
+

@@ -1,0 +1,10 @@
+graph {
+ node [shape = circle]
+ a -- b
+ a -- e
+ c -- d
+ c -- b
+ c -- e
+ d -- b
+ d -- e
+}

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversão ER para AF</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f6f8;
+        color: #17202a;
+      }
+
+      header {
+        background: #17202a;
+        color: white;
+        padding: 18px 24px;
+      }
+
+      header h1 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
+
+      header p {
+        margin: 0;
+        color: #d0d5dd;
+      }
+
+      main {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 18px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 390px 1fr;
+        gap: 18px;
+      }
+
+      .card {
+        background: white;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
+
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        font-weight: bold;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid #98a2b3;
+        border-radius: 7px;
+        padding: 9px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        background: white;
+      }
+
+      button {
+        border: 0;
+        border-radius: 7px;
+        padding: 9px 12px;
+        margin: 5px 4px 0 0;
+        cursor: pointer;
+        font-weight: bold;
+        background: #e4e7ec;
+        color: #17202a;
+      }
+
+      button:hover {
+        filter: brightness(0.96);
+      }
+
+      button.primary {
+        background: #2563eb;
+        color: white;
+      }
+
+      .stages {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin: 10px 0;
+      }
+
+      #canvas-container {
+        background: white;
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        overflow: hidden;
+        min-height: 500px;
+      }
+
+      canvas {
+        display: block;
+        max-width: 100%;
+        height: auto !important;
+      }
+
+      #info {
+        margin-top: 12px;
+        padding: 10px;
+        border-radius: 7px;
+        background: #eef2ff;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      #details {
+        margin-top: 10px;
+        padding: 12px;
+        background: white;
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        line-height: 1.5;
+      }
+
+      .help {
+        color: #667085;
+        font-size: 12px;
+        line-height: 1.45;
+        margin-top: 12px;
+      }
+
+      @media (max-width: 950px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Simulador de Conversão de Expressão Regular para Autômatos</h1>
+      <p>Construção de AFN, AFD, AFD mínimo e busca de ocorrências em texto.</p>
+    </header>
+
+    <main>
+      <div class="layout">
+        <section class="card">
+          <h2>Entrada</h2>
+
+          <label for="regex">Expressão regular</label>
+          <input
+            id="regex"
+            value="(0|1)*01"
+            placeholder="Ex.: (0|1)*01"
+          />
+
+          <div>
+            <button id="generate" class="primary">Gerar autômatos</button>
+            <button id="clear">Limpar</button>
+          </div>
+
+          <div class="stages">
+            <button data-stage="0">1. AFN</button>
+            <button data-stage="1">2. AFD</button>
+            <button data-stage="2">3. AFD mínimo</button>
+            <button data-stage="3">4. Busca no texto</button>
+          </div>
+
+          <div
+            id="simulation-controls"
+            style="display:none; margin:10px 0; gap:8px; flex-wrap:wrap;"
+          >
+            <button id="new-text">Novo texto aleatório</button>
+          </div>
+
+          <div class="help">
+            Símbolos de um caractere são aceitos. Use <code>|</code> para união,
+            concatenação implícita, <code>*</code>, <code>+</code>, <code>?</code>
+            e parênteses. Para usar um metacaractere literalmente, escape-o com
+            <code>\</code>. O símbolo <code>ε</code> representa a palavra vazia;
+            neste protótipo, <code>e</code> também é interpretado como ε.
+          </div>
+        </section>
+
+        <section>
+          <div id="canvas-container"></div>
+          <div id="info" aria-live="polite"></div>
+          <div id="details"></div>
+        </section>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/viz.js@2.1.2/viz.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/viz.js@2.1.2/full.render.js"></script>
+    <script src="sketch.js"></script>
+  </body>
+</html>

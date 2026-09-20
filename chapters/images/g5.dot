@@ -1,0 +1,17 @@
+graph {
+  node [shape = circle]
+  a 
+  b
+  c 
+  d [penwidth = 3]
+  e [penwidth = 3]
+  f [penwidth = 3]
+  a -- b
+  a -- c
+  a -- d
+  b -- e
+  d -- e [penwidth = 3]
+  d -- f [penwidth = 3]
+  e -- f [penwidth = 3]
+  { rank = same e f }
+}

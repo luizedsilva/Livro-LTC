@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="version" content="2.0" />
+    <title>Simulador de Árvore Sintática</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
+
+    <!-- O parser é gerado localmente pelo Jison.
+       Não é necessário carregar o Jison no navegador. -->
+
+    <script src="https://cdn.jsdelivr.net/npm/viz.js@2.1.2/viz.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/viz.js@2.1.2/full.render.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header>
+      <div>
+        <h1>Construção da Árvore Sintática</h1>
+        <p>Simulador para a Linguagem Simples</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel source-panel">
+        <div class="panel-title">
+          <h2>Programa fonte</h2>
+          <div class="actions">
+            <button id="exampleBtn">Exemplo</button>
+            <button id="clearBtn">Limpar</button>
+            <button id="runBtn" class="primary">Construir árvore</button>
+          </div>
+        </div>
+
+        <div class="code-editor">
+          <div id="lineNumbers" class="line-numbers">1</div>
+
+          <textarea id="source" spellcheck="false">
+programa maior
+  inteiro a b
+  logico x
+inicio
+    leia a
+    leia b
+    se a > b 
+       entao escreva a
+       senao escreva b
+    fimse
+fimprograma</textarea
+          >
+        </div>
+
+        <div id="p5-status"></div>
+        <div id="status" class="status">Carregando simulador...</div>
+      </section>
+
+      <section class="panel tree-panel">
+        <div class="panel-title">
+          <h2>Árvore sintática</h2>
+          <div class="actions">
+            <button id="zoomOutBtn">−</button>
+            <button id="zoomInBtn">+</button>
+            <button id="fitBtn">Ajustar</button>
+            <button id="dotBtn">Mostrar DOT</button>
+          </div>
+        </div>
+        <div id="tree"></div>
+      </section>
+
+      <section class="panel trace-panel">
+        <div class="panel-title">
+          <h2>Informações da análise</h2>
+        </div>
+
+        <div class="info-grid">
+          <div><span>Tokens</span><strong id="tokenCount">0</strong></div>
+          <div><span>Nós da árvore</span><strong id="nodeCount">0</strong></div>
+          <div><span>Raiz</span><strong id="rootName">—</strong></div>
+        </div>
+
+        <details>
+          <summary>Sequência de tokens</summary>
+          <pre id="tokens"></pre>
+        </details>
+      </section>
+    </main>
+
+    <dialog id="dotDialog">
+      <div class="dialog-head">
+        <h2>Representação DOT</h2>
+        <button
+          id="closeDot"
+          onclick="document.getElementById('dotDialog').close()">
+          ×
+        </button>
+      </div>
+      <pre id="dotOutput"></pre>
+    </dialog>
+
+    <!-- parser.js é gerado por npm run build e deve ser carregado ANTES de sketch.js. -->
+    <script src="parser.js"></script>
+    <script src="sketch.js"></script>
+  </body>
+</html>
