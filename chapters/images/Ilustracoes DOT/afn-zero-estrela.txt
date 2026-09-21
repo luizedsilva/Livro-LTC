@@ -1,0 +1,13 @@
+digraph automato_zeroestrela {
+	rankdir=LR;
+	size="8,5"
+	"" [shape = none];
+	node [shape = doublecircle]; q1;
+	node [shape = circle]; q0; q2; q3;
+	start -> q0 
+	q0 -> q1 [ label = "&#955;" ];
+	q1 -> q0 [ label = "&#955;" ];
+	q0 -> q2 [ label = "&#955;" ];
+	q2 -> q3 [ label = "0" ];
+	q3 -> q1 [ label = "&#955;" ];
+}

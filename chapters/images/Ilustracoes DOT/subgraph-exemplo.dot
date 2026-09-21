@@ -1,0 +1,30 @@
+digraph {
+    rankdir=LR;
+    subgraph cluster01 {
+        label="t=0"
+        a0 [label="A"];
+        a1 [label="B"];
+        a2 [label="C"];
+        a5 [label="E"];
+        a0 -> a1;
+        a1 -> a2 ;
+        a2 -> a0;
+    };
+
+    subgraph cluster02
+    {
+        label="t=10"
+        b0 [label="A"];
+        b5 [label="E"];
+        b1 [label="B"];
+        b2 [label="C"];
+
+        b0 -> b1;
+        b2 -> b5;
+    };
+
+    a0->b0;
+    a1->b1;
+    a2->b2;
+    a5->b5;
+}

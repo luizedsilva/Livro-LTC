@@ -18,7 +18,7 @@ A utilização de recursos interativos é particularmente importante no estudo d
 
 Os exemplos em **p5.js** podem ser executados diretamente no navegador, sem a necessidade de instalação de ambientes de desenvolvimento específicos. Um exemplo de simulador interativo utilizado no livro é apresentado a seguir:
 
-::: {.simulacao url="[https://pdi-book.netlify.app/p5js/negative/](https://pdi-book.netlify.app/p5js/negative/)" height="400" imagem="p5js-negative.png" qrcode="qrcode-negative.png"}
+<!-- ::: {.simulacao url="[https://pdi-book.netlify.app/p5js/negative/](https://pdi-book.netlify.app/p5js/negative/)" height="400" imagem="p5js-negative.png" qrcode="qrcode-negative.png"} -->
 
 Para obter mais informações sobre a biblioteca, consulte a documentação oficial da [p5.js](https://p5js.org/).
 

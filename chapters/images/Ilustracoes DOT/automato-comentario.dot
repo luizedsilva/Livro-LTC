@@ -1,0 +1,28 @@
+digraph automato_afd {
+   rankdir=LR;
+   inicio [shape = none; label = "inicio"];
+   node [shape = doublecircle]; q2;
+   node [shape = circle];
+   x [label="comentario"]
+   q0 [label="estado_0"]
+   q1 [label="estado_1"]
+   q2 [label="estado_2"]
+   q3 [label="estado_3"]
+   q4 [shape=none; label="(...)"]
+   q7 [label="estado_7"]
+   q8 [shape = none; label="(...)"]
+   q55 [label="estado_55"]
+   q56 [shape = none; label="(...)"]
+   q100 [shape = none; label="(...)"]
+   inicio->q0
+   q0 -> x [ label = "/*" ]
+   x -> x [label="qualquer"]
+   x -> q0 [ label = "*/" ] 
+   q0 -> q1 [ label = "letra" ];
+   q1 -> q1 [ label = "letra,digito" ];
+   q1 -> q2 [ label = "outro"]
+   q0 -> q3 -> q4
+   q0 -> q7 -> q8
+   q0 -> q55 -> q56
+   q0 -> q100
+}

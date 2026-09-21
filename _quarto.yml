@@ -7,6 +7,12 @@ licence: "CC BY-SA 4.0"
 
 number-depth: 2
 
+filters:
+  - simulacao.lua
+
+resources:
+  - p5js
+
 book:
   title: "Teoria de Linguagens e Compiladores"
   author: "Luiz Eduardo da Silva"

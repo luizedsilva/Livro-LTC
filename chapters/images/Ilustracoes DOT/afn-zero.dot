@@ -1,0 +1,9 @@
+digraph automato_zero {
+	rankdir=LR;
+	size="8,5"
+	"" [shape = none]; 
+	node [shape = doublecircle]; q5;
+	node [shape = circle]; q4;
+	"" -> q4 
+	q4 -> q5 [ label = "0" ];
+}

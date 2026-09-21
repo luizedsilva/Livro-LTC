@@ -1,0 +1,35 @@
+digraph {
+	rankdir=LR;
+	
+	subgraph cluster_food {
+	  eggs; chicken; ham;
+	  label="Food";
+	  graph[style=dotted];
+	}
+
+	subgraph cluster01 {
+        a0; a1; a2; a5;
+        a0 -> a1;
+        a1 -> a2 ;
+        a2 -> a0;
+    };
+
+	subgraph cluster_zero {
+        label="t=10"
+	  q2; q3; q6; q7; 
+	  q2 -> q3;
+	  q2 -> q6;
+	  q6 -> q7;
+	  q7 -> q3;
+	  q3 -> q2;
+	  graph[style=dotted];
+	};
+
+	subgraph cluster_um {
+	  label="1"
+	  q4 [label="q4"]; 
+	  q5 [label="q5"];
+	  q4 -> q5;
+	};
+
+}

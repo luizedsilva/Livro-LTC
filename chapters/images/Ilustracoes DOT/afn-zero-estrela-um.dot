@@ -1,0 +1,22 @@
+digraph {
+	rankdir=LR;
+	node [shape = doublecircle]; q3;
+	node [shape = circle];
+	inicio [shape = none; label = ""];
+	inicio -> q2
+	q2 -> q6 [ label = "&#955;" ];
+	subgraph cluster_1 {
+	  q6 -> q7 [ label = "&#955;" ];
+	  q6 -> q10 [ label = "&#955;" ];
+	  subgraph cluster_2 {
+	    q10 -> q11 [ label = "0" ];
+	  };
+	  q11 -> q7 [ label = "&#955;" ];
+	  q7 -> q6 [ label = "&#955;" ];
+	};
+	subgraph cluster_3 {
+	  q8 -> q9 [ label = "1" ];
+	};
+	q7 -> q8 [ label = "&#955;" ];
+	q9 -> q3 [ label = "&#955;" ];
+}
