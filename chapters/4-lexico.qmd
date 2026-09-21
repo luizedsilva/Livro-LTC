@@ -1,3 +1,716 @@
 # As Linguagens Regulares e a Analise Léxica
 
 ![](/chapters/images/lexico.png){fig-align="center" width=70%}
+
+
+## Linguagens Regulares
+
+Nesta seção são apresentados conceitos fundamentais relacionados às linguagens formais, às expressões regulares e aos autômatos finitos, estabelecendo as bases teóricas necessárias para compreender o processo de análise léxica de um compilador. Esses conceitos permitem formalizar a estrutura dos elementos que compõem uma linguagem de programação e compreender como sequências de caracteres podem ser reconhecidas e classificadas de acordo com determinadas regras.
+
+Inicialmente, são introduzidos os principais conceitos relacionados às linguagens regulares e às expressões regulares, destacando sua capacidade de representar padrões léxicos presentes nos programas-fonte. Em seguida, são estudados os autômatos finitos, modelos computacionais utilizados para reconhecer linguagens regulares e que constituem uma importante fundamentação para a implementação de analisadores léxicos. A relação entre expressões regulares e autômatos também é explorada, permitindo compreender como especificações abstratas dos elementos léxicos podem ser transformadas em mecanismos efetivos de reconhecimento.
+
+O domínio desses fundamentos é particularmente importante para o projeto de compiladores, uma vez que a análise léxica constitui a primeira etapa do processo de compilação. Nessa etapa, o programa-fonte é examinado como uma sequência de caracteres, que é agrupada em unidades léxicas denominadas tokens. Identificadores, palavras reservadas, constantes, operadores e delimitadores, entre outros elementos, podem ser especificados por meio de padrões regulares e posteriormente reconhecidos por autômatos finitos.
+
+O objetivo desta seção, portanto, não é apresentar um tratamento exaustivo da teoria das linguagens formais e dos autômatos, mas destacar os conceitos e resultados que serão necessários ao longo do desenvolvimento do projeto de um compilador. O aprofundamento desses temas pode ser encontrado em obras específicas dedicadas à teoria da computação, às linguagens formais e aos autômatos. [@sipser; @vieira; @gersting; @lewis].
+
+### Alfabeto (ou vocabulário)
+
+O alfabeto é um conjunto finito e não vazio de símbolos que podem ser simples como dígitos, letras e caracteres especiais, ou então compostos, como [begin]{.underline}, [:=]{.underline}, que serão tratados, em geral, como símbolos indivisíveis (*tokens*). Seja $\Sigma$ um alfabeto. Uma palavra (cadeia ou sentença) sobre $\Sigma$ é uma sequência finita de símbolos de $\Sigma$. $\Sigma^*$ é o conjunto de todas as palavras sobre $\Sigma$.
+
+### Linguagens
+
+Uma linguagem sobre um alfabeto é um subconjunto de $\Sigma^*$, formalmente, podemos escrever $L\subseteq \{ \alpha \in \Sigma^*\}$. São exemplos de linguagem sobre o alfabeto $\{a,b\}$, $L_1=\{\alpha \in \{a,b\}^*$ tal que $|\alpha| \leq 2\}$ e $L_2=\{a^nb^n | n \geq 1\}$. Considerando todos os símbolos léxicos (identificadores, palavras reservadas, operadores, etc.) que podem ser combinados das mais diversas formas, como em: [a var b integer : ;]{.underline}, a linguagem determina, através de regras de sintaxe, a forma correta como esses símbolos devem ser encadeados, como em: [var a, b : integer;]{.underline}.
+
+### Autômatos Finitos
+
+Autômatos finitos são máquinas abstratas usadas para representar algumas caraterísticas de uma máquina concreta. São representadas usando estados e transições entre os estados. Como o número de estados é finito é denominada também como uma máquina estados finitos.
+
+Uma representação de um autômato está na @fig-afd1. Onde os estados são os círculos e as transições são as setas rotuladas com 0 e 1. O estado marcado por uma seta é o estado inicial e o(s) estados(s) com dois círculos aninhados representa(m) o(s) estados(s) final(is).
+
+::: center
+![Autômato de Estados Finitos Determinístico.](/chapters/images/afd1.png){#fig-afd1 width=40%}
+:::
+
+Para representar a computação do autômato podemos usar duas definições: a) a configuração instantânea, representada pelo par $[e,w]$, onde $e$ é o estado atual e $w$ a palavra a ser computada num dado instante; b) a relação $\vdash$ que mostra a transformação da configuração instantânea durante a computação da palavra $w$. Então $[q_0,aw] \vdash [q_1,w]$ se existe uma transição de $q_0$ para $q_1$ para o símbolo $a$ no autômato.
+
+Considerando o autômato da @fig-afd1 e a palavra $w=001$, tem-se:
+
+$$[q_0,001] \vdash [q_0,01] \vdash [q_0,1] \vdash [q_1,\lambda]$$
+
+Os símbolos $\lambda$ ou $\epsilon$ são usados para representar uma palavra vazia. Dizemos que uma palavra é reconhecida por uma autômato se, começando do estado inicial, processamos todos os símbolos da palavra e terminamos no estado final.
+
+A linguagem $L$ reconhecida por um autômato $A$ pode ser definida como:
+
+$$L(A) = \{w \in \Sigma^* | [i,w]  \overset{*}{\vdash} [f,\lambda] \}$$
+
+onde:
+
+-   $w$ é a palavra da linguagem
+
+-   $i$ é o estado inicial do autômato
+
+-   $f$ é um estado final do autômato
+
+### Autômatos Finitos Determinísticos
+
+O Autômato Finito Determinístico (AFD) é matematicamente definido como:
+
+::: {.callout-note title="Definição"}
+Um AFD é uma quíntupla $(E,\Sigma,\delta,i,F)$, onde:
+
+-   $E$ é o conjunto finito dos estados do autônomo;
+
+-   $\Sigma$ é um alfabeto;
+
+-   $\delta:E\times\Sigma\rightarrow E$ é a função de transição;
+
+-   $i \in E$ é o estado inicial;
+
+-   $F \subseteq E$ é o conjunto de estados finais.
+:::
+
+Usando essa definição podemos descrever formalmente a máquina da @fig-afd1 como $A_1 = (\{q_0,q_1\}, \{0,1\}, \delta, q_0, \{q_1\})$, onde $\delta$ é descrita pela @tbl-transicao.
+
+::: {#tbl-transicao}
+   $\delta$     0       1
+  ---------- ------- -------
+    $q_0$     $q_0$   $q_1$
+    $q_1$     $q_0$   $q_1$
+
+  : Função de Transição $\delta$
+:::
+
+Para descrever a computação da máquina de maneira formal, usamos a definição da função de transição estendida:
+
+::: {.callout-note title="Definição"}
+Seja um AFD $A = (E,\Sigma,\delta,i,F)$. A função de transição estendida para $A$, $\hat{\delta} : E \times \Sigma^* \rightarrow E$, definida recursivamente como:
+
+-   $\hat{\delta}(a,\lambda) = a$
+
+-   $\hat{\delta}(e,ay) = \hat{\delta}(\delta(e,a),y)$, para todo $a \in \Sigma$ e $y \in \Sigma^*$
+:::
+
+Então para $w=001$ e a máquina $A_1$ temos:
+
+$$\begin{array}{ccl}
+    \hat{\delta}(q_0,001) & = & \hat{\delta}(\delta(q_0,0),01)\\ 
+    & = & \hat{\delta}(q_0,01) \\   
+    & = & \hat{\delta}(\delta(q_0,0),1) \\
+    & = & \hat{\delta}(q_0,1) \\    
+    & = & \hat{\delta}(\delta(q_0,1),\lambda) \\
+    & = & \hat{\delta}(q_1,\lambda) \\
+    & = & q_1 \\
+\end{array}$$
+
+Essa computação também pode ser implementada de forma bastante simples através de uma repetição que consulta a Tabela de Transição $T$, representada na @tbl-transicao, onde as linhas representam estados e as colunas os símbolos do vocabulário:
+
+    i = 0;
+    estado = 0;
+    while (entrada[i]) {
+       estado = T[estado, entrada[i]];
+       i++;
+    }
+
+A partir da função de transição estendida, podemos definir a linguagem $L$ reconhecida por uma autômato finito determinístico $A$ por:
+
+$$L(A) = \{w \in \Sigma^* | \hat{\delta}(i,w) \in F \}$$
+
+### Autômatos Finitos Não-Determinísticos
+
+Um outro formalismo é o Autômato Finito Não-Determinístico (AFN) que não aumenta o poder de especificação do AFD, mas pode simplificar a definição de algumas máquinas.
+
+O indeterminismo está representado em mais de um estado inicial, em mais de uma transicão possível para o mesmo estado e símbolo e também pela possibilidade de efetuar a transição de estados sem consumir símbolos da entrada através de transições $\lambda$.
+
+::: {.callout-note title="Definição"}
+Um AFN é uma quíntupla $(E,\Sigma,$ $\delta,I,F)$, onde:
+
+-   $E$ é o conjunto finito dos estados do autômato;
+
+-   $\Sigma$ é um alfabeto;
+
+-   $\delta:E\times\Sigma_\lambda \rightarrow P(E)$ é a função de transição;
+
+-   $I \subseteq E$ é o conjunto não vazio de estados iniciais;
+
+-   $F \subseteq E$ é o conjunto de estados finais.
+:::
+
+![Autômato Finito Não-Determinístico](/chapters/images/afn1.png){#fig-afn1 width=70%}
+
+A computação no AFN é um pouco diferente, uma vez que precisamos simular a execução em paralelo das múltiplas escolhas de transição que podem ser realizadas no percurso do autômato. A palavra é reconhecida se no conjunto de possibilidades de computação, existe uma que consuma toda entrada e termina num estado final.
+
+### Expressões Regulares
+
+Um outro formalismo que pode ser utilizado para definição de linguagens são as Expressões Regulares (ER). Assim como as expressões aritméticas tem operadores (soma, multiplicação, divisão, \...) que são utilizados para expressar valores numéricos, as **expressões regulares** usam os operadores de concatenação, união (representado pelo símbolo +) e fecho de Kleene (representado pelo símbolo \*) para definir linguagens regulares.
+
+::: {.callout-note title="Definição"}
+Sejam $A$ e $B$ linguagens. As operações regulares de União, Concatenação e Fecho de Kleene são definidas da seguinte forma:
+
+-   União: $A \cup B = \{x | x \in A$ ou $x \in B\}$.
+
+-   Concatenação: $AB = \{xy | x \in A$ e $y \in B\}$.
+
+-   Fecho de Kleene: $A^*= \{x_1x_2...x_k | k \geq 0$ e $x_i \in A\}$.
+:::
+
+::: {.callout-note title="Definição"}
+Uma ER sobre uma alfabeto $\Sigma$ é definida recursivamente como:
+
+1.  $\emptyset$, $\lambda$ e $a$ para qualquer $a \in \Sigma$ são expressões regulares; tais que ER's denotam, respectivamente, os conjuntos $\emptyset$, $\{\lambda\}$ e $\{a\}$
+
+2.  Se $r$ e $s$ são expressões regulares, então também são expressões regulares $(r+s)$, $(rs)$ e $r^*$; tais ER's denotam, respectivamente, $L(r) \cup L(s)$, $L(r)L(s)$ e $L(r)^*$.
+:::
+
+Alguns exemplos de ER considerando o alfabeto $\Sigma = \{a, b\}$:
+
+1.  a\*ba\* = {$w \in \Sigma^* | w$ contém um único b}
+
+2.  (a + $\lambda$)b = {$w \in \Sigma^* | w$ começa com a ou nada seguido de b}
+
+3.  a\*b = {$w \in \Sigma^* | w$ contém zero ou mais a´s finalizado por b}
+
+4.  a(a+b)\*a+a = {$w \in \Sigma^* | w$ começa e termina com a}
+
+### Conversão de ER para AFN
+
+A classe de Linguagens Regulares é fechada com relação as operações de União, Concatenação e fecho de Kleene [@vieira; @sipser]. A demonstração pode ser feita a partir construção de AFNs para essas operações, conforme ilustrado na @fig-uniao, @fig-concatenacao e @fig-kleene.
+
+![Construção de uma AFN $A$ para reconhecer $A_1 \cup A_2$](/chapters/images/uniao-vieira.png){#fig-uniao width=70%}
+
+![Construção de uma AFN $A$ para reconhecer $A_1A_2$](/chapters/images/concatena-vieira.png){#fig-concatenacao width=60%}
+
+![Construção de uma AFN $A$ para reconhecer $A_1^*$](/chapters/images/kleene-vieira.png){#fig-kleene width=40%}
+
+Usamos essa propriedade para transformar as Expressões Regulares em Autômatos Finitos Não-Determinísticos.
+
+### Conversão de AFN para AFD
+
+Para todo Autômato Finito Não-Determinístico existe um Autômato Finito Determinístico correspondente [@vieira; @lewis; @sipser]. A demonstração pode ser realizada através da simulação da execução em paralelo da computação do AFN.
+
+Basicamente, ao invés de mudar para um único estado a cada transição, no AFN poderemos nos deslocar para um conjunto de estados possíveis, dada o não-determinismo de algumas transições.
+
+Existem $P(E)$ subconjuntos de estados possíveis para um conjunto $E$ de estados. Assim se $E = \{1, 2, 3\}$, $P(E) = \{\emptyset, \{1\}, \{2\}, \{3\}, \{1, 2\}, \{1,3\}, \{2,3\}, \{1,2,3\}\}$. Ou seja, para um AFN com $k$ estados, teremos uma AFD com até $2^k$ estados correspondentes.
+
+Seja $R \in P(E)$, definimos a função fecho-lambda da seguinte forma: $f\lambda(R) = \{q | q$ pode ser atingido a partir de R através de zero ou mais transições $\lambda \}$.
+
+Através de $P(E)$ e $f\lambda(R)$ podemos construir o AFD $M = \{E', \Sigma, \delta', i', F'\}$ equivalente ao AFN $N = \{E, \Sigma, \delta, I, F\}$ da seguinte forma:
+
+-   $E' = P(E)$.
+
+-   Para $R \in E'$, $\delta'(R,a) = \bigcup_{r \in R}f\lambda(\delta(r,a))$
+
+-   $i = f\lambda(\{I\})$.
+
+-   $F' = \{R \in E' | R$ contém um estado de aceitação do $AFN \}$
+
+Para exemplificar todo o processo de conversão de uma expressão regular para um autômato finito não-determinístico e desse para um autômato finito determinístico, faremos uma tradução para $ER = 0^*1+0$:
+
+1.  A tradução da $ER = 0$ para o AFN está representada @fig-zero;
+
+    ![AFN correspondente a $ER = 0$](/chapters/images/afn-zero.png){#fig-zero width=35%}
+
+2.  A tradução da $ER = 1$ para o AFN está representada na @fig-um;
+
+    ![AFN correspondente a $ER = 1$](/chapters/images/afn-um.png){#fig-um width=40%}
+
+3.  A tradução da $ER = 0^*$ para o AFN está representada na @fig-zeroestrela;
+
+    ![AFN correspondente a $ER = 0^*$](/chapters/images/afn-zero-estrela.png){#fig-zeroestrela width=60%}
+
+4.  A tradução da $ER = 0^*1$ para o AFN está representada na @fig-zeroestrelaum;
+
+    ![AFN correspondente a $ER = 0^*1$](/chapters/images/afn-zero-estrela-um.png){#fig-zeroestrelaum width=80%}
+
+5.  A tradução da $ER = 0^*1+0$ para o AFN está representada na @fig-zeroestrelaumouzero;
+
+    ![AFN correspondente a $ER = 0^*1+0$](/chapters/images/afn-zero-estrela-um-ou-zero.png){#fig-zeroestrelaumouzero width=100%}
+
+6.  A tradução do AFN = $(\{q_0,q_1,q_2,q_3,q_4,q_5,q_6,q_7,q_8,q_9,q_{10},q_{11}\}, \{0,1\}, \delta,q_0,\{q_1\})$ da @fig-zeroestrelaumouzero para o AFD = $(\{q_0', q_1', q_2', q_3'\}, \{0,1\}, \delta', q_0', \{q_1', q_2'\})$ correspondente da @fig-afd é realizada conforme os passos seguintes. Primeiro o estado inicial para AFD correspondente é calculado como: $$q_0' = f\lambda(q_0) = \{q_0, q_2, q_4, q_6, q_{10}, q_7, q_8\}$$ A função de transição $\delta'$ é calculada até a idempotência, da seguinte forma:
+
+    $        \begin{array}{ll}
+            \delta'(q_0', 0) =  & \bigcup_{q \in q_0'}f\lambda(\delta(q,0)) = \\
+                &  f\lambda(\delta(q_4,0)) \cup f\lambda(\delta(q_{10},0)) = \\
+                & \{q_5, q_1\} \cup \{q_{11},q_7,q_6,q_{10},q_8\} = \\ 
+                & \{q_5,q_7,q_{10},q_1,q_8,q_6,q_{11}\} = q_1'\\
+            \delta'(q_0', 1) = & \bigcup_{q \in q_0'}f\lambda(\delta(q,1)) = \\
+                & f\lambda(\delta(q_8,1)) = \\
+                & \{q_9,q_3,q_1\} = q_2' \\
+            \delta'(q_1', 0) = & \bigcup_{q \in q_1'}f\lambda(\delta(q,0)) = \\
+                & f\lambda(\delta(q_{10},0))  = \\
+                & \{q_{11},q_7,q_8,q_6,q_{10}\} = q_3' \\
+            \delta'(q_1', 1) = & \bigcup_{q \in q_1'}f\lambda(\delta(q,1)) = \\
+                & f\lambda(\delta(q_8,1)) = \\
+                & \{q_9,q_3,q_1\} = q_2' \\
+            \delta'(q_3', 0) = & \bigcup_{q \in q_3'}f\lambda(\delta(q,0)) = \\
+                & f\lambda(\delta(q_{10},0)) = \\
+                & \{q_{11},q_7,q_8,q_6,q_{10}\} = q_3' \\
+            \delta'(q_3', 1) = & \bigcup_{q \in q_3'}f\lambda(\delta(q,1)) = \\
+                & f\lambda(\delta(q_8,1)) = \\
+                & \{q_9,q_3,q_1\} = q_2' \\
+            \end{array} 
+        $
+
+    E o conjunto de estados finais $F = \{q_1', q_2'\}$, pois são os estados do AFD que contém o estado final $q_1$ do AFN.
+
+    ![AFD equivalente ao AFN da Figura @fig-zeroestrelaumouzero](/chapters/images/afd.png){#fig-afd width=100%}
+
+O resultado desse processo todo é um autômato finito determinístico correspondente a expressão regular informada.
+
+Todo esse processo pode ser automatizado, executado através de ferramentas que representam essas estruturas (autômatos, expressões regulares) e implementam os algoritmos conforme descritos. São esses algoritmos que estão implementados em ferramentas de geração de analisadores léxicos, como Lex e Flex. A partir de um arquivo de especificação que contém as expressões regulares que pretende-se reconhecer, Lex/Flex traduzem as expressões em autômatos e desse em código em linguagem C, que implementam a programa de reconhecimento dos lexemas.
+
+## Análise Léxica
+
+A análise léxica constitui a primeira etapa do processo de compilação e tem como principal responsabilidade transformar o programa-fonte, originalmente representado como uma sequência de caracteres, em uma sequência de unidades léxicas denominadas *tokens*. Para realizar essa tarefa, o analisador léxico percorre o texto do programa, normalmente da esquerda para a direita, identificando os diferentes elementos que possuem significado para as etapas posteriores da compilação. Dessa forma, a análise léxica estabelece a primeira forma de interpretação estruturada do programa-fonte.
+
+Os elementos reconhecidos pelo analisador léxico são denominados **símbolos léxicos** ou **lexemas**. Entre eles encontram-se palavras reservadas, operadores, identificadores, constantes literais, constantes numéricas e delimitadores, entre outros elementos definidos pela linguagem de programação. Também fazem parte do texto de entrada elementos que, embora possam ser importantes para a organização e documentação do programa, não necessariamente participam das demais fases da compilação, como comentários, espaços em branco, tabulações e, em determinadas linguagens, caracteres utilizados para formatação e indentação.
+
+Durante o processo de reconhecimento, o analisador léxico identifica cada lexema e associa a ele um *token*, que representa sua categoria léxica. Por exemplo, ao encontrar a sequência de caracteres `while`, o analisador pode reconhecê-la como uma palavra reservada e produzir um *token* `T_WHILE`. Da mesma forma, uma sequência de caracteres que corresponda a um identificador pode produzir um *token* `T_IDENTIF`, enquanto uma sequência numérica pode ser classificada como um *token* correspondente a um número inteiro ou real. O *token* funciona, portanto, como uma representação abstrata do elemento encontrado no programa-fonte, permitindo que as etapas seguintes trabalhem com categorias léxicas em vez de manipular diretamente cada caractere do texto.
+
+É importante distinguir o *token* do **lexema** que lhe deu origem. O lexema corresponde à sequência concreta de caracteres encontrada no programa-fonte, enquanto o *token* representa a categoria a que essa sequência pertence. Assim, em uma instrução como
+
+```text
+soma := a + 10;
+```
+
+as sequências `soma`, `a` e `10` são lexemas encontrados no texto, enquanto seus respectivos *tokens* podem ser classificados como identificadores e constante numérica. O operador `:=`, o operador `+` e o delimitador `;` também são reconhecidos e representados por seus respectivos *tokens*. Essa separação entre a representação concreta e sua categoria léxica simplifica o trabalho das fases posteriores do compilador.
+
+Nem todos os elementos encontrados durante a leitura do programa precisam ser transformados em *tokens*. Comentários, espaços em branco e tabulações, por exemplo, normalmente são utilizados para facilitar a leitura, a organização e a documentação do código-fonte, mas são descartados pelo analisador léxico quando não possuem significado para a sintaxe da linguagem. Essa regra, entretanto, depende das características da linguagem de programação. Em algumas linguagens, por exemplo, a indentação possui significado sintático e, nesse caso, o analisador léxico deve produzir informações que permitam às etapas posteriores considerar as mudanças de nível de indentação.
+
+Outro aspecto importante da análise léxica é sua interação com a **tabela de símbolos**. Os identificadores reconhecidos pelo analisador léxico podem estar associados a informações que serão utilizadas durante as demais fases da compilação. Quando um identificador é encontrado, o compilador pode verificar sua existência na tabela de símbolos e, quando necessário, cadastrá-lo. A tabela de símbolos mantém informações sobre entidades presentes no programa, como identificadores de variáveis, procedimentos, funções e outros elementos definidos pela linguagem. Embora a construção e o gerenciamento completo dessa tabela envolvam outras fases do compilador, o reconhecimento dos identificadores durante a análise léxica constitui uma das primeiras oportunidades de interação com essa estrutura.
+
+Como resultado de seu processamento, o analisador léxico produz uma sequência de *tokens* que constitui a entrada para o **analisador sintático**. Enquanto a análise léxica procura identificar e classificar os elementos individuais que compõem o programa, a análise sintática utiliza a sequência de *tokens* para verificar se esses elementos estão organizados de acordo com as regras gramaticais da linguagem. Os *tokens* são, portanto, a interface entre essas duas fases do compilador.
+
+Considere, por exemplo, uma instrução simplificada como:
+
+```text
+a := b + 10;
+```
+
+O analisador léxico pode produzir uma sequência semelhante a:
+
+```text
+T_IDENTIF  T_ATRIB  T_IDENTIF  T_SOMA  T_INTEIRO  T_PONTO_VIRGULA
+```
+
+A análise sintática não precisa mais trabalhar diretamente com os caracteres `a`, `:`, `=`, `b`, `+`, `1`, `0` e `;`. Ela recebe a sequência de *tokens* e verifica se essa sequência pode ser derivada de acordo com as produções da gramática da linguagem. Essa divisão de responsabilidades torna o processo de compilação mais organizado e permite que cada fase utilize mecanismos formais apropriados ao problema que deve resolver.
+
+Para especificar os elementos que devem ser reconhecidos na análise léxica, utilizam-se **linguagens regulares**. Palavras reservadas, identificadores, números, operadores e diversos outros elementos léxicos podem ser descritos por meio de padrões regulares. As **expressões regulares** fornecem uma notação conveniente para representar esses padrões e constituem uma das principais formas de especificação utilizadas na construção de analisadores léxicos.
+
+A relação entre expressões regulares e **autômatos finitos** é particularmente importante para a implementação do analisador léxico. Uma expressão regular pode ser utilizada para especificar uma linguagem regular e, a partir dela, pode-se construir um autômato finito capaz de reconhecer as sequências de caracteres pertencentes a essa linguagem. Assim, existe uma relação direta entre a especificação declarativa dos elementos léxicos e o mecanismo computacional responsável por reconhecê-los.
+
+Essa relação é explorada por ferramentas de geração automática de analisadores léxicos, como o *Flex*. Nessa abordagem, o programador especifica os padrões correspondentes aos diferentes *tokens*, normalmente utilizando expressões regulares, e associa a cada padrão uma ação a ser executada quando ele for reconhecido. A ferramenta utiliza essas especificações para gerar um programa capaz de realizar o reconhecimento dos elementos léxicos do programa-fonte. Dessa forma, o desenvolvedor não precisa implementar manualmente todas as estruturas necessárias para percorrer o texto e reconhecer cada padrão.
+
+De maneira semelhante, a construção do **analisador sintático** pode ser automatizada a partir de uma especificação formal da sintaxe da linguagem. Nesse caso, em vez de linguagens regulares e expressões regulares, são utilizadas **gramáticas livres de contexto (GLC)** para descrever as estruturas sintáticas que podem ser formadas a partir dos *tokens*. Ferramentas como o *Bison* recebem uma especificação gramatical e geram um analisador sintático capaz de reconhecer as estruturas válidas da linguagem e identificar construções que não estejam de acordo com sua gramática.
+
+A diferença entre essas duas etapas está, portanto, relacionada ao tipo de estrutura que cada uma procura reconhecer. A análise léxica identifica unidades elementares do programa, como identificadores, números, palavras reservadas e operadores, utilizando principalmente mecanismos associados às linguagens regulares e aos autômatos finitos. A análise sintática, por sua vez, trabalha sobre a sequência de *tokens* produzida pelo analisador léxico e procura reconhecer estruturas mais complexas, descritas por uma gramática livre de contexto.
+
+Essa divisão pode ser representada de forma simplificada pelo seguinte fluxo:
+
+```text
+Programa-fonte
+      │
+      ▼
+Analisador léxico
+      │
+      │  reconhecimento de lexemas
+      │  por padrões regulares
+      ▼
+Sequência de tokens
+      │
+      ▼
+Analisador sintático
+      │
+      │  reconhecimento segundo
+      │  uma gramática livre de contexto
+      ▼
+Estrutura sintática
+```
+
+Na próxima seção será apresentada a ferramenta Flex, amplamente utilizada na construção de analisadores léxicos. A partir das expressões regulares utilizadas para especificar os padrões léxicos da linguagem, o Flex implementa os mecanismos necessários para realizar sua conversão em autômatos finitos determinísticos, responsáveis pelo reconhecimento eficiente dos tokens no programa-fonte. Essa ferramenta será utilizada no desenvolvimento da primeira etapa do compilador apresentado neste livro, permitindo implementar de forma sistemática o analisador léxico e estabelecer a interface entre o programa-fonte e as etapas posteriores do processo de compilação.
+
+
+## Lex/Flex - Geradores de Analisadores Léxicos 
+
+A primeira fase do compilador deve ler o arquivo fonte e converter sequência de caracteres em *tokens*. A construção dessa rotina não é tão complicada de se implementar, no entanto, existem ferramentas que podem ser utilizadas para automatizar essa fase da tradução. Lex é uma ferramenta usada para geração de analisadores léxicos. Especifica-se padrões léxicos para lex usando expressões regulares. E para cada símbolo encontrado associa-se uma ação que pode ser, por exemplo, retornar a codificação numérica (*token*) do símbolo encontrado.
+
+A ferramenta lex funciona basicamente implementando os algoritmos de Conversão de Expressões Regulares em Automatos Finitos Não-Determisticos e esses para Autômatos Finitos Determinístico, conforme apresentado anteriormente. Essa tradução transforma as expressões regulares num código em linguagem C que implementa um autômato de estados finitos para reconhecimento dos símbolos léxicos. O próximo estado é determinado pela indexação numa tabela de estados gerada pelo computador usando o próximo caracter de entrada e o estado corrente.
+
+### Metacaracteres Lex
+
+Alguns carateres tem um significado especial nas expressões regulares escritas para Lex. Os principais são apresentados na Tabela [1.2](@tbl-metacaracteres){reference-type="ref" reference="tab:metacaracteres"}.
+
+::: {#tbl-metacaracteres}
+   **Metacaracter**  **Correspondência**
+  ------------------ ----------------------------------------------
+          x          caracter 'x', exceto nova linha
+          .          Qualquer caracter exceto nova linha
+    $\ n$   Nova linha
+          \*         Zero ou mais cópias da expressão precedente
+          \+         Uma ou mais cópias da expressão precedente
+          ?          Zero ou uma cópia da expressão precedente
+          \^         Início da linha
+          \$         Fim da linha
+         a b         Alternativa \"a ou b\"
+        (ab)+        Uma ou mais cópias de ab (agrupamento)
+       \"a+b\"       Literal \"a+b\"
+                     Classe de caracteres. Nesse caso, a, b ou c.
+
+  : Metacaracteres de Lex
+:::
+
+Alguns exemplos de correspondências entre expressões regulares para Lex e os símbolos que são reconhecidos estão representados na Tabela [1.3](@tbl-exemplosLex){reference-type="ref" reference="tab:exemplosLex"}.
+
+::: {#tbl-exemplosLex}
+   **Expressão Regular**  **Símbolos Reconhecidos**
+  ----------------------- --------------------------------------
+            abc           abc
+           abc\*          ab, abc, abcc, abccc, \...
+           abc+           abc, abcc, abccc, \...
+          a(bc)+          abc, abcbc, abcbcbc, \...
+          a(bc)?          a, abc
+                          a ou b ou c
+                          qualquer letra no intervalo a até z.
+                          a ou - ou z
+                          qualquer símbolo exceto a ou b.
+                          a ou \^ou b
+                          a ou ou b
+            ab            a ou b
+
+  : Exemplos de Expressões Regulares para Lex
+:::
+
+As expressões regulares em lex são compostas de metacaracteres (Tabela [1.2](@tbl-metacaracteres){reference-type="ref" reference="tab:metacaracteres"}). Os exemplos de casamento de padrões são mostrados na Tabela [1.3](@tbl-exemplosLex){reference-type="ref" reference="tab:exemplosLex"}. Com uma classe de caracteres, os caracteres normais perdem seu significado. Os dois caracteres usados em classes de caracteres (entre colchetes) são o hífen ("-") e o circunflexo ("\^"). Quando usado entre dois caracteres o hífen significa o intervalo de caracteres. O circunflexo, quando usado como o primeiro caracter, nega a expressão. Se dois padrões reconhecem o mesmo string, o casamento mais longo é utilizado. No caso de dois casamentos de padrões com o mesmo comprimento, então o primeiro padrão listado é usado.
+
+O arquivo de entrada para Lex tem o seguinte formato:
+
+    ... definicoes ...
+    %%
+    ... regras ...
+    %%
+    ... subrotinas ... 
+
+O arquivo de entrada Lex é dividido em três seções, com %% dividindo as seções. Vamos ilustrar isto com um exemplo. O primeiro exemplo é o menor arquivo de entrada Lex possível:
+
+    %%
+
+A entrada é copiada para a saída, um caracter por vez. O primeiro %% é obrigatório, iniciando a seção de regras. Se nenhuma regra é especificada então a ação padrão é reconhecer tudo e copiar para a saída. Os arquivos de entrada e saída padrão são stdin e stdout, respectivamente. Aqui o mesmo exemplo, com os valores default explicitamente codificados:
+
+    %%
+        /* match everything except newline */
+    .   ECHO;
+        /* match newline */
+    \n  ECHO;
+
+    %%
+
+    int yywrap(void) {
+        return 1;
+    }
+
+    int main(void) {
+        yylex();
+        return 0;
+    }
+
+Dois padrões foram especificados na seção de regras. Cada padrão tem que começar na primeira coluna do arquivo texto. Estes são seguidos por caracter em branco (espaço, tabulação ou nova linha) e uma ação opcional associada com o padrão. A ação pode ser um único comando C ou múltiplos comandos delimitados por chaves. Qualquer comando que não começa na primeira coluna é copiado como está para o arquivo C gerado. Podemos usar comentários no arquivo lex. Neste exemplo há dois padrões "." e "$\$n", com a ação ECHO associada com cada padrão. Várias macros e variáveis são pré-definidas por lex. ECHO é uma macro que escreve o código reconhecido pelo padrão léxico. Esta é a ação default para qualquer string não reconhecido. Normalmente, ECHO é definido como:
+
+    #define ECHO fwrite(yytext, yyleng, 1, yyout)
+
+A variável yytext é um ponteiro para o string reconhecido (terminado por NULL), e yyleng é o tamanho do string reconhecido. A variável yyout é o arquivo de saída, e o default é stdout. A função yywrap é chamada por lex quando a entrada é esgotada. Retorna um se terminou, ou 0 se mais processamento é necessário. Todo programa C completo precisa de uma função main. Neste exemplos, nós simplesmente chamamos yylex, o ponto de entrada principal para lex. Algumas implementações de lex incluem cópias de main e yywrap na biblioteca, eliminando a necessidade de codificá-las explicitamente.
+
+Algumas das funções, macros e variáveis pré-definidas no arquivo gerado por Lex estão listados na Tabela [1.4](@tbl-variaveisLex){reference-type="ref" reference="tab:variaveisLex"}.
+
+::: {#tbl-variaveisLex}
+       **Nome**                               **Função**
+  ------------------ -------------------------------------------------------------
+   int yylex(void)    Função principal do analisador que retorna o próximo token.
+    char \*yytext         Ponteiro para o padrão léxico (string) reconhecido.
+        yyleng                      Tamanho do string reconhecido.
+        yylval                       Valor associado com o token.
+   int yywrap(void)          wrapup, retorna 1 se acabou, 0 se não acabou.
+     FILE \*yyout                          Arquivo de saída.
+     FILE \*yyin                          Arquivo de entrada.
+       INITIAL                             Condição inicial.
+   BEGIN condition                     Troca a condição inicial.
+         ECHO                        Escreve o string reconhecido.
+
+  : Variáveis, Macros e Funções geradas por Lex
+:::
+
+### Alguns Exemplos de Lex
+
+O primeiro exemplo apresenta um arquivo de especificação lex que gera um programa que não faz nada. Todas as entradas são reconhecidas mas não existe nenhuma ação associada com qualquer padrão, tal que nada será apresentado na saída.
+
+    %%
+    .
+    \n
+
+O seguinte exemplo numera cada linha do arquivo. Algumas implementações de lex predefinem e calculam a variável yylineno. O arquivo de entrada para lex é yyin, e o arquivo de entrada default é stdin.
+
+    %{
+        int yylineno;
+    %}
+    %%
+    ^(.*)\n    printf("%4d\t%s", ++yylineno, yytext);
+    %%
+    int main(int argc, char *argv[]) {
+        yyin = fopen(argv[1], "r");
+        yylex();
+        fclose(yyin);
+    }
+
+A seção de definições é composta de substituições, códigos e estados iniciais. O código na seção de definições é copiado como está para o topo do arquivo C gerado e precisa ser delimitado com os marcadores \"%{\" and \"%}\". As substituições simplificam as regras para casamento de padrões. Por exemplo, podemos definir dígitos e letras como segue:
+
+    digit     [0-9]
+    letter    [A-Za-z]
+    %{
+        int count;
+    %}
+    %%
+        /* match identifier */
+    {letter}({letter}|{digit})*    count++;
+    %%
+    int main(void) {
+        yylex();
+        printf("number of identifiers = %d\n", count);
+        return 0;
+    }
+
+Espaços em branco precisam separar o termo definido e a expressão associada. As referências para as substituições nas regras devem estar delimitadas por chaves ({letter}) para diferenciá-las de literais. Quando o padrão léxico é reconhecido nas regras, o código C associado é executado. Aqui um exemplo de analisador que conta o número de caracteres, palavras e linhas no arquivo (similar ao comando Unix wc):
+
+    %{
+        int nchar, nword, nline;
+    %}
+    %%
+    \n         { nline++; nchar++; }
+    [^ \t\n]+  { nword++, nchar += yyleng; }
+    .          { nchar++; }
+    %%
+    int main(void) {
+        yylex();
+        printf("%d\t%d\t%d\n", nchar, nword, nline);
+        return 0;
+    }
+
+## Analisador Léxico para Linguagem Simples
+
+A linguagem Simples$^\circledR$, na sua versão inicial, é composta dos seguintes símbolos léxicos:
+
+-   [**Palavras Reservadas**]{.underline}: programa, inicio, fimprograma, leia, escreva, se, entao, senao, fimse, enquanto, faca, fimenquanto.
+
+-   [**Operadores**]{.underline}: +, -, \*, div, $>$, $<$, +, e, ou, nao, [$<$$-$]{.underline}, [(]{.underline}, [)]{.underline}
+
+-   [**tipos**]{.underline}: inteiro, logico
+
+-   [**constantes**]{.underline}: V, F
+
+-   [**identificadores**]{.underline}: (letra)(letradigito)\*
+
+-   [**números**]{.underline}: (digito)+
+
+Utilizando a ferramenta flex pode-se construir um classificador do código da linguagem Simples. Esse classificador é uma versão básica do analisador léxico que recebe como entrada um código de Simples e apresenta na saída uma tabela onde todos os símbolos léxicos encontrados no código são classificados. Dado o seguinte código Simples:
+
+morekeywords=programa, inicio, fimprograma, leia, escreva, se, entao, senao, fimse, enquanto, faca, fimenquanto, inteiro, logico, V, F, e, ou, nao, div, sensitive=false, morecomment=\[l\]//, morecomment=\[s\]/\*\*/, morestring=\[b\]\",
+
+    programa teste
+      inteiro A B
+    inicio
+      A <- 5
+      leia B
+      B <- A * B
+      escreva B
+    fimprograma
+
+Obtem-se como saída a seguinte tabela:
+
+       programa: palavra reservada
+          teste: identificador
+        inteiro: palavra reservada
+              A: identificador
+              B: identificador
+         inicio: palavra reservada
+              A: identificador
+             <-: operador de atribuicao
+              5: numero
+           leia: palavra reservada
+              B: identificador
+              B: identificador
+             <-: operador de atribuicao
+              A: identificador
+              *: operador aritmetico multiplicacao
+              B: identificador
+        escreva: palavra reservada
+              B: identificador
+    fimprograma: palavra reservada
+
+O arquivo de especificação Lex que implementa esse classificador de símbolos da linguagem Simples é:
+
+    identificador  [a-zA-Z]([a-zA-Z0-9])*
+    numero         [0-9]+
+    espaco         [ \t]+
+    novalinha      [\n]
+
+    %%
+
+    programa    printf("%11s: palavra reservada\n", yytext);
+    inicio      printf("%11s: palavra reservada\n", yytext);
+    fimprograma printf("%11s: palavra reservada\n", yytext);
+
+    leia        printf("%11s: palavra reservada\n", yytext);
+    escreva     printf("%11s: palavra reservada\n", yytext);
+
+    se      printf("%11s: palavra reservada\n", yytext);
+    entao       printf("%11s: palavra reservada\n", yytext);
+    senao       printf("%11s: palavra reservada\n", yytext);
+    fimse       printf("%11s: palavra reservada\n", yytext);
+
+    enquanto    printf("%11s: palavra reservada\n", yytext);
+    faca        printf("%11s: palavra reservada\n", yytext);
+    fimenquanto printf("%11s: palavra reservada\n", yytext);
+
+    "+"     printf("%11s: operador aritmetico soma\n", yytext);
+    "-"     printf("%11s: operador aritmetico subtracao\n", yytext);
+    "*"     printf("%11s: operador aritmetico multiplicacao\n", yytext);
+    div     printf("%11s: operador aritmetico divisao\n", yytext);
+
+    ">"     printf("%11s: operador relacional maior\n", yytext);
+    "<"     printf("%11s: operador relacional menor\n", yytext);
+    "="     printf("%11s: operador relacional igual\n", yytext);
+
+    e       printf("%11s: operador logico conjuncao\n", yytext);
+    ou      printf("%11s: operador logico disjuncao\n", yytext);
+    nao     printf("%11s: operador logico negacao\n", yytext);
+
+    "<-"        printf("%11s: operador de atribuicao\n", yytext);
+    "("     printf("%11s: simbolo abre parenteses\n", yytext);
+    ")"     printf("%11s: simbolo fecha parenteses\n", yytext);
+
+    inteiro     printf("%11s: palavra reservada\n", yytext);
+    logico      printf("%11s: palavra reservada\n", yytext);
+    V       printf("%11s: constante logica de verdade\n", yytext);
+    F       printf("%11s: constante logica de falsidade\n", yytext);
+
+    {identificador} printf("%11s: identificador\n", yytext);
+    {numero}    printf("%11s: numero\n", yytext);
+    {espaco}        /* nao faz nada */
+    {novalinha}     /* nao faz nada */
+    .       printf("%11s: ERRO - SIMBOLO NAO RECONHECIDO!\n", yytext);
+
+    %%
+
+    int yywrap(void) { return 1; }
+
+    int main (void) {
+       yylex();
+       return 0;
+    }
+
+A exclusão dos comentários tem um tratamento especial na sintaxe Lex/Flex. A marca de início de comentário, normalmente representada por uma sequência de símbolos como /\* e (\*, determina uma configuração especial para o autômato. A partir dessa sequência, o analisador léxico deve descartar todos os símbolos, exceto a marca de fim de linha que é utilizada na contagem de linhas do arquivo fonte. Essa contagem é necessária para que as rotinas de tratamento de erro possam indicar a linha correta do erro. E quando o autômato identifica a sequência que fecha o comentário (/\* ou \*)), o autômato deve retornar ao seu estado normal. A Figura [1.12](/chapters/images/@fig-af-coment){reference-type="ref" reference="fig:af-coment"} representa o autômato para o tratamento de comentário de linhas. O autômato vai para o estado X quando encontra a marca de início de comentário. Nesse estado, o autômato consome os símbolos da entrada, quando encontra a sequência que marca o fim do comentário, o autômato volta ao estado inicial de aceitação.
+
+![Comentário para autômatos de estados finitos](/chapters/images/automato-comentario.pdf){#fig:af-coment width="0.7\\linewidth"}
+
+O novo arquivo de especificação Flex que inclui o tratamento para comentário de linha (//), comentário de múltiplas linhas (/\* \... \*/) e a contagem do número das linhas no arquivo fonte é:
+
+    identificador [a-zA-Z]([a-zA-Z0-9])*
+    numero [0-9]+
+    espaco [ \t]+
+    novalinha [\n]
+
+    %x coment
+
+    %{
+        int nlin = 1;
+    %}
+
+    %%
+    programa      printf("%3d|%11s: reservada\n", nlin, yytext);
+    inicio        printf("%3d|%11s: reservada\n", nlin, yytext);
+    fimprograma   printf("%3d|%11s: reservada\n", nlin, yytext);
+    leia          printf("%3d|%11s: reservada\n", nlin, yytext);
+    escreva       printf("%3d|%11s: reservada\n", nlin, yytext);
+    se            printf("%3d|%11s: reservada\n", nlin, yytext);
+    entao         printf("%3d|%11s: reservada\n", nlin, yytext);
+    senao         printf("%3d|%11s: reservada\n", nlin, yytext);
+    fimse         printf("%3d|%11s: reservada\n", nlin, yytext);
+    enquanto      printf("%3d|%11s: reservada\n", nlin, yytext);
+    fimenquanto   printf("%3d|%11s: reservada\n", nlin, yytext);
+    inteiro       printf("%3d|%11s: reservada (tipo)\n", nlin, yytext);
+    logico        printf("%3d|%11s: reservada (tipo)\n", nlin, yytext);
+
+    "+"          printf("%3d|%11s: soma\n", nlin, yytext);
+    "-"          printf("%3d|%11s: subtracao\n", nlin, yytext);
+    "*"          printf("%3d|%11s: multiplicacao\n", nlin, yytext);
+    "<-"         printf("%3d|%11s: atribuicao\n", nlin, yytext);
+    div          printf("%3d|%11s: divisao\n", nlin, yytext);
+    ">"          printf("%3d|%11s: maior\n", nlin, yytext);
+    "<"          printf("%3d|%11s: menor\n", nlin, yytext);
+    "="          printf("%3d|%11s: igual\n", nlin, yytext);
+    e            printf("%3d|%11s: e logico\n", nlin, yytext);
+    ou           printf("%3d|%11s: ou logico\n", nlin, yytext);
+    nao          printf("%3d|%11s: negacao\n", nlin, yytext);
+    "("          printf("%3d|%11s: abre\n", nlin, yytext);
+    ")"          printf("%3d|%11s: fecha\n", nlin, yytext);
+
+    "V"          printf("%3d|%11s: constante\n", nlin, yytext);
+    "F"          printf("%3d|%11s: constante\n", nlin, yytext);
+
+    "//".*          ;
+    "/*"            BEGIN(coment);
+    <coment>"*/"    BEGIN(INITIAL);
+    <coment>.       ; 
+    <coment>\n      nlin++;
+
+    {identificador}   printf("%3d|%11s: identificador\n", nlin, yytext);
+    {numero}          printf("%3d|%11s: numero\n", nlin, yytext);
+    {espaco}          ;
+    {novalinha}       nlin++;
+
+    %%
+    int yywrap() { return 1; }
+    int main () {
+        yylex();
+        return 0;
+    }
+
+Para o arquivo Simples de entrada:
+
+    /*----------------------
+    Programa exemplo em linguagem simples
+    --------------------*/
+    programa um
+      inteiro a b  // declaracao das variaveis
+    inicio
+      leia a  // leitura de a
+      leia b  // leitura de b
+      enquanto a < b faca
+         escreva a 
+         a <- a + 1
+      fimenquanto
+    fimprograma
+
+A saída produzida como resultado do classificador de símbolos (analisador léxico simplificado) é:
+
+      4|   programa: reservada
+      4|         um: identificador
+      5|    inteiro: reservada (tipo)
+      5|          a: identificador
+      5|          b: identificador
+      6|     inicio: reservada
+      7|       leia: reservada
+      7|          a: identificador
+      8|       leia: reservada
+      8|          b: identificador
+      9|   enquanto: reservada
+      9|          a: identificador
+      9|          <: menor
+      9|          b: identificador
+      9|       faca: identificador
+     10|    escreva: reservada
+     10|          a: identificador
+     11|          a: identificador
+     11|         <-: atribuicao
+     11|          a: identificador
+     11|          +: soma
+     11|          1: numero
+     12|fimenquanto: reservada
+     13|fimprograma: reservada
