@@ -23,7 +23,7 @@ book:
     - chapters/2-fundamentos.qmd
     - chapters/3-compilador.qmd
     - chapters/4-lexico.qmd
-    # - chapters/5-sintatico.qmd
+    - chapters/5-sintatico.qmd
     - chapters/6-maquinas.qmd
     - chapters/7-semantico-geracao.qmd
     - chapters/8-projetos.qmd
@@ -38,7 +38,7 @@ format:
       - cosmo
       - brand
   pdf:
-    documentclass: book    
+    documentclass: book
     geometry:
       - paperwidth=17cm
       - paperheight=24cm
