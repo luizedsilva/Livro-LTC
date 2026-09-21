@@ -4,6 +4,23 @@
 
 local document_meta = {}
 
+local BASE_URL = "https://luizedsilva.github.io/Livro-LTC"
+local BASE_IMAGES = "chapters/images"
+
+local function resolve_url(url)
+  if url == nil or url == "" then
+    return ""
+  end
+
+  -- Se já for uma URL absoluta, mantém como está
+  if url:match("^https?://") then
+    return url
+  end
+
+  -- Se for relativa, acrescenta a URL base
+  return BASE_URL .. "/" .. url:gsub("^/", "")
+end
+
 local function file_exists(path)
   if path == nil or path == "" then return false end
   local f = io.open(path, "r")
@@ -42,10 +59,13 @@ local function process_div(el)
   end
 
   local url    = get_attr_or_meta("url")
+  url = resolve_url(url)
   local height = get_attr_or_meta("height")
   if height == "" then height = "400" end
-  local imagem = get_attr_or_meta("imagem")
+  local imagem = get_attr_or_meta("image")
+  imagem = BASE_IMAGES ..  imagem
   local qrcode = get_attr_or_meta("qrcode")
+  qrcode = BASE_IMAGES ..  qrcode
 
   -- =========================
   -- HTML
@@ -77,10 +97,11 @@ local function process_div(el)
 
     if url ~= "" then
       latex = latex .. "\\begin{tcolorbox}[enhanced jigsaw, title=Acesso Interativo]\n"
-      latex = latex .. "Acesse a simulação em: \\url{" .. url .. "}\n"
+      latex = latex .. "Acesse a simulação em:\\par\\smallskip\n"
+      latex = latex .. "\\small\\url{" .. url .. "}\n"
 
       if qrcode ~= "" and file_exists(qrcode) then
-        latex = latex .. "\\begin{center}\\includegraphics[width=3cm]{" .. qrcode .. "}\\end{center}\n"
+         latex = latex .. "\\begin{center}\\includegraphics[width=3cm]{" .. qrcode .. "}\\end{center}\n"
       end
 
       latex = latex .. "\\end{tcolorbox}\n"

@@ -1,3 +1,1305 @@
 # As Gramáticas e a Análise Sintática {#sec-analise-sintatica}
 
 ![](/chapters/images/sintatico.png){fig-align="center" width=70%}
+
+## Análise Sintática
+
+A análise sintática é executada pelo *parser* e sua função principal é agrupar os *tokens*, retornados do analisar léxico, em estruturas sintáticas (comando, bloco, expressão, identicador, número, etc). Uma estrutura que pode ser empregada é a árvore sintática. A árvore representa a aplicação das regras sintáticas da linguagem e definem, de certa forma, um significado para a estrutura do programa compilado. O programa está sintaticamente correto se for possível construir uma única árvore sintática, no qual a raiz é o símbolo inicial da gramática da linguagem (símbolo de partida) e as folhas são os tokens retornados do analisado léxico.
+
+Apresentamos na próxima seção uma breve revisão de conceitos que serão fundamentais para essa fase da compilação, tais como: gramática, gramática livre de contexto, derivação, redução, árvore de derivação e árvore sintática.
+
+### Gramática
+
+A gramática pode ser definida de maneira formal como uma quádrupla $G = (V,\Sigma,R,P)$, onde $V$ é vocabulário de símbolos não-terminais de $G$, também chamados de variáveis da gramática. $\Sigma$ é o vocabulário de símbolos terminais de $G$, disjunto de $V$. $R$ são as regras de produção ou regras de sintaxe. $P$ é um símbolo de $V$ (raiz, símbolo inicial ou símbolo de partida da gramática $G$).
+
+### Gramática Regular
+
+A gramática regular é uma gramática, em que cada regra tem uma das formas: $X \rightarrow a$ ou $X \rightarrow aY$ ou $X \rightarrow \lambda$, onde $X$ e $Y$ são símbolos não-terminais e $a$ é um símbolo terminal. Gramáticas Regulares, Expressões Regulares e Autômatos finitos são três formalismos alternativos usados para especificar linguagens regulares. Usamos essas especificações para definir os padrões léxicos que são reconhecidos pelo analisador léxico.
+
+### Gramática Livre de Contexto
+
+A gramática livre de contexto (GLC) é uma gramática cujas as regras de produção são da forma: $X \rightarrow \alpha$, onde $X$ é qualquer símbolo não terminal e $\alpha$ é uma elemento de $\{V \cup \Sigma\}^*$. As GLC´s são usadas para especificar, através de definições indutivas, todas as construções sintáticas válidas para as linguagens de programação. Usamos GLC para especificar a sintaxe das linguagens que são reconhecidas pelo analisador sintático de compilador. Exemplo:
+
+::: center
+$G = (\{C,E,I,O\}, \{a,b,+,*,(,),\underline{:=},\underline{;}\}, R, C\}$
+:::
+
+onde:
+
+::: center
+$R = \left\lbrace \begin{array}{rcl}
+    C & \rightarrow & I := E | C;C \\ 
+    E & \rightarrow & I | E O E | (E) \\ 
+    O & \rightarrow & + | * \\ 
+    I & \rightarrow & a | b \\ 
+    \end{array} 
+    \right\rbrace$
+:::
+
+### Derivação
+
+A derivação, representada através da relação $\Rightarrow$ significa a aplicação de uma regra de produção numa sequência que contém símbolos não-terminais a fim de se obter uma sequência só de símbolos terminais. Exemplo: Considere a gramática de expressões (para abreviar a notação da gramática estamos indicando apenas o conjunto de regras de produção):
+
+::: center
+$G_1: E \rightarrow a | b | E+E | E*E | (E)$.
+:::
+
+A sentença [$(a+b)*a$]{.underline} pode ser obtida por várias derivações distintas:
+
+-   $E\Rightarrow E*E\Rightarrow (E)*E \Rightarrow (E+E)*E \Rightarrow (a+E)*E \Rightarrow (a+b)*E \Rightarrow (a+b)*a$
+
+-   $E \Rightarrow E*E \Rightarrow E*a \Rightarrow (E)*a \Rightarrow (E+E)*a \Rightarrow (E+b)*a \Rightarrow (a+b)*a$
+
+Usando as definições de derivação e gramática podemos definir novamente uma linguagem da seguinte forma:
+
+$$L(G) = \{\alpha \in \Sigma^* | P  \overset{*}{\Rightarrow} \alpha \}$$
+
+### Árvores de Derivação
+
+Se observarmos o exemplo anterior, verificamos que o que muda numa sequência de derivação para outra é a ordem na qual as produções são aplicadas. Num certo sentido todas as derivações são equivalentes. Um meio usado para representar todas as derivações que indicam a mesma estrutura são as árvores de derivação (árvores sintáticas). Na árvore de derivação a aplicação da regra $E \rightarrow E_1E_2...E_n$ é representada da seguinte forma, o símbolo não terminal $E$, do lado esquerdo da regra é a raiz da subárvore e os símbolos $E_1, E_2, ..., E_n$ , os símbolos não terminais e/ou terminais do lado direito da regra são os filhos desta raiz. Exemplo: Para gramática $G_1$ e a sequência [$(a+b)*a$]{.underline}, temos a árvore de derivação, conforme ilustrado na Figura [1.1](#fig-arvorederivacao){reference-type="ref" reference="fig:arvorederivacao"}.
+
+![Árvore de Derivação](/chapters/images/arvorederivacao.png){#fig-arvorederivacao width="30%"}
+
+### Gramática Ambígua
+
+Consideremos a cadeia [a+b\*a]{.underline} para gramática $G_1$. Existem duas árvores de derivação distintas, conforme ilustrado na Figura [1.2](#fig-ambiguidade1){reference-type="ref" reference="fig:ambiguidade1"}.
+
+![Exemplo de ambiguidade](/chapters/images/ambiguidade1.png){#fig-ambiguidade1 width="70%"}
+
+Uma gramática $G$ é dita ambígua se a linguagem $L(G)$ contém uma sentença para qual existe mais de uma árvore de derivação, usando a gramática $G$. Consideremos agora a seguinte sentença [a+a+a]{.underline}:
+
+::: center
+$E \Rightarrow E+E \Rightarrow E+E+E \Rightarrow a+E+E \Rightarrow a+a+E \Rightarrow a+a+a$
+:::
+
+Devido à maneira como foi definido o conceito de derivação não está claro no passo E+E+E, qual das duas ocorrências de E foi substituída. Esta derivação corresponde a duas árvores distintas, conforme ilustrado na Figura [1.3](#fig-ambiguidade2){reference-type="ref" reference="fig:ambiguidade2"}.
+
+![Exemplo de ambiguidade](/chapters/images/ambiguidade2.png){#fig-ambiguidade2 width="70%"}
+
+A causa da ambiguidade está no fato dela não indicar as precedências entre os operadores \* e +. Consideremos agora a seguinte gramática $G_2$:
+
+::: center
+$\begin{array}{rcl}
+    E & \rightarrow & E + T \quad | \quad T \\ 
+    T & \rightarrow & T * F \quad | \quad F \\ 
+    F & \rightarrow & a \quad | \quad b \quad | \quad (E) \\ 
+    \end{array}$
+:::
+
+Pode-se demonstrar que a gramática $G_1$ e a $G_2$ definem a mesma linguagem e que $G_2$ não é ambígua. Há várias derivações para as sentenças a+b+a e a+a+a:
+
+$E \Rightarrow E+T \Rightarrow T+T \Rightarrow F+T \Rightarrow a + T \Rightarrow a+T*F \Rightarrow a+F*F \Rightarrow a+b+F \Rightarrow a+b+a$
+
+$E \Rightarrow E+T \Rightarrow E+T*F \Rightarrow E+T*a \Rightarrow E+F*a \Rightarrow E+b*a \Rightarrow F+b*a \Rightarrow a+b*a$
+
+Há porém, uma única árvore de derivação para cada sentença, conforme ilustrado na Figura [1.4](#fig-derivacao){reference-type="ref" reference="fig:derivacao"}.
+
+![Exemplo de árvore não ambígua](/chapters/images/derivacao.png){#fig-derivacao width="70%"}
+
+Deve-se notar que nem sempre é possível eliminar ambiguidade. Um outro exemplo famoso de ambiguidade é o chamado "else pendente". Consideremos a seguinte gramática $G_3$:
+
+::: center
+$\begin{array}{rcl}
+    C & \rightarrow &a \quad | \quad if \quad b \quad then \quad C \quad else \quad C \quad | \quad if \quad b \quad then \quad  \\ 
+    \end{array}$
+:::
+
+Esta gramática é ambígua, pois temos duas árvores de derivação para a sentença [if b then if b then a else a]{.underline}, conforme ilustrado na Figura [1.5](#fig-ambiguidade3){reference-type="ref" reference="fig:ambiguidade3"}.
+
+![Ambiguidade do else pendente](/chapters/images/ambiguidade3.png){#fig-ambiguidade3 width="70%"}
+
+Isto se deve ao fato da parte else a poder ser associada tanto com o primeiro como com o segundo if. Ainda neste caso podemos eliminar a ambiguidade:
+
+::: center
+$\begin{array}{rcl}
+    C & \rightarrow & a \quad | \quad if \quad b \quad then \quad D \quad else \quad C \quad | \quad if \quad b \quad then \quad C \\
+    
+    D & \rightarrow & a \quad | \quad if \quad b \quad then \quad D \quad else \quad D \\
+    \end{array}$
+:::
+
+Note-se que esta gramática sempre associa o [else]{.underline} com o [if]{.underline} mais próximo possível.
+
+## Implementação de Analisadores Sintáticos
+
+O objetivo principal da análise sintática é decidir se uma cadeia (sentença, palavra) pertence ou não à linguagem definida por uma gramática. Existem duas importantes estratégias para o problema de análise sintática:
+
+-   Análise Sintática Ascendente
+
+-   Análise Sintática Descendente
+
+Na primeira, a árvore sintática é construída partindo-se da cadeia a ser analisada, "subindo-se" até atingir o símbolo inicial da gramática. Na segunda, parte-se do símbolo inicial e vai-se "descendo" até atingir todos os símbolos da cadeia que está sendo analisada.
+
+Apresentamos nessa seção uma estratégia (existem outras) para análise descendente e uma estratégia para análise ascendente.
+
+## Análise Sintática LL
+
+Os analisadores descendentes (*top-down*) podem ser construídos com uma classe de gramática chamada LL(1). O primeiro \"L\" se refere a forma como é lida a cadeia de entrada na análise, nesse caso da esquerda para direita (*Left-to-right*). O segundo \"L\" se refere a forma como é obtida a sequência de derivação para obtenção da sentença avaliada, nesse caso derivação mais à esquerda (*leftmost*). O número \"1\" se refere ao número de símbolos a frente deve-se olhar para decidir que regra da gramática deve ser utilizada.
+
+Para construção de Analisadores LL(k), são necessárias duas funções sobre símbolos da gramática: função *FIRST* e *FOLLOW*. A Figura [1.6](#fig-firstfollow){reference-type="ref" reference="fig:firstfollow"} é usada para ilustrar o cálculo dessas funções. Intuitivamente, todos os símbolos que iniciam derivações de [A]{.underline} compõe o conjunto [*FIRST* de A]{.underline} (por exemplo, o terminal [c]{.underline} da Figura). Todo símbolo terminal que segue o símbolo [A]{.underline} em qualquer derivação faz parte do conjunto [*FOLLOW* de A]{.underline} (por exemplo, o terminal [a]{.underline} da Figura [1.6](#fig-firstfollow){reference-type="ref" reference="fig:firstfollow"})
+
+![Ilustração para os conjuntos First/Follow](/chapters/images/firstfollow.png){#fig-firstfollow width="6cm"}
+
+### Função $FIRST$
+
+Para calcular $FIRST$ de todos os simbolos $X$ de uma gramática, execute as seguintes regras até que nenhum novo símbolo possa ser acrescentado a qualquer conjunto $FIRST$.
+
+1.  Se $X$ é um símbolo terminal, então $FIRST(X) = \{X\}$
+
+2.  Se $X$ é um não-terminal e $X\rightarrow Y_1Y_2...Y_k$ é uma regra de produção para algum $k \geq 1$, então acrescente $a$ a $FIRST(X)$ se, para algum $i$, $a$ estiver em $FIRST(Y_i)$, e $\lambda$ estiver em todos os $FIRST(Y_1),...,FIRST(Y_{i-1})$. Se $\lambda$ está em $FIRST(Y_j)$ para todo $j=1,2,...,k$, então adicione $\lambda$ a $FIRST(X)$.
+
+3.  Se $X \rightarrow \lambda$ é um regra de produção, então acrescente $\lambda$ a $FIRST(X)$
+
+### Função $FOLLOW$
+
+Para calcular $FOLLOW$ de todos os simbolos NÃO-TERMINAIS $S$ de uma gramática, execute as seguintes regras até que nenhum novo símbolo possa ser acrescentado a qualquer conjunto $FOLLOW$.
+
+1.  Coloque $\#$ em $FOLLOW(S)$, onde $S$ é o símbolo inicial da gramática e $\#$ é o marcador de fim de sentença, que é incluido antes da avaliação da sentença.
+
+2.  Se houver uma produção $A \rightarrow \alpha B \beta$, então tudo que está em $FIRST(\beta)$ exceto $\lambda$, deve estar em $FOLLOW(B)$.
+
+3.  Se houver uma produção $A \rightarrow \alpha B$ ou $A \rightarrow \alpha B \beta$, onde $FIRST(\beta)$ contém $\lambda$, então inclua $FOLLOW(A)$ em $FOLLOW(B)$.
+
+[**Exemplo:**]{.underline}
+
+Considere a seguinte gramática:
+
+  $E \rightarrow TE^{'}$
+  $E^{'} \rightarrow +TE^{'} | \lambda$
+  $T \rightarrow FT^{'}$
+  $T^{'} \rightarrow *FT^{'} | \lambda$
+  $F \rightarrow a | (E)$
+
+[**Conjuntos FIRST e FOLLOW:**]{.underline}
+
+|   | FIRST | FOLLOW |
+|---|:-----:|:------:|
+| $E$ | $\{(, a\}$ | $\{), \#\}$ |
+| $E'$ | $\{+, \lambda\}$ | $\{), \#\}$ |
+| $T$ | $\{(, a\}$ | $\{+, ), \#\}$ |
+| $T'$ | $\{*, \lambda\}$ | $\{+, ), \#\}$ |
+| $F$ | $\{(, a\}$ | $\{*, +, ), \#\}$ |
+
+[**Algoritmo para construir a Tabela de Análise Preditiva LL(1):**]{.underline}
+
+-   Para cada produção $A \rightarrow \alpha$ da gramática, faça:
+
+    1.  Para cada terminal $a$ de $FIRST(\alpha)$, adicione a produção $A \rightarrow \alpha$ a $T[A,a]$
+
+    2.  Se $FIRST(\alpha)$ inclui a palavra vazia, então adicione $A \rightarrow \alpha$ a $T[A,b]$ para cada $b$ em $FOLLOW(A)$.
+
+A tabela LL(1) é:
+
+|   | $a$ | $+$ | $*$ | $($ | $)$ | $\#$ |
+|:--:|:---:|:---:|:---:|:---:|:---:|:---:|
+| $E$ | $E \rightarrow TE'$ |  |  | $E \rightarrow TE'$ |  |  |
+| $E'$ |  | $E' \rightarrow +TE'$ |  |  | $E' \rightarrow \lambda$ | $E' \rightarrow \lambda$ |
+| $T$ | $T \rightarrow FT'$ |  |  | $T \rightarrow FT'$ |  |  |
+| $T'$ |  | $T' \rightarrow \lambda$ | $T' \rightarrow *FT'$ |  | $T' \rightarrow \lambda$ | $T' \rightarrow \lambda$ |
+| $F$ | $F \rightarrow a$ |  |  | $F \rightarrow (E)$ |  |  |
+
+: Tabela de análise preditiva LL(1) {#tbl-tabela-ll1}
+
+A seguinte definição permite identificar as gramáticas LL(1):
+
+::: definicao
+Uma gramática G não recursiva à esquerda é LL(1)se e somente se, sempre que $A \rightarrow \alpha$ e $A \rightarrow \beta$ são regras de produção de G, ocorre que:
+
+1.  a interseção dos conjuntos $FIRST(\alpha)$ e $FIRST(\beta)$ é vazia;
+
+2.  no máximo um dos dois, $\alpha$ ou $\beta$, deriva a palavra vazia; e
+
+3.  se $\beta \overset{*}{\Rightarrow} \lambda$, então a interseção de $FIRST(\alpha)$ e $FOLLOW(A)$ é vazia;
+:::
+
+## Análise LR
+
+Os analisadores ascendentes (*bottom-up*) podem ser construídos com uma classe de gramática chamada LR(1). A letra "L" se refere a forma como é lida a cadeia de entrada na análise, nesse caso da direita para esquerda (*Left-to-right*). A letra "R" do nome se refere a forma como é obtida a sequência de derivação para obtenção da sentença avaliada, nesse caso derivação mais à direita (*rigthmost*). O número "1" se refere ao número de símbolos a frente deve-se olhar para decidir que regra da gramática deve ser utilizada.
+
+O funcionamento de um algoritmo de análise sintática ascendente pode ser descrito, informalmente da seguinte maneira:
+
+1.  $\alpha$ = cadeia dada
+
+2.  Decompor $\alpha = \beta X_1X_2...X_n \gamma$ tal que exista uma regra de produção $X \rightarrow X_1X_2...X_n$. Adotar a cadeia $\alpha = \beta X \gamma$, associando-se uma árvore onde $X$ é a raiz e $X_1X_2...X_n$ são as subárvores da raiz $X$. (Este processo inverso da derivação é denominado REDUÇÃO).
+
+3.  O passo 2 é repetido até que o valor de $\alpha$ seja reduzido para o símbolo inicial da gramática.
+
+Na descrição genérica do algoritmo de análise ascendente usa-se a intuição para decidir que regra de produção utilizar para redução. Em algumas situações temos mais de uma redução possível. Para automatizar o processo de análise sintática existem alguns algoritmos que utilizam uma tabela (matriz) representando a gramática para decidir de forma automática as reduções. A idéia básica deste método é que para cada símbolo da cadeia de entrada é feita uma consulta na tabela. O valor obtido da tabela (um estado) é empilhado. Em cada passo, o último estado empilhado é utilizado para decidir sobre uma eventual redução. O processo continua até que seja encontrada uma situação de erro, ou então, até que a cadeia de entrada seja reconhecida.
+
+A tabela de análise é uma matriz retangular cujas linhas são indexadas pelos estados, e as colunas pelos símbolos do vocabulário da gramática (terminais e não-terminais). Os elementos da matriz indicam as ações que podem ser tomadas pelo algoritmo que podem ser:
+
+-   Empilhar o estado $e_i$
+
+-   Reduzir usando a j-ésima regra de produção.
+
+-   Aceitar
+
+-   Rejeitar
+
+Consideremos a gramática abaixo cujas produções foram numeradas para fins de referência:
+
+::: center
+$\begin{array}{rrcl}
+(1) & E & \rightarrow & +EE \\ 
+(2) & E & \rightarrow & *EE \\ 
+(3) & E & \rightarrow & a \\ 
+(4) & E & \rightarrow & b \\ 
+\end{array}$
+:::
+
+A tabela de análise LR(k) para esta gramática é:
+
+| Tabela | $E$ | $+$ | $*$ | $a$ | $b$ | $\#$ |
+|:------:|:---:|:---:|:---:|:---:|:---:|:---:|
+| $e_0$ | $e_1$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_1$ | | | | | | $a$ |
+| $e_2$ | $e_6$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_3$ | $e_7$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_4$ | | $r_3$ | $r_3$ | $r_3$ | $r_3$ | $r_3$ |
+| $e_5$ | | $r_4$ | $r_4$ | $r_4$ | $r_4$ | $r_4$ |
+| $e_6$ | $e_8$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_7$ | $e_9$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_8$ | | $r_1$ | $r_1$ | $r_1$ | $r_1$ | $r_1$ |
+| $e_9$ | | $r_2$ | $r_2$ | $r_2$ | $r_2$ | $r_2$ |
+
+: Tabela de análise LR {#tbl-analise-lr}
+
+O símbolo \# é utilizado para marcar o fim da sentença. As ações indicadas em cada célula da tabela são:
+
+-   $e_i$ = significa empilhar o estado $e_i$.
+
+-   $r_j$ = significa reduzir usando a j-ésima regra de produção.
+
+-   $a$ = aceitar.
+
+-   $branco$ = rejeitar.
+
+Considerando essa tabela, o algoritmo que reconhece automaticamente as construções válidas para a gramática pode ser resumido da seguinte forma:
+
+``` {mathescape=""}
+Inicio
+  P[0] $\leftarrow$ $e_o$ 
+  i $\leftarrow$ 0
+  termino $\leftarrow$ falso
+  reduzido $\leftarrow$ falso
+  Simbolo $\leftarrow$ PROXIMO ( )
+  Repita
+    Se reduzido
+        Entao s $\leftarrow$ SimboloReduzido
+        Senao s $\leftarrow$ Simbolo
+    Fim-se
+    Caso Tabela[P[i],s] de
+        Empilha ($e_j$):
+              i $\leftarrow$ i + 1
+              P[i] $\leftarrow$ $e_j$
+              Se reduzido
+                   Entao reduzido $\leftarrow$ falso
+                   Senao Simbolo $\leftarrow$ PROXIMO ( )
+        Reduzir ($A \rightarrow \alpha$):
+               i $\leftarrow$ i $–$ | $\alpha$ |
+               Reduzido $\leftarrow$ verdadeiro
+               SimboloReduzido $\leftarrow$ A
+        Aceitar: termino $\leftarrow$ verdadeiro
+        Rejeitar: ERRO ( )
+    Fim-caso
+  Ate termino
+Fim
+```
+
+As estruturas e variáveis desse algoritmo são:
+
+-   [P]{.underline}: é a pilha de estados
+
+-   [i]{.underline}: é o topo da pilha de estados
+
+-   [termino]{.underline}: condição de parada do algoritmo. Determina a aceitação da sentença que está sendo avaliada.
+
+-   [reduzido]{.underline}: variável booleana que indica se houve redução no passo anterior do algoritmo
+
+-   [Simbolo]{.underline}: é o último símbolo lido na sentença de entrada.
+
+-   [PROXIMO ( )]{.underline}: função que retorna o próximo símbolo da sentença de entrada (corresponde a uma versão primitiva do analisador léxico, i. e., função yylex() gerada pela ferramenta FLEX).
+
+-   [Tabela]{.underline}: é a tabela de análise LR, em questão.
+
+-   [ERRO ( )]{.underline}: função de tratamento de erro.
+
+A Tabela [1.2](#tab:algoritmoLR){reference-type="ref" reference="tab:algoritmoLR"} apresenta o acompanhamento dos passos do algoritmo de análise LR(k) usando a tabela para a sentença [+\*a+baa#]{.underline}
+
+Algumas observações:
+
+-   Conforme pode ser observado no algoritmo, o próximo símbolo a ser consultado pode ser o próximo símbolo da cadeia de entrada ou o não-terminal da última redução (se houve redução no passo anterior).
+
+-   A fim de tornar o processo de análise mais claro, os estados empilhados são indicados por $s_i$, onde $s$ representa o símbolo que determinou a inclusão do estado na pilha e $i$ representa o estado propriamente dito.
+
+-   Na redução são removidos k estados da pilha, onde k representa o número de símbolos no lado direito da regra de produção considerada.
+
+| **Passo** | **Pilha** | **Símbolo Reduzido** | **Cadeia de Entrada** | **Ação** |
+|:---:|:---|:---:|:---|:---:|
+| 0 | $e_0$ | | $\underline{+}*a+baa\#$ | e2 |
+| 1 | $e_0 +_2$ | | $\underline{*}a+baa\#$ | e3 |
+| 2 | $e_0 +_2 *_3$ | | $\underline{a}+baa\#$ | e4 |
+| 3 | $e_0 +_2 *_3 a_4$ | | $\underline{+}baa\#$ | r3 |
+| 4 | $e_0 +_2 *_3$ | $\underline{E}$ | $+baa\#$ | e7 |
+| 5 | $e_0 +_2 *_3 E_7$ | | $\underline{+}baa\#$ | e2 |
+| 6 | $e_0 +_2 *_3 E_7 +_2$ | | $\underline{b}aa\#$ | e5 |
+| 7 | $e_0 +_2 *_3 E_7 +_2 b_5$ | | $\underline{a}a\#$ | r4 |
+| 8 | $e_0 +_2 *_3 E_7 +_2$ | $\underline{E}$ | $aa\#$ | e6 |
+| 9 | $e_0 +_2 *_3 E_7 +_2 E_6$ | | $\underline{a}a\#$ | e4 |
+| 10 | $e_0 +_2 *_3 E_7 +_2 E_6 a_4$ | | $\underline{a}\#$ | r3 |
+| 11 | $e_0 +_2 *_3 E_7 +_2 E_6$ | $\underline{E}$ | $a\#$ | e8 |
+| 12 | $e_0 +_2 *_3 E_7 +_2 E_6 E_8$ | | $\underline{a}\#$ | r1 |
+| 13 | $e_0 +_2 *_3 E_7$ | $\underline{E}$ | $a\#$ | e9 |
+| 14 | $e_0 +_2 *_3 E_7 E_9$ | | $\underline{a}\#$ | r2 |
+| 15 | $e_0 +_2$ | $\underline{E}$ | $a\#$ | e6 |
+| 16 | $e_0 +_2 E_6$ | | $\underline{a}\#$ | e4 |
+| 17 | $e_0 +_2 E_6 a_4$ | | $\underline{\#}$ | r3 |
+| 18 | $e_0 +_2 E_6$ | $\underline{E}$ | $\#$ | e8 |
+| 19 | $e_0 +_2 E_6 E_8$ | | $\underline{\#}$ | r1 |
+| 20 | $e_0$ | $\underline{E}$ | $\#$ | e1 |
+| 21 | $e_0 E_1$ | | $\underline{\#}$ | **ACEITAR** |
+
+: Simulação da análise sintática LR {#tbl-simulacao-lr}
+
+Exercício: Fazer o acompanhamento do algoritmo de análise LR(k) usando a gramática e a tabela anterior, para a cadeia de entrada ++\*abaa#.
+
+### Implementação do Algoritmo LR
+
+Na listagem de código seguinte é apresentada uma implementação para o algoritmo LR. Na implementação em questão a cadeia de entrada é restrita a cada símbolo ocupando uma única posição de caracter no string *sentenca*. O código apresenta várias tabelas para diversas gramáticas distintas. Ao final da execução, se a sentença verificada for aceita, o programa apresenta a sequência de derivações mais à direita que produz a sentença.
+
+    /*+--------------------------------------------------------------+
+      | Implementacao do algoritmo de analise sintatica LR(K).       |
+      | Por Luiz Eduardo da Silva                                    |
+      +--------------------------------------------------------------+*/
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+
+    /*+--------------------------------------------------------------+
+      | Vocabulario, Regras de Producao de uma gramatica             |
+      | e a Tabela de Analise LR(k) para a esta gramatic             |
+      +--------------------------------------------------------------+*/
+
+    #define NSIMBOLOS 7
+    #define NREGRAS   4
+    #define NESTADOS  9
+    char alfabeto[NSIMBOLOS+1] = "SLa[];#";
+    char *regras[NREGRAS] =
+          { "S::=a",
+            "S::=[L]",
+            "L::=S",
+            "L::=L;S"};
+
+    struct {
+      char acao;
+      int indice;
+    } TabSint[NESTADOS][NSIMBOLOS] =
+       { 'e',1, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
+         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
+         ' ',0, ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
+         'e',4, 'e',5, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
+         ' ',0, ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
+         ' ',0, ' ',0, ' ',0, ' ',0, 'e',6, 'e',7, ' ',0,
+         ' ',0, ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2,
+         'e',8, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
+         ' ',0, ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
+       };
+
+    /*
+    #define NSIMBOLOS 6
+    #define NREGRAS   4
+    #define NESTADOS  10
+    char alfabeto[NSIMBOLOS+1] = "E+*ab#";
+    char *regras[NREGRAS] =
+          { "E::=+EE",
+            "E::=*EE",
+            "E::=a",
+            "E::=b"};
+
+    struct {
+      char acao;
+      int indice;
+    } TabSint[NESTADOS][NSIMBOLOS] =
+       { 'e',1, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
+         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
+         'e',6, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
+         'e',7, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
+         ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
+         ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
+         'e',8, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
+         'e',9, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
+         ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
+         ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2
+       };
+
+    #define NSIMBOLOS 5
+    #define NREGRAS   2
+    #define NESTADOS  6
+    char alfabeto[NSIMBOLOS+1] = "Sacb#";
+    char *regras[NREGRAS] =
+          { "S::=aSc",
+            "S::=b"};
+
+    struct {
+      char acao;
+      int indice;
+    } TabSint[NESTADOS][NSIMBOLOS] =
+       { 'e',1, 'e',2, ' ',0, 'e',3, ' ',0,
+         ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
+         'e',4, 'e',2, ' ',0, 'e',3, ' ',0,
+         ' ',0, 'r',2, 'r',2, 'r',2, 'r',2,
+         ' ',0, ' ',0, 'e',5, ' ',0, ' ',0,
+         ' ',0, 'r',1, 'r',1, 'r',1, 'r',1,
+       };
+
+    #define NSIMBOLOS 7
+    #define NREGRAS   4
+    #define NESTADOS  9
+    char alfabeto[NSIMBOLOS+1] = "SL(),a#";
+    char *regras[NREGRAS] =
+          { "S::=(L)",
+            "S::=a",
+            "L::=L,S",
+            "L::=S"};
+
+    struct {
+      char acao;
+      int indice;
+    } TabSint[NESTADOS][NSIMBOLOS] =
+       { 'e',1, ' ',0, 'e',2, ' ',0, ' ',0, 'e',3, ' ',0,
+         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
+         'e',4, 'e',5, 'e',2, ' ',0, ' ',0, 'e',3, ' ',0,
+         ' ',0, ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2,
+         ' ',0, ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
+         ' ',0, ' ',0, ' ',0, 'e',6, 'e',7, ' ',0, ' ',0,
+         ' ',0, ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
+         'e',8, ' ',0, 'e',2, ' ',0, ' ',0, 'e',3, ' ',0,
+         ' ',0, ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
+       };
+
+
+    #define NSIMBOLOS 7
+    #define NREGRAS   4
+    #define NESTADOS  9
+    char alfabeto[NSIMBOLOS+1] = "SLa[];#";
+    char *regras[NREGRAS] =
+          { "S::=a",
+            "S::=[L]",
+            "L::=S",
+            "L::=L;S"};
+
+    struct {
+      char acao;
+      int indice;
+    } TabSint[NESTADOS][NSIMBOLOS] =
+       { 'e',1, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
+         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
+         ' ',0, ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
+         'e',4, 'e',5, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
+         ' ',0, ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
+         ' ',0, ' ',0, ' ',0, ' ',0, 'e',6, 'e',7, ' ',0,
+         ' ',0, ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2,
+         'e',8, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
+         ' ',0, ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
+       };
+    */
+
+    /*+--------------------------------------------------------------+
+      | Pilha sintatica utilizada pelo algoritmo de analise LR(K     |
+      +--------------------------------------------------------------+*/
+    struct {
+      char elem;
+      int ind;
+    } P[20];
+
+    void traco (int);
+    void strins (char *, int, char *, int);
+
+    /*+---------------------------------------------------------------+
+      | Programa principal que implementa o algoritmo de analise LR(K)|
+      | Este programa LE uma sentenca e verifica se esta sentenca eh  |
+      | valida ou para a gramatica representada na tabela de analise. |
+      | Durante o processo de analise o programa apresenta, de forma  |
+      | tabular, os valores das estruturas a cada passo.              |
+      +---------------------------------------------------------------+*/
+    int main()
+    {
+      int i, j, k, termino, reduzido, indice, ind, tam, passo,
+          nreducao, indreduz = -1, reducoes[50];
+      char sentenca[40], pilha[60], cadeia[40], str[40];
+      char s, simboloreduzido = ' ', acao;
+
+      P[0].elem = 'e';
+      P[0].ind = 0;
+      i = termino = reduzido = 0;
+
+      printf ("\nDigite a sentenca: ");
+      gets (sentenca);
+
+      strcat (sentenca, "#");
+      indice = 0;
+      passo = 0;
+      printf ("PASSO %-30s S.R. %-15s  %s\n", "PILHA", "SENTENCA", "ACAO");
+      traco (79);
+      while (!termino) {
+        if (reduzido)
+           s = simboloreduzido;
+        else
+           s = sentenca[indice];
+        for (j=0; alfabeto[j] != s && j <= strlen(alfabeto); j++);
+        if (alfabeto[j] != s) {
+           printf ("\nERRO: o simbolo <%c> nao e reconhecido nesta linguagem", s);
+           printf ("\n\nDigite '.' para terminar!");
+           while (getchar()!='.');
+           exit(10);
+        }
+        acao = TabSint[P[i].ind][j].acao;
+        ind = TabSint[P[i].ind][j].indice;
+        for (j = 0, k = indice; sentenca[k]; j++, k++)
+           cadeia [j] = sentenca[k];
+        cadeia [j] = '\0';
+        strcpy (pilha, "");
+        for (k = 0; k <= i; k++) {
+           sprintf (str,"%c%d", P[k].elem, P[k].ind);
+           strcat (pilha, str);
+        }
+        printf ("%3d   %-30s %c    %-15s  %c%d\n",
+                 passo++, pilha, simboloreduzido, cadeia, acao, ind);
+        switch (acao) {
+           case 'e':  i++;
+                      P[i].elem = s;
+                      P[i].ind = ind;
+                      if (reduzido) {
+                          reduzido = 0;
+                          simboloreduzido = ' ';
+                      }
+                      else
+                         indice++;
+                      break;
+           case 'r':  tam = strlen (regras[ind-1]);
+                      i = i - tam + 4;
+                      reduzido = 1;
+                      reducoes[++indreduz] = ind-1;
+                      simboloreduzido = regras[ind-1][0];
+                      break;
+           case 'a':  termino = 1;
+                      printf ("\nA sentenca <%s> esta correta", sentenca);
+                      break;
+           case ' ':  printf ("\nA sentenca <%s> NAO e reconhecida", sentenca);
+                      printf ("\n\nDigite '.' para terminar!");
+                      while (getchar()!='.');
+                      exit (1);
+        }
+        /*getchar();*/
+      }
+      /*- Mostra a serie de derivacoes mais a direita para produzir a sentenca -*/
+      printf ("\n\nGramatica:");
+      printf ("\n==========\n");
+      for (i = 0; i < NREGRAS; i++)
+         printf ("(%d).  %s\n", i+1, regras[i]);
+      printf ("\n\nSequencia de Derivacoes mais a direita:");
+      printf ("\n=======================================\n\n");
+      sentenca[0] = regras[0][0];
+      sentenca[1] = '\0';
+      printf ("%s ", sentenca);
+      while (indreduz >= 0)
+      {
+        i = strlen (sentenca) - 1;
+        while (sentenca[i] < 'A' || sentenca[i] > 'Z') i--;
+        nreducao = reducoes[indreduz--];
+        strins (regras[nreducao], 4, sentenca, i);
+        printf ("=%d=> %s ", nreducao+1, sentenca);
+      }
+      printf ("\n\nDigite '.' para terminar!");
+      while (getchar()!='.');
+    }
+
+    /*+----------------------------------------------------------------+
+      | Desenha uma linha de hifens na tela.                           |
+      +----------------------------------------------------------------+*/
+    void traco (int i) {
+      int k;
+      for (k = 0; k < i; k++)
+         printf ("-");
+      printf ("\n");
+    }
+
+    /*+----------------------------------------------------------------+
+      |Insere substring da pos1 ate o final de s1 na pos2 do string s2 |
+      +----------------------------------------------------------------+*/
+    void strins (char *s1, int pos1, char *s2, int pos2) {
+      int i, tam_s1, tam_s2;
+      for (tam_s1 = 0; s1[tam_s1]; tam_s1++);
+      for (tam_s2 = 0; s2[tam_s2]; tam_s2++);
+      for (i = tam_s2; i >= pos2; i--)
+         s2[i+tam_s1-pos1-1] = s2[i];
+      for (i = pos1; i < tam_s1; i++)
+         s2[i+pos2-pos1] = s1[i];
+      s2[tam_s1+tam_s2-pos1]='\0';
+    }
+
+O resultado da execução desse programa, considerando a entrada da sentença \[a;\[a;a\]\] é:
+
+    PASSO PILHA                          S.R. SENTENCA         ACAO
+    ----------------------------------------------------------------------------
+      0   e0                                  [a;[a;a]]#       e3
+      1   e0[3                                a;[a;a]]#        e2
+      2   e0[3a2                              ;[a;a]]#         r1
+      3   e0[3                           S    ;[a;a]]#         e4
+      4   e0[3S4                              ;[a;a]]#         r3
+      5   e0[3                           L    ;[a;a]]#         e5
+      6   e0[3L5                              ;[a;a]]#         e7
+      7   e0[3L5;7                            [a;a]]#          e3
+      8   e0[3L5;7[3                          a;a]]#           e2
+      9   e0[3L5;7[3a2                        ;a]]#            r1
+     10   e0[3L5;7[3                     S    ;a]]#            e4
+     11   e0[3L5;7[3S4                        ;a]]#            r3
+     12   e0[3L5;7[3                     L    ;a]]#            e5
+     13   e0[3L5;7[3L5                        ;a]]#            e7
+     14   e0[3L5;7[3L5;7                      a]]#             e2
+     15   e0[3L5;7[3L5;7a2                    ]]#              r1
+     16   e0[3L5;7[3L5;7                 S    ]]#              e8
+     17   e0[3L5;7[3L5;7S8                    ]]#              r4
+     18   e0[3L5;7[3                     L    ]]#              e5
+     19   e0[3L5;7[3L5                        ]]#              e6
+     20   e0[3L5;7[3L5]6                      ]#               r2
+     21   e0[3L5;7                       S    ]#               e8
+     22   e0[3L5;7S8                          ]#               r4
+     23   e0[3                           L    ]#               e5
+     24   e0[3L5                              ]#               e6
+     25   e0[3L5]6                            #                r2
+     26   e0                             S    #                e1
+     27   e0S1                                #                a0
+
+    A sentenca <[a;[a;a]]#> esta correta
+
+    Gramatica:
+    ==========
+    (1).  S::=a
+    (2).  S::=[L]
+    (3).  L::=S
+    (4).  L::=L;S
+
+
+    Sequencia de Derivacoes mais a direita:
+    =======================================
+
+    S =2=> [L] =4=> [L;S] =2=> [L;[L]] =4=> [L;[L;S]] =1=> [L;[L;a]] =3=> [L;[S;a]] =1=> [L;[a;a]] =3=> [S;[a;a]] =1=> [a;[a;a]] 
+
+### Construção da Tabela de Análise Sintática LR
+
+Já temos um método automático para verificar a sintaxe em linguagens de programação: o algoritmo de análise LR(k). Nesse algoritmo, todo trabalho do analisador sintático é orientado por uma tabela de análise que é construída a partir da gramática LR para linguagem. A questão é: como definir as ações da tabela de análise LR(k). Antes de apresentar o algoritmo para o cálculo da coleção de estados (linhas da tabela) e para definição dos valores da tabela, precisamos fazer algumas definições.
+
+Definições:
+
+1.  **Item**: É uma regra de produção na qual foi marcada uma posição na cadeia do lado direito; esta posição será indicada por meio do símbolo $\bullet$ (ponto). Exemplo: Seja a gramática:
+
+    ::: center
+    $\begin{array}{rcl}
+    E & \rightarrow & +EE \\ 
+    E & \rightarrow & *EE \\ 
+    E & \rightarrow & a \\ 
+    E & \rightarrow & b \\ 
+    \end{array}$
+    :::
+
+    O conjunto de itens derivados desta gramática é: $\{E \rightarrow \bullet+EE | +\bullet EE | +E\bullet E | +EE\bullet | \bullet *EE | *\bullet EE | *E\bullet E | *EE\bullet | \bullet a | a\bullet | \bullet b | b\bullet\}$. O conjunto de itens para uma gramática é sempre finito e será utilizado para construir os estados da tabela.
+
+2.  **Estado**: É um conjunto de itens. A presença no topo da pilha de um estado contendo um item da forma $A \rightarrow \alpha \bullet \beta$ indica que já foi processada e deslocada para pilha a parte inicial $alpha$ do redutendo $\alpha \beta$. O estado contendo o item da forma $A \rightarrow \alpha \bullet$ indica um redutendo completo (item completo), o que indica que a próxima ação será uma REDUÇÃO.
+
+3.  **Fecho**: Diremos que um conjunto K de itens é fechado se para todo item K da forma $A\rightarrow \alpha \bullet B \beta$, todos os itens da forma $B \rightarrow \bullet \gamma$ estão em K. Denotaremos por FECHO(K) o menor conjunto fechado que contém K. Exemplo: Consideremos os seguintes conjuntos de itens:
+
+    ::: center
+    $\begin{array}{rcl}
+    K_1 & = & \{ E \rightarrow +\bullet EE \} \\ 
+    K_2 & = & \{ E \rightarrow +E\bullet E | *\bullet EE | \bullet a \} \\
+    K_3 & = & \{ E \rightarrow \bullet b \} \\
+    \end{array}$
+    :::
+
+    Para a gramática:
+
+    ::: center
+    $\begin{array}{rcl}
+    E & \rightarrow & +EE \\ 
+    E & \rightarrow & *EE \\ 
+    E & \rightarrow & a \\ 
+    E & \rightarrow & b \\ 
+    \end{array}$
+    :::
+
+    Então seus fechos são:
+
+    ::: center
+    $\begin{array}{rcl}
+    FECHO (K_1) & = & \{ E \rightarrow +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
+    FECHO (K_2) & = & \{ E \rightarrow +E\bullet E | *\bullet EE | \bullet a | \bullet +EE | \bullet *EE | \bullet b \} \\
+    FECHO (K_3) & = &  \{ E \rightarrow \bullet b \} \\
+    \end{array}$
+    :::
+
+4.  **Transfere**: Vamos agora analisar como determinar as entradas da forma $e_j$ na tabela de análise. Suponhamos que um estado $e_i$ contenha um item incompleto da forma $A\rightarrow \alpha \bullet X \beta$. A presença deste estado no topo da pilha de análise indica que se o próximo símbolo a ser consultado for X, então terá sido processada a parte $\alpha X$ do redutendo $\alpha X \beta$, devendo ser empilhado portando um estado que contenha o item $A\rightarrow \alpha X\bullet \beta$ (com a marca depois do símbolo X). Definiremos então a função TRANSFERE (K,X), como sendo o conjunto [fechado]{.underline} de todos os itens da forma $A \rightarrow \alpha X \bullet \beta$ tais que o item $A \rightarrow \alpha \bullet X \beta$ está em K.
+
+    Consideremos a gramática anterior e os conjuntos:
+
+    ::: center
+    $\begin{array}{rcl} 
+    K_1 & = & \{ E \rightarrow *\bullet EE \}  \\
+    K_2 & = &  FECHO(K_1) = \{ E \rightarrow +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
+    K_3  & = & \{ E \rightarrow \bullet b \} \\
+    \end{array}$
+    :::
+
+    Tem-se então:
+
+    ::: center
+    $\begin{array}{lcl} 
+    TRANSFERE (K_1,*) & = &  \{\} \\
+    TRANSFERE (K_1,E) & = & \{ E \rightarrow *\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
+    TRANSFERE (K_2,+) & = & \{ E \rightarrow +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} = K_2 \\
+    TRANSFERE (K_2,a) & = & \{ E \rightarrow a\bullet \} \\
+    TRANSFERE (K_3,E) & = & \{\} \\
+    TRANSFERE (K_3,B) & = & \{ E \rightarrow b\bullet \} \\
+    \end{array}$
+    :::
+
+As funções FECHO e TRANSFERE permitem a construção dos estados que serão identificados como as linhas da tabela de análise. Assim:
+
+#### Algoritmo para determinar a coleção C de estados de uma gramática:
+
+1.  Adota-se o estado $e_0 = FECHO ( \{ S^{'} \rightarrow \bullet S\# \} )$ como sendo o valor inicial da coleção $C$. Observe que deve ser acrescentada à gramática, uma regra para caracterizar o instante que a sentença toda será reduzida para o símbolo inicial. O símbolo terminal \# é artificialmente acrescentado a gramática para marcar o fim da sentença que será analisada.
+
+2.  Se existe um estado $e$ de $C$ e um símbolo $X$ de $\Sigma$ (vocabulário) tais que $e^{'} = TRANSFERE (e, X) \neq \emptyset$ e $e^{'} \notin C$, então $e^{'}$ é acrescentado à coleção $C$.
+
+3.  O passo 2 é repetido até que não se possam acrescentar mais estados à coleção C.
+
+C é o conjunto de estado tipo LR(0) da gramática.
+
+Exemplo: Consideremos a gramática:
+
+::: center
+$\begin{array}{lcl}
+E^{'} & \rightarrow & E\# \\
+E & \rightarrow & +EE \\
+E & \rightarrow & *EE \\
+E & \rightarrow & a \\
+E & \rightarrow & b \\
+\end{array}$
+:::
+
+Aplicando-se o algoritmo anterior obtém-se os seguintes estados para esta gramática: $$\begin{aligned}
+e_0 & = &  FECHO (\{ E’ \rightarrow \bullet E\# \}) & =  
+\{ E’ \rightarrow \bullet E\# \\
+   &  & &  
+       E \rightarrow  \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
+e_1  & = & TRANSFERE (e_0, E) & =  \{ E’ \rightarrow E\bullet \# \}\\
+e_2 & = & TRANSFERE (e_0, +) & =   \{ E \rightarrow  +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
+e_3 & = & TRANSFERE (e_0, *) & =  \{ E \rightarrow  *\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
+e_4 & = & TRANSFERE (e_0, a) & =   \{ E \rightarrow  a\bullet  \}\\
+e_5 & = & TRANSFERE (e_0, a) & =  \{ E \rightarrow  b\bullet  \}\\
+e_6 & = & TRANSFERE (e_2, E) & =  \{ E \rightarrow  +E\bullet E | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
+   & & TRANSFERE (e_2, +) & =   e_2\\
+   & & TRANSFERE (e_2, *) & =   e_3\\
+   & & TRANSFERE (e_2, a) & =   e_4\\
+   & & TRANSFERE (e_2, b) & =   e_5\\
+e_7 & = & TRANSFERE (e_3, E) & =   \{ E \rightarrow  *E\bullet E | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
+      & & TRANSFERE (e_3, +) & =  e_2\\
+      & & TRANSFERE (e_3, *) & =  e_3\\
+      & & TRANSFERE (e_3, a) & =   e_4\\
+      & & TRANSFERE (e_3, b) & =   e_5\\
+e_8 & = & TRANSFERE (e_6, E) & =   \{ E \rightarrow  +EE\bullet  \}\\
+      & & TRANSFERE (e_6, +) & =   e_2\\
+      & & TRANSFERE (e_6, *) & =   e_3\\
+      & & TRANSFERE (e_6, a) & =   e_4\\
+      & & TRANSFERE (e_6, b) & =   e_5\\
+e_9 & = & TRANSFERE (e_7, E) & =  \{ E \rightarrow  *EE\bullet  \}\\
+      & & TRANSFERE (e_7, +) & =   e_2\\
+      & & TRANSFERE (e_7, *) & =   e_3\\
+      & & TRANSFERE (e_7, a) & =   e_4\\
+      & & TRANSFERE (e_7, b) & =   e_5\\
+%\end{array} $
+\end{aligned}$$
+
+A tabela de análise LR construída com essa coleção de estados é:
+
+| **Tabela** | $E$ | $+$ | $*$ | $a$ | $b$ | $\#$ |
+|:----------:|:---:|:---:|:---:|:---:|:---:|:---:|
+| $e_0$ | $e_1$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_1$ | | | | | | $a$ |
+| $e_2$ | $e_6$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_3$ | $e_7$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_4$ | | $r_3$ | $r_3$ | $r_3$ | $r_3$ | $r_3$ |
+| $e_5$ | | $r_4$ | $r_4$ | $r_4$ | $r_4$ | $r_4$ |
+| $e_6$ | $e_8$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_7$ | $e_9$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
+| $e_8$ | | $r_1$ | $r_1$ | $r_1$ | $r_1$ | $r_1$ |
+| $e_9$ | | $r_2$ | $r_2$ | $r_2$ | $r_2$ | $r_2$ |
+
+: Tabela de análise LR {#tbl-tabela-lr}
+
+Observações:
+
+-   Não foi calculado o estado $TRANSFERE (e_1,\#)$ pois esta situação corresponde à aceitação da sentença de entrada.
+
+-   Os estados calculados contêm apenas um item completo $(e_4, e_5, e_8, e_9)$, ou apenas itens incompletos $(e_0, e_1, e_2, e_3, e_6, e_7)$. Os estados constituídos de itens completos indicam que os últimos estados empilhados correspondem a um redutendo, e que portanto deve haver redução, independente do próximo símbolo.
+
+O simulador seguinte implementa todo o processo de conversão da gramática para tabela de análise. Ainda é possível testar uma sentença para a gramática usando o algoritmo de análise LR:
+
+::: {.simulacao url="/p5js/lr/" height="400" image="/printscreen/lr.png" qrcode="/qrcode/lr.png"}
+:::
+
+## Yacc/Bison - Geradores e Analisadores Sintáticos 
+
+As gramáticas para Yacc estão definidas usando uma notação similar a notação de Backus Naur Form (BNF). Esta técnica foi criada por John Backus e Peter Naur, e usada para descrever a sintaxe de ALGOL60. Uma gramática BNF pode ser usada para especificar gramáticas livres de contexto. Muitas construções sintáticas de linguagens de programação modernas podem ser expressas usando BNF. Por exemplo, a gramática de expressões que multiplica e adiciona números é:
+
+::: center
+$\begin{array}{rccl}
+(1) & E & \rightarrow & E + E \\
+(2) & E & \rightarrow & E * E \\
+(3) & E & \rightarrow & id \\
+\end{array}$
+:::
+
+Três regras de produção foram especificadas. Os termos que aparecem no lado esquerdo das regras de produção, como E, são não-terminais. Termos como id (identificadores) são terminais (tokens retornados pelo analisador léxico) e somente podem aparecer no lado direito de uma regra de produção. Esta gramática especifica que expressões podem ser a soma de duas expressões, o produto de duas expressões ou um identificador. Nós podemos usar esta gramática para gerar expressões:
+
+::: center
+$\begin{array}{rcll}
+E &\Rightarrow & E * E &            (r2) \\
+  &\Rightarrow & E * z &            (r3) \\
+  &\Rightarrow & E + E * z  &       (r1) \\
+  &\Rightarrow & E + y * z  &       (r3) \\
+  &\Rightarrow & x + y * z  &       (r3) \\
+\end{array}$
+:::
+
+A cada passo expande-se um termo, trocando um símbolo não-terminal no lado esquerdo de um regra pela sequência de símbolos terminais e/ou não terminais no lado direito da mesma regra. O número no lado direito indica que regra foi aplicada. Para analisar a expressão, nós usamos uma operação inversa. Ao invés de começar com o símbolo não-terminal inicial e gerar a expressão da gramática, nós devemos reduzir a expressão para um único símbolo não-terminal (o símbolo inicial). Este método, mais simples de implementar é chamado de análise ascendente ou análise de redução e deslocamento (bottom-up or shift-reduce parsing), e usa uma pilha para armazenar os termos. Aqui está o mesma da derivação, mas em ordem inversa:
+
+::: center
+$\begin{array}{rlll}
+ 1 &  \bullet x + y * z  &   shift & \\
+ 2 &  x \bullet + y * z  &   reduce(r3) & \\
+ 3 &  E \bullet + y * z  &   shift & \\
+ 4 &  E + \bullet y * z  &   shift & \\
+ 5 &  E + y \bullet * z  &   reduce(r3) & \\
+ 6 &  E + E \bullet * z  &   shift & \\
+ 7 &  E + E * \bullet z  &   shift & \\
+ 8 &  E + E * z \bullet  &   reduce(r3) & \\
+ 9 &  E + E * E \bullet  &   reduce(r2) &  emit \quad multiply \\
+10 &  E + E \bullet      &  reduce(r1) &  emit \quad add \\
+11 &  E \bullet          &   accept & \\
+\end{array}$
+:::
+
+Os termos do lado esquerdo do ponto estão na pilha, enquanto o restante da entrada está no lado direito do ponto. Quando o topo da pilha corresponde ao lado direito de uma regra nós trocamos os tokens correspondentes com o símbolo não terminal do lado esquerdo da regra de produção. Conceitualmente, os tokens do lado direito são desempilhados e o símbolo não terminal do lado esquerdo da regra é empilhado. Os seqüência de tokens encontrados são chamados de redutendo (handle), e nós estamos reduzindo o redutendo para o símbolo do lado esquerdo da regra de produção. Este processo continua até que tenhamos deslocado todos os símbolos para a pilha e somente o símbolo não terminal inicial permanecer na pilha. No passo 1 nós deslocamos o x para a pilha. No passo 2 nós aplicamos a regra r3 para a pilha, trocando o símbolo x por um E. Nós continuamos deslocando e reduzindo, até que um único não terminal, o símbolo inicial, permaneça na pilha. No passo 9, quando nós reduzimos usando a regra r2, escrevemos a instrução de multiplicação. Da mesma forma, escrevemos a instrução de soma no passo 10. Portanto a multiplicação tem precedência maior que a soma.
+
+Considere, entretanto, o deslocamento no passo 6. Ao invés de deslocar, nós poderíamos ter reduzido, aplicando a regra r1. Isto resultaria na adição tendo maior precedência que a multiplicação. Isto é conhecido como conflito de redução-deslocamento (shift-reduce conflict). Nossa gramática é ambígua, pois existe mais de uma derivação que produzirá a expressão. Neste caso, a precedência dos operadores é afetada. Outro exemplo, a associatividade na regra:
+
+::: center
+$\begin{array}{ccl}
+E & \rightarrow & E + E \\
+\end{array}$
+:::
+
+é ambígua, pois podemos recursivamente substituir o não terminal mais à esquerda ou mais à direita na regra. Para resolver esta situação, nós deveríamos reescrever a gramática, ou indicar para Yacc a precedência que existe entre os operadores. O último método é mais simples e será demonstrado numa prática posterior.
+
+A seguinte gramática tem um conflito de redução e redução. Com um id na pilha nós podemos reduzir para T ou reduzir para E.
+
+::: center
+$\begin{array}{ccl}
+E & \rightarrow & T \\
+E & \rightarrow & id \\
+T & \rightarrow & id \\
+\end{array}$
+:::
+
+Yacc executa uma ação default quando há um conflito. Para conflito de redução-deslocamento, yacc deslocará o símbolo para pilha. Para conflito de redução-redução ele usará a primeira regra da listagem. Ele também apresenta uma mensagem indicando a existência do conflito. O aviso pode ser excluído tornando a gramática não ambígua. Vários métodos para remover ambigüidade serão apresentados na seção seguinte.
+
+#### Implementação de uma calculadora de expressões usando Yacc
+
+    ... definicoes ...
+    %%
+    ... regras ...
+    %%
+    ... subrotinas ... 
+
+O arquivo de entrada para yacc é dividido em três seções. A seção de definições consiste de declaração de tokens, e código C delimintado por \"%\" e \"%\". A gramática BNF é colocada na seção de regras e as rotinas do usuário são colocados na seção de subrotinas.
+
+Podemos ilustrar isto melhor através de um exemplo que contrói uma pequena calculadora que pode adicionar e subtrair números. Começaremos examinando a ligação entre lex e yacc. Abaixo está a seção de definição para o arquivo de entrada yacc:
+
+    %token INTEGER
+
+Esta definição declara um token INTEGER. Quando nós rodamos yacc, ele gera o analisador sintático (parser) no arquivo y.tab.c, e também cria um arquivo (include file), y.tab.h:
+
+    #ifndef YYSTYPE
+    #define YYSTYPE int
+    #endif
+    #define INTEGER 258
+    extern YYSTYPE yylval;
+
+Lex inclui este arquivo e utiliza a definição para o valor do token. Para obter tokens, yacc chama yylex. A função yylex é do tipo int, e retorna o código numérico do token. Valores associados com o token são retornados por lex na variável yylval. Por exemplo,
+
+    [0-9]+      {
+                    yylval = atoi(yytext);
+                    return INTEGER;
+                }
+
+armazenaria o valor do inteiro em yylval, e retorna o token INTEGER para yacc. O tipo de yylval é determinado por YYSTYPE. Como o tipo default é inteiro, o valor retornado está correto para este caso. Os valores de tokens entre 0 e 255 são reservados para os caracteres. Por exemplo, se você tem um regra como
+
+    [-+]       return *yytext;    /* return operator */
+
+será retornado o valor caracter para os operadores de subtração e soma. Note que nós colocamos o caracter menos antes do caracter mais porque senão ele poderia ser confundido com o designador de intervalo numa classe de caracteres. Os valores do tokens gerados começam normalmente do valor 258 (Lex ainda reseva alguns valores para fim de arquivo e códigos de erro). Aqui está uma especificação lex completa para nossa calculadora:
+
+    %{
+        #include "y.tab.h"
+        #include <stdlib.h>
+        void yyerror(char *);
+    %}
+
+    %%
+
+    [0-9]+      {
+                    yylval = atoi(yytext);
+                    return INTEGER;
+                }
+
+    [-+\n]      return *yytext;
+
+    [ \t]       ; /* skip whitespace */
+
+    .           yyerror("invalid character");
+
+    %%
+
+    int yywrap(void) {
+        return 1;
+    }
+
+Internamente, Yacc mantém duas pilhas na memória, a pilha de análise e a pilha de valores. A pilha de análise contém terminais e não-terminais e representa o estado de análise corrente. A pilha de valores é um vetor de elementos do tipo YYSTYPE, e associa um valor com cada elemento da pilha de análise. Por exemplo, quando lex retorna um token INTEGER, yacc desloca este token para a pilha de análise. Ao mesmo tempo, o yylval correspondente é deslocado para a pilha de valores. A pilha de análise e de valores estão sempre sincronizadas. Abaixo está a especificação do arquivo de entrada yacc para a nossa calculadora:
+
+    %{
+        int yylex(void);
+        void yyerror(char *);
+    %}
+
+
+    %token INTEGER
+
+    %%
+
+    program:
+            program expr '\n'         { printf("%d\n", $2); }
+            | 
+            ;
+
+    expr:
+            INTEGER                   { $$ = $1; }
+            | expr '+' expr           { $$ = $1 + $3; }
+            | expr '-' expr           { $$ = $1 - $3; }
+            ;
+
+    %%
+
+    void yyerror(char *s) {
+        printf("%s\n", s);
+    }
+
+    int main(void) {
+        yyparse();
+        return 0;
+    }
+
+A seção de regras descreve a gramática BNF discutida anteriormente. O lado esquerdo da regra de produção, ou não-terminal, deve estar todo justificado à esquerda, seguido por dois pontos. Este é seguido pelo lado direito da regra de produção. As ações associadas as regras devem estar entre chaves. Pela utilização da recursão à esquerda, nós especificamos que um programa consiste de zero ou mais expressões. Cada expressão terminada por nova linha (ENTER). Quando uma nova linha é detectada, nós escrevemos o valor associado com a expressão. Quando nós aplicamos a regra:
+
+    expr: expr '+' expr              { $$ = $1 + $3; }
+
+Nós trocamos o lado direito da regra de produção na pilha de análise com o símbolo não terminal no lado esquerdo da mesma regra. Neste caso nós desempilhamos \"expr '+' expr\" e empilhamos \"expr\". Nós reduzimos a pilha desempilhando três termos e empilhando de volta um termo. Nós podemos referenciar as posições na pilha de valores no código em C especificando \"\$1\" para o primeiro termo no lado direito da regra de produção, \"\$2\" para o segundo termo, e assim por diante. \"\$\$\" determina o valor do topo da pilha depois que a redução é executada. As ações acima adicionam os valores associados com as duas expressões, desempilha três termos da pilha, e empilha de volta a soma. Então a pilha de análise e de valores permanecem sincronizadas.
+
+Os valores numéricos estão inicialmente todos na pilha quanto reduzimos de INTEGER para expr. Depois que INTEGER é deslocado para a pilha, aplicamos a regra:
+
+    expr: INTEGER                   { $$ = $1; }
+
+O token INTEGER é desempilhado da pilha de análise, seguido pelo empilhamento de expr. Para a pilha de valores, nós desempilhamos o valor inteiro e então empilhamos ele de volta. Em outras palavras, nós não fazemos nada. De fato , esta é uma operação default e não precisa ser especificada. Finalmente, quando uma nova linha é encontrada, o valor associado com expr será apresentado na saída.
+
+No caso de erro de sintaxe, yacc chama a função definida pelo usuário yyerror. Se você necessita modificar a interface para yyerror, você pode alterar a implementação que Yacc inclui automaticamente para satisfazer as suas necessidades. A última função em nossa especificação Yacc é main. Este exemplo tem uma gramática ambígua. Yacc emitirá avisos de conflito shift-reduce, mas processará a gramática usando o deslocamento como operação default.
+
+#### Nova versão da calculadora
+
+Nesta seção nós estenderemos a calculadora da seção anterior para incorporar algumas novas funcionalidades. As novas características incluem operadores aritméticos de multiplicação e divisão. Parênteses pode ser usado para alterar a precedência das operações e variáveis de uma única letra podem ser especificadas para comandos de atribuição. O exemplo seguinte ilustra algumas entradas e saídas da calculadora:
+
+    user:  3 * (4 + 5)
+    calc:  27
+    user:  x = 3 * (5 + 4)
+    user:  y = 5
+    user:  x
+    calc:  27
+    user:  y
+    calc:  5
+    user:  x + 2*y
+    calc:  37
+
+O analisador léxico retorna os tokens VARIABLE e INTEGER. Para variável, yylval especifica o índice para sym, nossa tabela de símbolos.Para este programa, sym simplesmente pega o valor da variável associada. Quando o token INTEGER é retornado, yylval contém o número encontrado. Abaixo a especificação para lex:
+
+    %{
+        #include <stdlib.h>
+        #include "y.tab.h"
+        void yyerror(char *);
+    %}
+
+    %%
+
+        /* variables */
+    [a-z]       {
+                    yylval = *yytext - 'a';
+                    return VARIABLE;
+                }
+
+        /* integers */
+    [0-9]+      {
+                    yylval = atoi(yytext);
+                    return INTEGER;
+                }
+
+        /* operators */
+    [-+()=/*\n] { return *yytext; }
+
+        /* skip whitespace */
+    [ \t]        ;
+
+        /* anything else is an error */
+    .               yyerror("invalid character");
+
+    %%
+
+    int yywrap(void) {
+        return 1;
+    }
+
+A especificação para Yacc é apresentada em seguida. Os tokens para INTEGER e VARIABLE são usados por yacc para criar definições do tipo #defines no arquivo y.tab.h para usar em lex. Esta é seguida pela definição da aritmética de operadores. Nós podemos especificar %left, para associatividade à esquerda ou %right, para associatividade à direita.A última definição listada é a quem tem maior precedência. Então multiplicação e divisão tem precedência maior que adição e subtração. Todos os quatro operadores são associados à esquerda. Usando esta técnica simples, nós tiramos a ambiguidade de nossa gramática:
+
+    %token INTEGER VARIABLE
+    %left '+' '-'
+    %left '*' '/'
+
+    %{
+        void yyerror(char *);
+        int yylex(void);
+        int sym[26];
+    %}
+
+    %%
+
+    program:
+            program statement '\n'
+            | 
+            ;
+
+    statement:
+            expr                      { printf("%d\n", $1); }
+            | VARIABLE '=' expr       { sym[$1] = $3; }
+            ;
+
+    expr:
+            INTEGER
+            | VARIABLE                { $$ = sym[$1]; }
+            | expr '+' expr           { $$ = $1 + $3; }
+            | expr '-' expr           { $$ = $1 - $3; }
+            | expr '*' expr           { $$ = $1 * $3; }
+            | expr '/' expr           { $$ = $1 / $3; }
+            | '(' expr ')'            { $$ = $2; }
+            ;
+
+    %%
+
+    void yyerror(char *s) {
+        printf("%s\n", s);
+    }
+
+    int main(void) {
+        yyparse();
+        return 0;
+    }
+
+## Analisador Sintático para a Linguagem Simples
+
+A gramática da linguagem Simples é:
+
+$$\begin{aligned}
+  programa & \rightarrow cabecalho \quad variaveis \quad T\_INICIO \quad lista\_comandos \quad T\_FIM \\
+  cabecalho & \rightarrow T\_PROGRAMA \quad T\_IDENTIF \\
+  variaveis & \rightarrow \lambda \quad \\
+            & \quad | \quad declaracao\_variaveis \\
+  declaracao\_variaveis & \rightarrow tipo \quad lista\_variaveis \quad declaracao\_variaveis \\
+            & \quad | \quad tipo \quad lista\_variaveis \\
+  tipo & \rightarrow T\_LOGICO \\
+            & \quad | \quad T\_INTEIRO \\            
+  lista\_variaveis & \rightarrow T\_IDENTIF \quad lista\_variaveis \\
+            & \quad | \quad T\_IDENTIF\\ 
+  lista\_comandos & \rightarrow \quad comando \quad lista\_comandos \\
+            & \quad | \quad \lambda \\
+  comando & \rightarrow entrada\_saida \\
+          & \quad | \quad repeticao \\
+          & \quad | \quad selecao \\
+          & \quad | \quad atribuicao \\
+  entrada\_saida & \rightarrow leitura \quad | \quad escrita \\
+  leitura & \rightarrow T\_LEIA \quad T\_IDENTIF \\
+  escrita & \rightarrow T\_ESCREVA \quad expressao \\
+  repeticao & \rightarrow T\_ENQTO \quad expressao \quad T\_FACA \\ &\quad lista\_comandos \quad T\_FIMENQTO \\
+  selecao & \rightarrow T\_SE \quad expressao \quad T\_ENTAO \quad lista\_comandos \\
+    & \quad T\_SENAO \quad lista\_comandos \quad T\_FIMSE \\
+  atribuicao & \rightarrow T\_IDENTIF \quad T\_ATRIB \quad expressao \\
+  expressao & \rightarrow expressao \quad T\_VEZES \quad expressao \\
+     & \quad | \quad expressao \quad T\_DIV \quad expressao \\
+     & \quad | \quad expressao \quad T\_MAIS \quad expressao \\
+     & \quad | \quad expressao \quad T\_MENOS \quad expressao \\
+     & \quad | \quad expressao \quad T\_MAIOR \quad expressao \\     
+     & \quad | \quad expressao \quad T\_MENOR \quad expressao \\
+     & \quad | \quad expressao \quad T\_IGUAL \quad expressao \\     
+     & \quad | \quad expressao \quad T\_E \quad expressao \\     
+     & \quad | \quad expressao \quad T\_OU \quad expressao \\
+     & \quad | \quad termo \\
+  termo & \rightarrow  T\_IDENTIF \\
+     & \quad | \quad T\_NUMERO \\
+     & \quad | \quad T\_V \\
+     & \quad | \quad T\_F \\     
+     & \quad | \quad T\_NAO \quad termo \\
+     & \quad | \quad T\_ABRE \quad expressao \quad T\_FECHA \\                    
+\end{aligned}$$
+
+Os símbolos não terminais (variáveis da gramática) estão grafados com letras minúsculas e são: *programa*, *cabecalho*, *variaveis*, *declaracao_variaveis*, *tipo*, *lista_variaveis*, *lista_comandos*, *comando*, *entrada_saida*, *leitura*, *escrita*, *repeticao*, *condicao*, *atribuicao*, *expressao* e *termo*. O símbolo de partida é o não-terminal *programa*.
+
+Os símbolos terminais (alfabeto da gramática) estão representados pelas constantes: T_PROGRAMA, T_INICIO, T_FIM, T_IDENTIF, T_INTEIRO, T_LOGICO, T_LEIA, T_ESCREVA, T_ENQTO, T_FACA, T_FIMENQTO, T_SE, T_ENTAO, T_SENAO, T_FIMSE, T_ATRIB, T_VEZES, T_DIV, T_MAIS, T_MENOS, T_MAIOR, T_MENOR, T_IGUAL, T_E, T_OU, T_V, T_F, T_NAO, T_ABRE e T_FECHA. Essas constantes representam codificações numéricas dos símbolos que são reconhecidos e retornados pelo analisador léxico.
+
+Para bison, as constantes que definem as codificações numéricas dos tokens são definidas através da seguinte declaração:
+
+    %token T_PROGRAMA
+    %token T_INICIO
+    %token T_FIM
+    %token T_IDENTIF
+    %token T_LEIA
+    %token T_ESCREVA
+    %token T_ENQTO
+    %token T_FACA
+    %token T_FIMENQTO
+    %token T_SE
+    %token T_ENTAO
+    %token T_SENAO
+    %token T_FIMSE
+    %token T_ATRIB
+    %token T_VEZES
+    %token T_DIV
+    %token T_MAIS
+    %token T_MENOS
+    %token T_MAIOR
+    %token T_MENOR
+    %token T_IGUAL
+    %token T_E
+    %token T_OU
+    %token T_V
+    %token T_F
+    %token T_NUMERO
+    %token T_NAO
+    %token T_ABRE
+    %token T_FECHA
+    %token T_LOGICO
+    %token T_INTEIRO
+
+Os códigos utilizados aqui são os mesmos retornados pelo analisador léxico. Basta incluir o arquivo de cabeçalho que é gerado com a declaração dessas contantes pela ferramenta bison.
+
+Como pode ser observado, a gramatica de expressões usada na linguagem Simples é ambígua. Essa ambiguidade é resolvida definindo-se prioridade entre as operações para a ferramenta Yacc. Fazemos isso com a seguinte declaração:
+
+    %left T_E T_OU
+    %left T_IGUAL
+    %left T_MAIOR T_MENOR
+    %left T_MAIS T_MENOS
+    %left T_VEZES T_DIV
+
+Com essa declaração, definimos que a multiplicação e a divisão tem associatividade mais à esquerda e precedência sobre a soma e a subtração. Soma e subtração tem precedência sobre Operadores relacionais Maior, Menor e Igual. Os operadores relacionais tem precedência sobre os operadores lógicos E e OU.
+
+As regras de produção da gramática SIMPLES usando a notação de bison fica:
+
+    programa
+          : cabecalho variaveis T_INICIO lista_comandos T_FIM
+          ;
+
+    cabecalho
+          : T_PROGRAMA T_IDENTIF
+          ;
+
+    variaveis
+          :  /* vazio */
+          | declaracao_variaveis
+          ;
+
+    declaracao_variaveis
+          : tipo lista_variaveis declaracao_variaveis
+          | tipo lista_variaveis
+          ;
+
+    tipo
+          : T_LOGICO
+          | T_INTEIRO
+          ;
+
+    lista_variaveis
+          : T_IDENTIF lista_variaveis
+          | T_IDENTIF
+          ;
+
+    lista_comandos
+          : /* vazio */
+          | comando lista_comandos
+          ;
+
+    comando
+          : entrada_saida
+          | repeticao
+          | selecao
+          | atribuicao
+          ;
+
+    entrada_saida
+          : leitura
+          | escrita
+          ;
+
+    leitura
+          : T_LEIA T_IDENTIF
+          ;
+
+    escrita
+          : T_ESCREVA expressao
+          ;
+
+    repeticao
+          : T_ENQTO expressao T_FACA lista_comandos T_FIMENQTO
+          ;
+
+    selecao
+          : T_SE expressao T_ENTAO lista_comandos T_SENAO lista_comandos T_FIMSE
+          ;
+
+    atribuicao
+          : T_IDENTIF T_ATRIB expressao
+          ;
+
+    expressao
+          : expressao T_VEZES expressao
+          | expressao T_DIV expressao
+          | expressao T_MAIS expressao
+          | expressao T_MENOS expressao
+          | expressao T_MAIOR expressao
+          | expressao T_MENOR expressao
+          | expressao T_IGUAL expressao
+          | expressao T_E expressao
+          | expressao T_OU expressao
+          | termo
+          ;
+
+    termo
+          : T_IDENTIF
+          | T_NUMERO
+          | T_V
+          | T_F
+          | T_NAO termo
+          | T_ABRE expressao T_FECHA
+          ;

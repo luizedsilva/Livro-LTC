@@ -258,6 +258,11 @@ O resultado desse processo todo é um autômato finito determinístico correspon
 
 Todo esse processo pode ser automatizado, executado através de ferramentas que representam essas estruturas (autômatos, expressões regulares) e implementam os algoritmos conforme descritos. São esses algoritmos que estão implementados em ferramentas de geração de analisadores léxicos, como Lex e Flex. A partir de um arquivo de especificação que contém as expressões regulares que pretende-se reconhecer, Lex/Flex traduzem as expressões em autômatos e desse em código em linguagem C, que implementam a programa de reconhecimento dos lexemas.
 
+No exemplo ilustrativo em sequência estão implementados esses algoritmos. Você pode entrar com a expressão regular para converter para o autômato finito não determinístico, usando as construções sugeridas por @sipser. Pode-se ainda calcular o autômato finito determinístico e o caso mínimo deste AFD. A busca de padrões num texto está disponível na última aba desta simulação.
+
+::: {.simulacao url="/p5js/er-af/" height="400" image="/printscreen/er-af.png" qrcode="/qrcode/er-af.png"}
+:::
+
 ## Análise Léxica
 
 A análise léxica constitui a primeira etapa do processo de compilação e tem como principal responsabilidade transformar o programa-fonte, originalmente representado como uma sequência de caracteres, em uma sequência de unidades léxicas denominadas *tokens*. Para realizar essa tarefa, o analisador léxico percorre o texto do programa, normalmente da esquerda para a direita, identificando os diferentes elementos que possuem significado para as etapas posteriores da compilação. Dessa forma, a análise léxica estabelece a primeira forma de interpretação estruturada do programa-fonte.
