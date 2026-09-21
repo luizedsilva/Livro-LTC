@@ -276,7 +276,7 @@ O símbolo \# é utilizado para marcar o fim da sentença. As ações indicadas 
 
 Considerando essa tabela, o algoritmo que reconhece automaticamente as construções válidas para a gramática pode ser resumido da seguinte forma:
 
-``` {mathescape=""}
+```text
 Inicio
   P[0] $\leftarrow$ $e_o$ 
   i $\leftarrow$ 0
