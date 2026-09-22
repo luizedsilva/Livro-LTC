@@ -16,7 +16,7 @@ Para descrever linguagens com estruturas desse tipo, utilizam-se as **gramática
 
 As linguagens geradas pelas gramáticas livres de contexto são denominadas **linguagens livres de contexto**. No modelo de reconhecimento, essas linguagens estão associadas aos **autômatos de pilha**, uma classe de máquinas que dispõe de uma pilha como memória auxiliar.
 
-## Gramáticas Livres de Contexto
+### Gramáticas Livres de Contexto
 
 Uma gramática consiste em um conjunto de regras, também denominadas **produções**, utilizadas para gerar as cadeias pertencentes a uma linguagem. Cada produção possui uma variável no lado esquerdo e uma sequência de variáveis e símbolos terminais no lado direito.
 
@@ -40,7 +40,7 @@ $$
 
 pode ser utilizada para acrescentar simultaneamente um símbolo `0` à esquerda e um símbolo `1` à direita de uma cadeia. A produção $A \rightarrow B$ permite substituir a variável $A$ por $B$, enquanto $B \rightarrow \#$ encerra o processo de geração, produzindo o símbolo terminal `#`.
 
-### Geração de uma cadeia
+#### Geração de uma cadeia
 
 Uma gramática é utilizada para gerar as cadeias de uma linguagem por meio de sucessivas substituições. Inicialmente, escreve-se a variável inicial. Em seguida, escolhe-se uma variável presente na forma sentencial e uma produção que possa ser aplicada a ela. A variável é então substituída pelo lado direito da produção. Esse processo é repetido até que não existam mais variáveis na forma sentencial.
 
@@ -59,7 +59,7 @@ A sequência de substituições utilizada para gerar uma cadeia é denominada **
 
 Nesse exemplo, cada aplicação da produção $A \rightarrow 0A1$ acrescenta um `0` no início e um `1` no final. Depois de realizadas as substituições necessárias, a variável $A$ é substituída por $B$, e finalmente $B$ é substituída por `#`.
 
-### Árvores de derivação
+#### Árvores de derivação
 
 Outra maneira de representar uma derivação é por meio de uma **árvore de derivação**. A raiz da árvore corresponde à variável inicial. Os filhos de um nó correspondem aos símbolos presentes no lado direito da produção utilizada para expandir a variável representada pelo nó.
 
@@ -67,7 +67,7 @@ Para a derivação de $000\#111$, a árvore de derivação representa graficamen
 
 As árvores de derivação são particularmente importantes na análise sintática de linguagens de programação. Elas permitem representar a estrutura hierárquica de uma sentença e servem de base para diversas etapas posteriores do processamento de um programa.
 
-## Definição formal de uma gramática livre de contexto
+### Definição formal de uma gramática livre de contexto
 
 ::: {.callout-note title="Definição"}
 
@@ -104,7 +104,7 @@ $$
 
 Portanto, uma cadeia pertence à linguagem da gramática quando pode ser derivada a partir do símbolo inicial e, após um número finito de aplicações das produções, resultar em uma cadeia formada exclusivamente por símbolos terminais.
 
-## Aplicação das GLCs às linguagens de programação
+### Aplicação das GLCs às linguagens de programação
 
 As gramáticas livres de contexto são amplamente utilizadas para especificar, por meio de definições indutivas, as construções sintáticas válidas de linguagens de programação. Em um compilador, a gramática pode ser utilizada pelo analisador sintático para determinar se a sequência de tokens produzida pelo analisador léxico possui uma estrutura sintática válida.
 
@@ -143,7 +143,7 @@ permite representar uma expressão delimitada por parênteses.
 
 Essa característica recursiva das GLCs é fundamental para representar estruturas hierárquicas presentes nas linguagens de programação, como expressões aritméticas, comandos condicionais, chamadas de funções e blocos de comandos.
 
-## Outro exemplo de gramática livre de contexto
+### Outro exemplo de gramática livre de contexto
 
 Considere a gramática
 
@@ -171,7 +171,7 @@ A produção $S\rightarrow aSb$ permite inserir um símbolo `a` no início e um 
 
 Se interpretarmos `a` como um parêntese esquerdo e `b` como um parêntese direito, essa gramática está relacionada à linguagem de parênteses corretamente aninhados. Esse exemplo evidencia a capacidade das GLCs de representar estruturas recursivas e aninhadas.
 
-## Projeto de gramáticas livres de contexto
+### Projeto de gramáticas livres de contexto
 
 A construção de uma GLC para uma determinada linguagem exige a identificação das estruturas que caracterizam as cadeias dessa linguagem. Assim como ocorre no projeto de autômatos finitos, não existe uma única estratégia que possa ser aplicada indistintamente a todos os problemas.
 
@@ -231,7 +231,7 @@ $$
 
 nas quais os símbolos acrescentados à esquerda e à direita estão relacionados. Essa construção é especialmente útil para linguagens que exigem correspondência entre partes da cadeia, como $0^n1^n$.
 
-## Ambiguidade
+### Ambiguidade
 
 Uma GLC é denominada **ambígua** quando existe pelo menos uma sentença da linguagem que possui mais de uma árvore de derivação distinta.
 
@@ -263,7 +263,7 @@ Essas diferentes estruturas podem ser representadas por árvores de derivação 
 
 A ambiguidade é especialmente importante no projeto de linguagens de programação, pois uma sentença ambígua pode admitir mais de uma interpretação sintática. Em uma linguagem de programação, normalmente é necessário estabelecer regras que determinem de forma única a estrutura da expressão, como regras de precedência e associatividade dos operadores.
 
-## Forma Normal de Chomsky
+### Forma Normal de Chomsky
 
 Quando se trabalha com gramáticas livres de contexto, pode ser conveniente transformar a gramática para uma forma simplificada. Uma dessas formas é a **Forma Normal de Chomsky (FNC)**.
 
@@ -293,7 +293,7 @@ A principal característica da FNC é restringir a estrutura das produções, pe
 
 Um resultado importante estabelece que toda gramática livre de contexto pode ser transformada em uma gramática equivalente na Forma Normal de Chomsky, considerando as condições apropriadas para a cadeia vazia.
 
-## Transformação para a Forma Normal de Chomsky
+### Transformação para a Forma Normal de Chomsky
 
 A transformação de uma GLC para a FNC pode ser realizada por uma sequência de etapas. Inicialmente, introduz-se uma nova variável inicial $S_0$ e uma produção
 
@@ -354,7 +354,7 @@ $$
 
 Dessa maneira, as produções passam gradualmente a obedecer às restrições da Forma Normal de Chomsky.
 
-## Algoritmo CYK
+### Algoritmo CYK
 
 O **algoritmo de Cocke-Younger-Kasami (CYK)** é um algoritmo de análise sintática para linguagens livres de contexto. O algoritmo utiliza uma estratégia de análise de baixo para cima associada à programação dinâmica.
 
@@ -433,7 +433,7 @@ O exemplo interativo seguinte simula esse algoritmo. A partir de um gramática n
 ::: {.simulacao url="/p5js/cyk/" height="400" image="/printscreen/cyk.png" qrcode="/qrcode/cyk.png"}
 :::
 
-## Eliminação da Recursão à Esquerda
+### Eliminação da Recursão à Esquerda
 
 A recursão à esquerda é uma característica importante das gramáticas livres de contexto, especialmente quando essas gramáticas são utilizadas na construção de analisadores sintáticos descendentes. Uma gramática apresenta recursão à esquerda quando existe uma variável que pode derivar uma cadeia cujo primeiro símbolo é a própria variável. No caso mais simples, isso ocorre quando uma produção apresenta a forma
 
@@ -486,7 +486,7 @@ A nova gramática não apresenta a recursão à esquerda direta existente na gra
 
 É importante observar que a eliminação da recursão à esquerda não resolve, por si só, todos os problemas necessários para a construção de um analisador descendente. Dependendo do método utilizado, outras transformações podem ser necessárias, como a fatoração à esquerda, além da análise dos conjuntos FIRST e FOLLOW. Esses conceitos serão utilizados posteriormente na construção de analisadores LL(1).
 
-## Autômato com Pilha
+### Autômato com Pilha
 
 As gramáticas livres de contexto podem ser utilizadas para descrever estruturas que não podem ser reconhecidas por autômatos finitos. Um exemplo clássico é a linguagem
 
@@ -538,7 +538,7 @@ O uso de $\Sigma_\varepsilon$ permite que uma transição seja realizada consumi
 
 A presença da pilha acrescenta ao modelo de autômato finito uma forma de memória potencialmente ilimitada. Embora o conjunto de símbolos disponíveis na pilha seja finito, a quantidade de símbolos armazenados pode crescer durante a computação. Essa característica é fundamental para o reconhecimento de diversas linguagens livres de contexto.
 
-## Exemplo de Autômato com Pilha
+### Exemplo de Autômato com Pilha
 
 Considere novamente a linguagem
 
@@ -594,7 +594,7 @@ $$
 
 formada pelas cadeias obtidas pela concatenação de uma cadeia $w$ com sua reversa $w^R$. O reconhecimento dessa linguagem também exige que o autômato armazene informações sobre a primeira parte da entrada para compará-las posteriormente com a segunda parte.
 
-## Equivalência entre Gramáticas Livres de Contexto e Autômatos com Pilha
+### Equivalência entre Gramáticas Livres de Contexto e Autômatos com Pilha
 
 Existe uma relação fundamental entre gramáticas livres de contexto e autômatos com pilha. O resultado pode ser expresso pelo seguinte teorema:
 
@@ -687,7 +687,7 @@ $$
 
 Essa construção é mais complexa do que a transformação de uma GLC para um autômato com pilha, mas demonstra formalmente a equivalência entre os dois modelos.
 
-## Forma simplificada de um Autômato com Pilha
+### Forma simplificada de um Autômato com Pilha
 
 Para facilitar a construção de uma GLC equivalente, é conveniente considerar uma forma simplificada de autômato com pilha. Os slides apresentam três condições para essa forma.
 
@@ -699,7 +699,7 @@ A terceira condição estabelece que cada transição deve realizar uma única o
 
 Essas condições não alteram a classe de linguagens que pode ser reconhecida. Elas apenas tornam a estrutura do autômato mais conveniente para a transformação em uma gramática livre de contexto.
 
-## Exemplo de transformação de AP para GLC
+### Exemplo de transformação de AP para GLC
 
 Considere um autômato com estados numerados, para o qual são introduzidas variáveis associadas a pares de estados. Se os estados forem $0$, $1$ e $2$, por exemplo, poderão ser consideradas as variáveis
 
@@ -745,7 +745,7 @@ $$
 
 O conjunto dessas produções descreve, por meio de derivações da gramática, as possíveis computações do autômato. Dessa forma, uma cadeia pertence à linguagem do autômato exatamente quando pode ser gerada pela gramática construída.
 
-## Linguagens que não são Livres de Contexto
+### Linguagens que não são Livres de Contexto
 
 As gramáticas livres de contexto são bastante expressivas, mas não conseguem representar todas as linguagens formais. Portanto, assim como foi possível identificar linguagens que não são regulares, também é possível identificar linguagens que não são livres de contexto.
 
@@ -759,7 +759,7 @@ Para pertencer a essa linguagem, uma cadeia deve possuir a mesma quantidade de s
 
 Para demonstrar formalmente que uma linguagem não é livre de contexto, uma das ferramentas utilizadas é o **lema do bombeamento para linguagens livres de contexto**.
 
-## Lema do Bombeamento para Linguagens Livres de Contexto
+### Lema do Bombeamento para Linguagens Livres de Contexto
 
 O lema do bombeamento fornece uma propriedade que toda linguagem livre de contexto deve satisfazer. Se $A$ é uma linguagem livre de contexto, então existe um número inteiro $p$, chamado **comprimento de bombeamento**, tal que toda cadeia $s\in A$, com comprimento suficientemente grande, pode ser dividida em cinco partes:
 
@@ -789,7 +789,7 @@ O lema é normalmente utilizado para provar que uma linguagem **não é** livre 
 
 É importante observar que o lema do bombeamento fornece uma **condição necessária**, mas não suficiente, para uma linguagem ser livre de contexto. Portanto, se uma linguagem não satisfaz o lema, podemos concluir que ela não é livre de contexto. Por outro lado, satisfazer o lema não constitui, isoladamente, uma prova de que a linguagem seja livre de contexto.
 
-## Exemplo de Linguagem que não é Livre de Contexto
+### Exemplo de Linguagem que não é Livre de Contexto
 
 Considere novamente
 
@@ -1071,7 +1071,7 @@ Na primeira, a árvore sintática é construída partindo-se da cadeia a ser ana
 
 Apresentamos nessa seção uma estratégia (existem outras) para análise descendente e uma estratégia para análise ascendente.
 
-## Análise Sintática LL
+### Análise Sintática LL
 
 Os analisadores descendentes (*top-down*) podem ser construídos com uma classe de gramática chamada LL(1). O primeiro \"L\" se refere a forma como é lida a cadeia de entrada na análise, nesse caso da esquerda para direita (*Left-to-right*). O segundo \"L\" se refere a forma como é obtida a sequência de derivação para obtenção da sentença avaliada, nesse caso derivação mais à esquerda (*leftmost*). O número \"1\" se refere ao número de símbolos a frente deve-se olhar para decidir que regra da gramática deve ser utilizada.
 
@@ -1079,7 +1079,7 @@ Para construção de Analisadores LL(k), são necessárias duas funções sobre 
 
 ![Ilustração para os conjuntos First/Follow](/chapters/images/firstfollow.png){#fig-firstfollow width="6cm"}
 
-### Função $FIRST$
+#### Função $FIRST$
 
 Para calcular $FIRST$ de todos os simbolos $X$ de uma gramática, execute as seguintes regras até que nenhum novo símbolo possa ser acrescentado a qualquer conjunto $FIRST$.
 
@@ -1089,7 +1089,7 @@ Para calcular $FIRST$ de todos os simbolos $X$ de uma gramática, execute as seg
 
 3.  Se $X \rightarrow \lambda$ é um regra de produção, então acrescente $\lambda$ a $FIRST(X)$
 
-### Função $FOLLOW$
+#### Função $FOLLOW$
 
 Para calcular $FOLLOW$ de todos os simbolos NÃO-TERMINAIS $S$ de uma gramática, execute as seguintes regras até que nenhum novo símbolo possa ser acrescentado a qualquer conjunto $FOLLOW$.
 
@@ -1151,7 +1151,7 @@ Uma gramática G não recursiva à esquerda é LL(1)se e somente se, sempre que 
 3.  se $\beta \overset{*}{\Rightarrow} \lambda$, então a interseção de $FIRST(\alpha)$ e $FOLLOW(A)$ é vazia;
 :::
 
-## Análise LR
+### Análise LR
 
 Os analisadores ascendentes (*bottom-up*) podem ser construídos com uma classe de gramática chamada LR(1). A letra "L" se refere a forma como é lida a cadeia de entrada na análise, nesse caso da direita para esquerda (*Left-to-right*). A letra "R" do nome se refere a forma como é obtida a sequência de derivação para obtenção da sentença avaliada, nesse caso derivação mais à direita (*rigthmost*). O número "1" se refere ao número de símbolos a frente deve-se olhar para decidir que regra da gramática deve ser utilizada.
 
@@ -1302,13 +1302,13 @@ Algumas observações:
 
 Exercício: Fazer o acompanhamento do algoritmo de análise LR(k) usando a gramática e a tabela anterior, para a cadeia de entrada ++\*abaa#.
 
-### Implementação do Algoritmo LR
+#### Implementação do Algoritmo LR
 
 Na listagem de código seguinte é apresentada uma implementação para o algoritmo LR. Na implementação em questão a cadeia de entrada é restrita a cada símbolo ocupando uma única posição de caracter no string *sentenca*. O código apresenta várias tabelas para diversas gramáticas distintas. Ao final da execução, se a sentença verificada for aceita, o programa apresenta a sequência de derivações mais à direita que produz a sentença.
 
+```c
     /*+--------------------------------------------------------------+
       | Implementacao do algoritmo de analise sintatica LR(K).       |
-      | Por Luiz Eduardo da Silva                                    |
       +--------------------------------------------------------------+*/
     #include <stdio.h>
     #include <stdlib.h>
@@ -1576,9 +1576,11 @@ Na listagem de código seguinte é apresentada uma implementação para o algori
          s2[i+pos2-pos1] = s1[i];
       s2[tam_s1+tam_s2-pos1]='\0';
     }
+```
 
 O resultado da execução desse programa, considerando a entrada da sentença \[a;\[a;a\]\] é:
 
+```text
     PASSO PILHA                          S.R. SENTENCA         ACAO
     ----------------------------------------------------------------------------
       0   e0                                  [a;[a;a]]#       e3
@@ -1624,6 +1626,7 @@ O resultado da execução desse programa, considerando a entrada da sentença \[
     =======================================
 
     S =2=> [L] =4=> [L;S] =2=> [L;[L]] =4=> [L;[L;S]] =1=> [L;[L;a]] =3=> [L;[S;a]] =1=> [L;[a;a]] =3=> [S;[a;a]] =1=> [a;[a;a]] 
+```
 
 ### Construção da Tabela de Análise Sintática LR
 
@@ -1855,25 +1858,31 @@ Yacc executa uma ação default quando há um conflito. Para conflito de reduç�
 
 #### Implementação de uma calculadora de expressões usando Yacc
 
+```c
     ... definicoes ...
     %%
     ... regras ...
     %%
-    ... subrotinas ... 
+    ... subrotinas ...
+``` 
 
 O arquivo de entrada para yacc é dividido em três seções. A seção de definições consiste de declaração de tokens, e código C delimintado por \"%\" e \"%\". A gramática BNF é colocada na seção de regras e as rotinas do usuário são colocados na seção de subrotinas.
 
 Podemos ilustrar isto melhor através de um exemplo que contrói uma pequena calculadora que pode adicionar e subtrair números. Começaremos examinando a ligação entre lex e yacc. Abaixo está a seção de definição para o arquivo de entrada yacc:
 
+```c
     %token INTEGER
+```
 
 Esta definição declara um token INTEGER. Quando nós rodamos yacc, ele gera o analisador sintático (parser) no arquivo y.tab.c, e também cria um arquivo (include file), y.tab.h:
 
+```c
     #ifndef YYSTYPE
     #define YYSTYPE int
     #endif
     #define INTEGER 258
     extern YYSTYPE yylval;
+```
 
 Lex inclui este arquivo e utiliza a definição para o valor do token. Para obter tokens, yacc chama yylex. A função yylex é do tipo int, e retorna o código numérico do token. Valores associados com o token são retornados por lex na variável yylval. Por exemplo,
 

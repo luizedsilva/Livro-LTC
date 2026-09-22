@@ -31,6 +31,7 @@ book:
     - chapters/10-referencias.qmd
 
 bibliography: chapters/referencias.bib
+csl: abnt.csl
 
 format:
   html:
