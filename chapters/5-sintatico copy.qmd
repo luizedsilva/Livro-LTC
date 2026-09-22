@@ -1,1063 +1,124 @@
-# As Linguagens Livres de Contexto e a Análise Sintática {#sec-analise-sintatica}
+# As Gramáticas e a Análise Sintática {#sec-analise-sintatica}
 
 ![](/chapters/images/sintatico.png){fig-align="center" width=70%}
 
-## Linguagens Livres de Contexto
-
-As linguagens regulares constituem uma classe importante de linguagens formais, mas existem linguagens que não podem ser descritas por meio de expressões regulares ou reconhecidas por autômatos finitos. Um exemplo clássico é a linguagem
-
-$$
-L = \{0^n1^n \mid n \geq 0\},
-$$
-
-que exige que a quantidade de símbolos `0` seja igual à quantidade de símbolos `1`, mantendo ainda a ordem em que esses símbolos aparecem. Esse tipo de dependência não pode ser mantido por um autômato finito.
-
-Para descrever linguagens com estruturas desse tipo, utilizam-se as **gramáticas livres de contexto (GLC)**. As GLCs constituem um formalismo mais poderoso que as gramáticas regulares e são particularmente importantes na especificação da sintaxe das linguagens de programação. Os analisadores sintáticos dos compiladores utilizam gramáticas livres de contexto para descrever e verificar as construções sintáticas de uma linguagem.
-
-As linguagens geradas pelas gramáticas livres de contexto são denominadas **linguagens livres de contexto**. No modelo de reconhecimento, essas linguagens estão associadas aos **autômatos de pilha**, uma classe de máquinas que dispõe de uma pilha como memória auxiliar.
-
-## Gramáticas Livres de Contexto
-
-Uma gramática consiste em um conjunto de regras, também denominadas **produções**, utilizadas para gerar as cadeias pertencentes a uma linguagem. Cada produção possui uma variável no lado esquerdo e uma sequência de variáveis e símbolos terminais no lado direito.
-
-Considere, por exemplo, a gramática:
-
-$$
-\begin{aligned}
-A &\rightarrow 0A1\\
-A &\rightarrow B\\
-B &\rightarrow \#
-\end{aligned}
-$$
-
-Nessa gramática, $A$ e $B$ são variáveis, enquanto $0$, $1$ e $\#$ são símbolos terminais. A variável $A$ é a variável inicial ou variável de partida.
-
-A produção
-
-$$
-A \rightarrow 0A1
-$$
-
-pode ser utilizada para acrescentar simultaneamente um símbolo `0` à esquerda e um símbolo `1` à direita de uma cadeia. A produção $A \rightarrow B$ permite substituir a variável $A$ por $B$, enquanto $B \rightarrow \#$ encerra o processo de geração, produzindo o símbolo terminal `#`.
-
-### Geração de uma cadeia
-
-Uma gramática é utilizada para gerar as cadeias de uma linguagem por meio de sucessivas substituições. Inicialmente, escreve-se a variável inicial. Em seguida, escolhe-se uma variável presente na forma sentencial e uma produção que possa ser aplicada a ela. A variável é então substituída pelo lado direito da produção. Esse processo é repetido até que não existam mais variáveis na forma sentencial.
-
-Para a gramática apresentada anteriormente, podemos gerar a cadeia $000\#111$ por meio da sequência:
-
-$$
-A
-\Rightarrow 0A1
-\Rightarrow 00A11
-\Rightarrow 000A111
-\Rightarrow 000B111
-\Rightarrow 000\#111.
-$$
-
-A sequência de substituições utilizada para gerar uma cadeia é denominada **derivação**. O símbolo $\Rightarrow$ representa uma etapa de derivação, enquanto $\Rightarrow^*$ pode ser utilizado para representar zero ou mais etapas de derivação.
-
-Nesse exemplo, cada aplicação da produção $A \rightarrow 0A1$ acrescenta um `0` no início e um `1` no final. Depois de realizadas as substituições necessárias, a variável $A$ é substituída por $B$, e finalmente $B$ é substituída por `#`.
-
-### Árvores de derivação
-
-Outra maneira de representar uma derivação é por meio de uma **árvore de derivação**. A raiz da árvore corresponde à variável inicial. Os filhos de um nó correspondem aos símbolos presentes no lado direito da produção utilizada para expandir a variável representada pelo nó.
-
-Para a derivação de $000\#111$, a árvore de derivação representa graficamente a sequência de aplicações das produções. As folhas da árvore, lidas da esquerda para a direita, formam a cadeia gerada pela gramática.
-
-As árvores de derivação são particularmente importantes na análise sintática de linguagens de programação. Elas permitem representar a estrutura hierárquica de uma sentença e servem de base para diversas etapas posteriores do processamento de um programa.
-
-## Definição formal de uma gramática livre de contexto
-
-::: {.callout-note title="Definição"}
-
-Uma **gramática livre de contexto (GLC)** é uma 4-upla
-
-$$
-G=(V,\Sigma,R,P),
-$$
-
-em que:
-
-* $V$ é um conjunto finito de **variáveis**;
-* $\Sigma$ é um conjunto finito de **símbolos terminais**, disjunto de $V$;
-* $R$ é um conjunto de regras de produção;
-* $P \in V$ é o símbolo **inicial** ou de **partida**.
-
-:::
-
-Cada produção de uma GLC possui a forma
-
-$$
-X \rightarrow w,
-$$
-
-em que $X \in V$ e $w \in (V\cup\Sigma)^*$.
-
-A característica fundamental de uma gramática livre de contexto é que o lado esquerdo de cada produção contém exatamente uma variável. A substituição dessa variável pode ser realizada independentemente do contexto em que ela aparece.
-
-A linguagem gerada por uma gramática $G$ é definida por
-
-$$
-L(G)=\{w\in\Sigma^* \mid P\overset{*}{\Rightarrow}w\}.
-$$
-
-Portanto, uma cadeia pertence à linguagem da gramática quando pode ser derivada a partir do símbolo inicial e, após um número finito de aplicações das produções, resultar em uma cadeia formada exclusivamente por símbolos terminais.
-
-## Aplicação das GLCs às linguagens de programação
-
-As gramáticas livres de contexto são amplamente utilizadas para especificar, por meio de definições indutivas, as construções sintáticas válidas de linguagens de programação. Em um compilador, a gramática pode ser utilizada pelo analisador sintático para determinar se a sequência de tokens produzida pelo analisador léxico possui uma estrutura sintática válida.
-
-Considere a gramática
-
-$$
-G=(\{C,E,I,O\},\{a,b,+,*,(,),:=,;\},R,C),
-$$
-
-em que o conjunto de produções é:
-
-$$
-\begin{aligned}
-C &\rightarrow I:=E \mid C;C\\
-E &\rightarrow I \mid EOE \mid (E)\\
-O &\rightarrow + \mid *\\
-I &\rightarrow a \mid b.
-\end{aligned}
-$$
-
-A variável $C$ representa construções de comandos, $E$ representa expressões, $O$ representa operadores e $I$ representa identificadores. Essa organização permite descrever estruturas sintáticas compostas a partir de estruturas menores.
-
-Por exemplo, a produção
-
-$$
-E\rightarrow EOE
-$$
-
-permite construir uma expressão combinando duas expressões por meio de um operador. Já a produção
-
-$$
-E\rightarrow(E)
-$$
-
-permite representar uma expressão delimitada por parênteses.
-
-Essa característica recursiva das GLCs é fundamental para representar estruturas hierárquicas presentes nas linguagens de programação, como expressões aritméticas, comandos condicionais, chamadas de funções e blocos de comandos.
-
-## Outro exemplo de gramática livre de contexto
-
-Considere a gramática
-
-$$
-G_3=(\{S\},\{a,b\},R,S),
-$$
-
-com as produções
-
-$$
-\begin{aligned}
-S &\rightarrow aSb\\
-S &\rightarrow SS\\
-S &\rightarrow \varepsilon.
-\end{aligned}
-$$
-
-Essa gramática permite gerar cadeias como
-
-$$
-abab,\qquad aaabbb,\qquad aababb.
-$$
-
-A produção $S\rightarrow aSb$ permite inserir um símbolo `a` no início e um símbolo `b` no final de uma estrutura. A produção $S\rightarrow SS$ permite concatenar duas estruturas já geradas, enquanto $S\rightarrow\varepsilon$ fornece o caso básico da derivação.
-
-Se interpretarmos `a` como um parêntese esquerdo e `b` como um parêntese direito, essa gramática está relacionada à linguagem de parênteses corretamente aninhados. Esse exemplo evidencia a capacidade das GLCs de representar estruturas recursivas e aninhadas.
-
-## Projeto de gramáticas livres de contexto
-
-A construção de uma GLC para uma determinada linguagem exige a identificação das estruturas que caracterizam as cadeias dessa linguagem. Assim como ocorre no projeto de autômatos finitos, não existe uma única estratégia que possa ser aplicada indistintamente a todos os problemas.
-
-Uma estratégia útil consiste em decompor uma linguagem em linguagens livres de contexto mais simples. Considere, por exemplo,
-
-$$
-L=\{0^n1^n\mid n\geq0\}
-\cup
-\{1^n0^n\mid n\geq0\}.
-$$
-
-Podemos construir uma gramática para cada uma das partes:
-
-$$
-S_1\rightarrow0S_11\mid\varepsilon
-$$
-
-e
-
-$$
-S_2\rightarrow1S_20\mid\varepsilon.
-$$
-
-Em seguida, uma variável inicial pode escolher entre as duas possibilidades:
-
-$$
-S\rightarrow S_1\mid S_2.
-$$
-
-Outra estratégia importante é construir uma GLC a partir de um autômato finito quando a linguagem é regular. Dado um AFD com estados $q_0,q_1,\ldots,q_n$, pode-se associar uma variável $R_i$ a cada estado $q_i$.
-
-Para uma transição
-
-$$
-\delta(q_i,a)=q_j,
-$$
-
-adiciona-se uma produção da forma
-
-$$
-R_i\rightarrow aR_j.
-$$
-
-Para cada estado de aceitação $q_i$, adiciona-se também
-
-$$
-R_i\rightarrow\varepsilon.
-$$
-
-A variável correspondente ao estado inicial do AFD é escolhida como variável inicial da gramática.
-
-Outra técnica útil para linguagens com dependências entre símbolos consiste em utilizar produções da forma
-
-$$
-R\rightarrow uRv,
-$$
-
-nas quais os símbolos acrescentados à esquerda e à direita estão relacionados. Essa construção é especialmente útil para linguagens que exigem correspondência entre partes da cadeia, como $0^n1^n$.
-
-## Ambiguidade
-
-Uma GLC é denominada **ambígua** quando existe pelo menos uma sentença da linguagem que possui mais de uma árvore de derivação distinta.
-
-Considere a gramática:
-
-$$
-E\rightarrow E+E\mid E*E\mid(E)\mid t.
-$$
-
-Para a cadeia
-
-$$
-t+t+t,
-$$
-
-podem existir diferentes formas de agrupar as operações. Uma interpretação pode associar primeiro os dois primeiros operandos:
-
-$$
-(t+t)+t,
-$$
-
-enquanto outra pode associar os dois últimos:
-
-$$
-t+(t+t).
-$$
-
-Essas diferentes estruturas podem ser representadas por árvores de derivação distintas. A existência de mais de uma árvore para a mesma sentença caracteriza a ambiguidade da gramática.
-
-A ambiguidade é especialmente importante no projeto de linguagens de programação, pois uma sentença ambígua pode admitir mais de uma interpretação sintática. Em uma linguagem de programação, normalmente é necessário estabelecer regras que determinem de forma única a estrutura da expressão, como regras de precedência e associatividade dos operadores.
-
-## Forma Normal de Chomsky
-
-Quando se trabalha com gramáticas livres de contexto, pode ser conveniente transformar a gramática para uma forma simplificada. Uma dessas formas é a **Forma Normal de Chomsky (FNC)**.
-
-Uma GLC está na Forma Normal de Chomsky quando suas produções possuem as formas
-
-$$
-A\rightarrow BC
-$$
-
-ou
-
-$$
-A\rightarrow a,
-$$
-
-em que $A$, $B$ e $C$ são variáveis e $a$ é um símbolo terminal.
-
-Também é permitida a produção
-
-$$
-S\rightarrow\varepsilon
-$$
-
-quando $S$ é o símbolo inicial.
-
-A principal característica da FNC é restringir a estrutura das produções, permitindo que uma variável produza exatamente duas variáveis ou um único terminal. Essa estrutura simplificada é particularmente conveniente para determinados algoritmos de análise sintática, entre eles o algoritmo CYK.
-
-Um resultado importante estabelece que toda gramática livre de contexto pode ser transformada em uma gramática equivalente na Forma Normal de Chomsky, considerando as condições apropriadas para a cadeia vazia.
-
-## Transformação para a Forma Normal de Chomsky
-
-A transformação de uma GLC para a FNC pode ser realizada por uma sequência de etapas. Inicialmente, introduz-se uma nova variável inicial $S_0$ e uma produção
-
-$$
-S_0\rightarrow S,
-$$
-
-em que $S$ era o símbolo inicial original. Essa modificação garante que o novo símbolo inicial não apareça no lado direito de nenhuma produção.
-
-Em seguida, são removidas as produções $\varepsilon$. Se uma variável $A$ pode produzir $\varepsilon$, então, para uma produção que contenha $A$, devem ser acrescentadas produções correspondentes às possibilidades de presença ou ausência de $A$.
-
-Por exemplo, se existir
-
-$$
-R\rightarrow uAv
-$$
-
-e $A$ for anulável, pode-se acrescentar
-
-$$
-R\rightarrow uv.
-$$
-
-Quando uma produção contém várias ocorrências de uma variável anulável, devem ser consideradas as diferentes combinações possíveis de remoção dessas ocorrências.
-
-Depois da eliminação das produções $\varepsilon$, removem-se as **produções unitárias**, isto é, produções da forma
-
-$$
-A\rightarrow B.
-$$
-
-Quando $B$ possui uma produção $B\rightarrow u$, a produção correspondente pode ser transferida para $A$.
-
-Finalmente, as produções restantes são convertidas para as formas permitidas pela FNC. Produções com mais de duas variáveis no lado direito são decompostas por meio da introdução de novas variáveis.
-
-Por exemplo, uma produção
-
-$$
-A\rightarrow u_1u_2u_3\ldots u_k
-$$
-
-pode ser substituída por uma sequência de produções binárias utilizando novas variáveis:
-
-$$
-\begin{aligned}
-A&\rightarrow u_1A_1\\
-A_1&\rightarrow u_2A_2\\
-&\ \vdots\\
-A_{k-2}&\rightarrow u_{k-1}u_k.
-\end{aligned}
-$$
-
-Quando uma produção de tamanho dois contém terminais, esses terminais podem ser substituídos por novas variáveis. Por exemplo, para uma produção contendo $a$ como um dos símbolos, pode-se introduzir uma variável $U$ e a produção
-
-$$
-U\rightarrow a.
-$$
-
-Dessa maneira, as produções passam gradualmente a obedecer às restrições da Forma Normal de Chomsky.
-
-## Algoritmo CYK
-
-O **algoritmo de Cocke-Younger-Kasami (CYK)** é um algoritmo de análise sintática para linguagens livres de contexto. O algoritmo utiliza uma estratégia de análise de baixo para cima associada à programação dinâmica.
-
-A versão padrão do CYK opera sobre gramáticas que estão na Forma Normal de Chomsky. Como toda GLC pode ser transformada para essa forma, o algoritmo pode ser aplicado, após a transformação apropriada, a uma ampla classe de linguagens livres de contexto.
-
-Considere uma cadeia de entrada
-
-$$
-I=a_1a_2\ldots a_n
-$$
-
-e uma gramática em FNC com $r$ variáveis. O algoritmo mantém informações sobre quais variáveis podem gerar cada substring da cadeia.
-
-Uma forma de representar essas informações é por meio de uma estrutura tridimensional
-
-$$
-P[n,n,r],
-$$
-
-cujos elementos são valores booleanos. Um elemento $P[l,s,A]$ indica se a variável $A$ pode gerar uma substring de comprimento $l$ iniciada na posição $s$ da entrada.
-
-Inicialmente, são identificadas as produções que geram diretamente cada terminal. Para cada posição $s$ da entrada e cada produção
-
-$$
-R_v\rightarrow a_s,
-$$
-
-marca-se:
-
-$$
-P[1,s,v]=\text{verdadeiro}.
-$$
-
-Em seguida, são analisadas substrings de comprimento crescente. Para uma substring de comprimento $l$, consideram-se todas as possíveis posições iniciais e todas as possíveis divisões da substring em duas partes.
-
-Suponha que exista uma produção
-
-$$
-R_a\rightarrow R_bR_c.
-$$
-
-Se uma substring puder ser dividida em duas partes de modo que $R_b$ gere a primeira parte e $R_c$ gere a segunda, então $R_a$ também pode gerar a substring completa.
-
-Formalmente, para uma divisão na posição $p$, verifica-se:
-
-$$
-P[p,s,b]\land P[l-p,s+p,c].
-$$
-
-Quando essa condição é verdadeira, define-se:
-
-$$
-P[l,s,a]=\text{verdadeiro}.
-$$
-
-Além da tabela $P$, pode-se manter uma estrutura de **backpointers**, denominada `back`, contendo informações sobre as divisões utilizadas para gerar cada substring. Essas informações permitem reconstruir posteriormente as árvores de derivação possíveis.
-
-Ao final da execução, verifica-se a posição correspondente à cadeia completa e à variável inicial. Se
-
-$$
-P[n,1,1]
-$$
-
-for verdadeiro, a cadeia pertence à linguagem gerada pela gramática. Caso contrário, a cadeia não pertence à linguagem.
-
-O algoritmo CYK possui complexidade
-
-$$
-O(n^3|G|),
-$$
-
-em que $n$ é o tamanho da cadeia de entrada e $|G|$ representa o tamanho da gramática. A utilização de programação dinâmica evita a repetição de cálculos para as mesmas substrings e permite obter um procedimento sistemático para a análise de cadeias geradas por GLCs em Forma Normal de Chomsky.
-
-O exemplo interativo seguinte simula esse algoritmo. A partir de um gramática na Forma Normal de Chomsky e um sentença o simulador preenche a tabela dinâmica de controi todas as árvores de derivação para a sentença dada, se esta for reconhecida pela linguagem reconhecida pela gramática FNC.
-
-::: {.simulacao url="/p5js/cyk/" height="400" image="/printscreen/cyk.png" qrcode="/qrcode/cyk.png"}
-:::
-
-## Eliminação da Recursão à Esquerda
-
-A recursão à esquerda é uma característica importante das gramáticas livres de contexto, especialmente quando essas gramáticas são utilizadas na construção de analisadores sintáticos descendentes. Uma gramática apresenta recursão à esquerda quando existe uma variável que pode derivar uma cadeia cujo primeiro símbolo é a própria variável. No caso mais simples, isso ocorre quando uma produção apresenta a forma
-
-$$
-X \rightarrow X\alpha.
-$$
-
-A recursão à esquerda pode ser direta, quando aparece explicitamente em uma produção, ou indireta, quando é introduzida por uma sequência de derivações envolvendo outras variáveis. Embora a recursão à esquerda não seja um problema para todos os métodos de análise sintática, ela impede a aplicação direta de determinados analisadores descendentes, pois o analisador pode entrar em um processo infinito de expansão de uma mesma variável sem consumir nenhum símbolo da entrada.
-
-Para uma gramática que contém produções da forma
-
-$$
-X \rightarrow Xy_1 \mid Xy_2 \mid \cdots \mid Xy_n
-       \mid w_1 \mid w_2 \mid \cdots \mid w_k,
-$$
-
-em que os símbolos $w_i$ não iniciam com $X$, a recursão à esquerda pode ser eliminada por meio da introdução de uma nova variável $Z$. As produções podem ser substituídas por
-
-$$
-X \rightarrow w_1Z \mid w_2Z \mid \cdots \mid w_kZ
-$$
-
-e
-
-$$
-Z \rightarrow y_1Z \mid y_2Z \mid \cdots \mid y_nZ \mid \lambda.
-$$
-
-A transformação preserva a linguagem gerada pela gramática, mas substitui a recursão à esquerda por uma forma de recursão à direita.
-
-Considere, por exemplo, a gramática
-
-$$
-E \rightarrow E+E \mid E*E \mid (E) \mid t.
-$$
-
-As duas primeiras produções apresentam recursão à esquerda. Uma transformação possível, conforme o procedimento apresentado anteriormente, produz a gramática
-
-$$
-E \rightarrow (E)Z \mid tZ
-$$
-
-e
-
-$$
-Z \rightarrow +EZ \mid *EZ \mid \lambda.
-$$
-
-A nova gramática não apresenta a recursão à esquerda direta existente na gramática original. Essa transformação é particularmente importante para a construção de analisadores sintáticos descendentes, nos quais a eliminação da recursão à esquerda constitui uma etapa de preparação da gramática.
-
-É importante observar que a eliminação da recursão à esquerda não resolve, por si só, todos os problemas necessários para a construção de um analisador descendente. Dependendo do método utilizado, outras transformações podem ser necessárias, como a fatoração à esquerda, além da análise dos conjuntos FIRST e FOLLOW. Esses conceitos serão utilizados posteriormente na construção de analisadores LL(1).
-
-## Autômato com Pilha
-
-As gramáticas livres de contexto podem ser utilizadas para descrever estruturas que não podem ser reconhecidas por autômatos finitos. Um exemplo clássico é a linguagem
-
-$$
-L=\{0^n1^n\mid n\geq 0\},
-$$
-
-na qual a quantidade de símbolos $0$ deve ser igual à quantidade de símbolos $1$. Um autômato finito não possui memória suficiente para armazenar uma quantidade arbitrária de símbolos e posteriormente compará-la com a quantidade de símbolos de outro tipo.
-
-Uma estrutura computacional capaz de realizar esse tipo de reconhecimento é o **autômato com pilha (AP)**. O autômato com pilha pode ser entendido como uma extensão de um autômato finito não determinístico à qual é acrescentada uma estrutura de memória denominada **pilha**. Os símbolos podem ser colocados na pilha durante o processamento da entrada e posteriormente retirados para verificar relações entre diferentes partes da cadeia.
-
-A pilha funciona segundo o princípio **LIFO** (*Last In, First Out*), isto é, o último símbolo inserido é o primeiro a ser retirado. Essa característica permite que o autômato armazene informações sobre uma parte da entrada e utilize essas informações posteriormente.
-
-Durante uma transição, o autômato pode ler um símbolo da entrada, consultar o símbolo que está no topo da pilha e realizar operações sobre essa pilha. Dependendo da transição, um símbolo pode ser empilhado, desempilhado ou nenhuma dessas operações pode ser realizada.
-
-Os autômatos com pilha possuem poder computacional equivalente às gramáticas livres de contexto no que diz respeito às linguagens que podem ser reconhecidas. Entretanto, existe uma diferença importante entre autômatos com pilha determinísticos e não determinísticos. Diferentemente do que ocorre com os autômatos finitos, os autômatos com pilha determinísticos não possuem o mesmo poder de reconhecimento que os autômatos com pilha não determinísticos.
-
-### Definição formal de um autômato com pilha
-
-::: {.callout-note title="Definição"}
-
-Um autômato com pilha pode ser definido formalmente pela 6-upla
-
-$$
-A=(Q,\Sigma,\Gamma,\delta,q_0,F),
-$$
-
-em que:
-
-* $Q$ é o conjunto finito de estados;
-* $\Sigma$ é o alfabeto de entrada;
-* $\Gamma$ é o alfabeto da pilha;
-* $\delta$ é a função de transição;
-* $q_0\in Q$ é o estado inicial;
-* $F\subseteq Q$ é o conjunto de estados de aceitação.
-
-:::
-
-A função de transição é definida por
-
-$$
-\delta:
-Q\times\Sigma_\varepsilon\times\Gamma_\varepsilon
-\rightarrow
-\mathcal{P}(Q\times\Gamma_\varepsilon).
-$$
-
-O uso de $\Sigma_\varepsilon$ permite que uma transição seja realizada consumindo ou não um símbolo da entrada. Analogamente, $\Gamma_\varepsilon$ permite representar situações em que não há símbolo da pilha sendo consultado ou inserido.
-
-A presença da pilha acrescenta ao modelo de autômato finito uma forma de memória potencialmente ilimitada. Embora o conjunto de símbolos disponíveis na pilha seja finito, a quantidade de símbolos armazenados pode crescer durante a computação. Essa característica é fundamental para o reconhecimento de diversas linguagens livres de contexto.
-
-## Exemplo de Autômato com Pilha
-
-Considere novamente a linguagem
-
-$$
-L=\{0^n1^n\mid n\geq0\}.
-$$
-
-Um autômato com pilha pode reconhecer essa linguagem armazenando na pilha um símbolo para cada $0$ encontrado na entrada. Quando começam a ser encontrados os símbolos $1$, o autômato retira um símbolo da pilha para cada $1 lido.
-
-Inicialmente, a máquina coloca um marcador na pilha para indicar sua base. Ao processar os símbolos $0$, um novo símbolo $0$ é empilhado para cada símbolo lido. Assim, depois de processar $0^n$, a pilha contém $n$ símbolos $0$, além do marcador de fundo.
-
-Quando o primeiro $1$ é encontrado, o autômato passa para uma fase diferente do processamento. Para cada $1$ lido, um símbolo $0$ é retirado da pilha. Se a cadeia tiver exatamente a mesma quantidade de $0$ e $1$, a leitura da entrada terminará juntamente com o esvaziamento da parte relevante da pilha.
-
-Essa estratégia permite realizar uma comparação entre duas quantidades arbitrariamente grandes sem que o autômato precise armazenar explicitamente o valor de $n$. A pilha desempenha justamente o papel dessa memória.
-
-No diagrama de um autômato com pilha, as transições são normalmente representadas por três componentes. Uma notação possível é
-
-$$
-a,b;c,
-$$
-
-ou, de forma equivalente,
-
-$$
-a,b\rightarrow c.
-$$
-
-Essa notação significa que o autômato lê $a$ da entrada, verifica $b$ no topo da pilha e substitui $b$ por $c$. Os símbolos podem ser $\varepsilon$, permitindo representar diferentes tipos de transição.
-
-Quando $a=\varepsilon$, a transição é realizada sem consumir um símbolo da entrada. Quando $b=\varepsilon$, não é necessário retirar um símbolo da pilha para realizar a transição. Finalmente, quando $c=\varepsilon$, nenhum símbolo é colocado na pilha após a operação.
-
-Essa notação torna possível representar, em um único diagrama, tanto a leitura da entrada quanto as operações realizadas sobre a memória auxiliar do autômato.
-
-### Outros exemplos de autômatos com pilha
-
-A capacidade adicional fornecida pela pilha permite reconhecer outras linguagens que não podem ser reconhecidas por autômatos finitos. Um exemplo apresentado nos slides é a linguagem
-
-$$
-L(M_2)=
-\{a^ib^jc^k\mid i,j,k\geq0
-\text{ e } i=j \text{ ou } i=k\}.
-$$
-
-Nesse caso, o autômato precisa verificar uma de duas condições possíveis: a quantidade de símbolos $a$ deve ser igual à quantidade de símbolos $b$, ou a quantidade de símbolos $a$ deve ser igual à quantidade de símbolos $c$.
-
-O não determinismo é essencial nessa construção. O autômato pode, de forma não determinística, escolher qual das duas condições tentará verificar. Essa possibilidade ilustra uma diferença importante entre autômatos com pilha determinísticos e não determinísticos.
-
-Outro exemplo é a linguagem
-
-$$
-L(M_3)=\{ww^R\mid w\in\{0,1\}^*\},
-$$
-
-formada pelas cadeias obtidas pela concatenação de uma cadeia $w$ com sua reversa $w^R$. O reconhecimento dessa linguagem também exige que o autômato armazene informações sobre a primeira parte da entrada para compará-las posteriormente com a segunda parte.
-
-## Equivalência entre Gramáticas Livres de Contexto e Autômatos com Pilha
-
-Existe uma relação fundamental entre gramáticas livres de contexto e autômatos com pilha. O resultado pode ser expresso pelo seguinte teorema:
-
-> **Teorema.** Uma linguagem é livre de contexto se, e somente se, algum autômato com pilha a reconhece.
-
-Esse resultado estabelece uma equivalência entre duas formas diferentes de representar uma mesma classe de linguagens. Uma linguagem livre de contexto pode ser descrita por meio de uma **gramática**, que especifica como suas cadeias podem ser geradas, ou por meio de um **autômato com pilha**, que especifica como suas cadeias podem ser reconhecidas.
-
-A equivalência não significa que uma gramática e um autômato com pilha tenham a mesma estrutura. Na gramática, o processo é descrito por meio de produções e derivações. No autômato, o processamento é descrito por estados, transições e operações sobre a pilha.
-
-Podemos, portanto, considerar duas direções de transformação:
-
-$$
-\text{GLC}\longrightarrow\text{AP}
-$$
-
-e
-
-$$
-\text{AP}\longrightarrow\text{GLC}.
-$$
-
-Essas transformações mostram que os dois formalismos possuem exatamente o mesmo poder de representação para a classe das linguagens livres de contexto.
-
-### Construção de um autômato com pilha a partir de uma GLC
-
-Considere a gramática
-
-$$
-\begin{aligned}
-S &\rightarrow aTb\mid b,\\
-T &\rightarrow Ta\mid\varepsilon.
-\end{aligned}
-$$
-
-A construção de um autômato com pilha a partir de uma GLC pode ser feita de forma que a pilha contenha uma representação da derivação que ainda precisa ser processada.
-
-Inicialmente, o símbolo inicial da gramática é colocado na pilha. O autômato utiliza as produções da gramática para substituir uma variável pelo lado direito de uma produção. Esse processo pode ser realizado por transições que não consomem símbolos da entrada.
-
-Quando o topo da pilha é um terminal, o autômato compara esse terminal com o próximo símbolo da entrada. Se forem iguais, o símbolo é consumido e retirado da pilha. Dessa maneira, a pilha mantém uma representação da parte da derivação que ainda precisa ser reconhecida.
-
-O procedimento estabelece uma correspondência entre uma derivação da gramática e uma computação do autômato. A aceitação ocorre quando toda a entrada foi consumida e a representação da derivação foi processada.
-
-### Construção de uma GLC a partir de um autômato com pilha
-
-A transformação inversa também é possível. Considere um autômato com pilha
-
-$$
-P=(Q,\Sigma,\Gamma,\delta,q_0,\{q_{\mathrm{aceita}}\}).
-$$
-
-Pode-se construir uma gramática
-
-$$
-G=(V,\Sigma,R,P)
-$$
-
-na qual as variáveis representam computações do autômato entre pares de estados.
-
-Para cada par de estados $p,q\in Q$, é criada uma variável
-
-$$
-A_{pq}.
-$$
-
-Intuitivamente, $A_{pq}$ representa uma cadeia de entrada que permite ao autômato sair do estado $p$ e chegar ao estado $q$, obedecendo às operações necessárias sobre a pilha.
-
-O símbolo inicial da gramática é definido por
-
-$$
-A_{q_0,q_{\mathrm{aceita}}}.
-$$
-
-As regras de produção são construídas a partir das transições do autômato. Entre elas encontram-se regras da forma
-
-$$
-A_{pq}\rightarrow aA_{rs}b,
-$$
-
-regras que dividem uma computação em duas partes,
-
-$$
-A_{pq}\rightarrow A_{pr}A_{rq},
-$$
-
-e regras que representam uma computação que começa e termina no mesmo estado,
-
-$$
-A_{pp}\rightarrow\varepsilon.
-$$
-
-Essa construção é mais complexa do que a transformação de uma GLC para um autômato com pilha, mas demonstra formalmente a equivalência entre os dois modelos.
-
-## Forma simplificada de um Autômato com Pilha
-
-Para facilitar a construção de uma GLC equivalente, é conveniente considerar uma forma simplificada de autômato com pilha. Os slides apresentam três condições para essa forma.
-
-A primeira condição é que o autômato possua **um único estado de aceitação**. Isso simplifica a identificação das computações completas que correspondem a cadeias aceitas.
-
-A segunda condição é que a pilha esteja **vazia antes da aceitação**. Assim, uma computação aceita pode ser caracterizada tanto pelo estado final quanto pelo esvaziamento da pilha.
-
-A terceira condição estabelece que cada transição deve realizar uma única operação sobre a pilha: **empilhar ou desempilhar**, mas não realizar as duas operações simultaneamente.
-
-Essas condições não alteram a classe de linguagens que pode ser reconhecida. Elas apenas tornam a estrutura do autômato mais conveniente para a transformação em uma gramática livre de contexto.
-
-## Exemplo de transformação de AP para GLC
-
-Considere um autômato com estados numerados, para o qual são introduzidas variáveis associadas a pares de estados. Se os estados forem $0$, $1$ e $2$, por exemplo, poderão ser consideradas as variáveis
-
-$$
-A_{00},A_{11},A_{22},A_{01},A_{02},A_{12}.
-$$
-
-Se o autômato começa no estado $0$ e deve terminar no estado $2$, a variável inicial será
-
-$$
-A_{02}.
-$$
-
-A partir das transições do autômato, são construídas produções como
-
-$$
-A_{02}\rightarrow A_{01}A_{12},
-$$
-
-$$
-A_{01}\rightarrow A_{01}A_{11},
-$$
-
-$$
-A_{12}\rightarrow A_{11}A_{12},
-$$
-
-e
-
-$$
-A_{11}\rightarrow 0A_{11}1.
-$$
-
-Também são introduzidas produções que representam computações vazias, como
-
-$$
-A_{00}\rightarrow\varepsilon,
-\qquad
-A_{11}\rightarrow\varepsilon,
-\qquad
-A_{22}\rightarrow\varepsilon.
-$$
-
-O conjunto dessas produções descreve, por meio de derivações da gramática, as possíveis computações do autômato. Dessa forma, uma cadeia pertence à linguagem do autômato exatamente quando pode ser gerada pela gramática construída.
-
-## Linguagens que não são Livres de Contexto
-
-As gramáticas livres de contexto são bastante expressivas, mas não conseguem representar todas as linguagens formais. Portanto, assim como foi possível identificar linguagens que não são regulares, também é possível identificar linguagens que não são livres de contexto.
-
-Um exemplo clássico é
-
-$$
-L=\{a^ib^ic^i\mid i>0\}.
-$$
-
-Para pertencer a essa linguagem, uma cadeia deve possuir a mesma quantidade de símbolos $a$, $b$ e $c$, nessa ordem. Uma única pilha não é suficiente para realizar esse tipo de comparação simultânea entre três quantidades independentes.
-
-Para demonstrar formalmente que uma linguagem não é livre de contexto, uma das ferramentas utilizadas é o **lema do bombeamento para linguagens livres de contexto**.
-
-## Lema do Bombeamento para Linguagens Livres de Contexto
-
-O lema do bombeamento fornece uma propriedade que toda linguagem livre de contexto deve satisfazer. Se $A$ é uma linguagem livre de contexto, então existe um número inteiro $p$, chamado **comprimento de bombeamento**, tal que toda cadeia $s\in A$, com comprimento suficientemente grande, pode ser dividida em cinco partes:
-
-$$
-s=uvxyz,
-$$
-
-de modo que sejam satisfeitas as seguintes condições:
-
-$$
-|vy|>0,
-$$
-
-$$
-|vxy|\leq p,
-$$
-
-e, para todo $i\geq0$,
-
-$$
-uv^ixy^iz\in A.
-$$
-
-A primeira condição garante que pelo menos uma das partes $v$ ou $y$ seja não vazia. A segunda estabelece que as partes $v$, $x$ e $y$ estão contidas em uma região da cadeia cujo comprimento não ultrapassa $p$. A terceira é a propriedade de bombeamento propriamente dita: as partes $v$ e $y$ podem ser repetidas simultaneamente qualquer número de vezes sem que a cadeia deixe de pertencer à linguagem.
-
-O lema é normalmente utilizado para provar que uma linguagem **não é** livre de contexto. Para isso, supõe-se inicialmente que a linguagem seja livre de contexto. A partir dessa hipótese, utiliza-se o comprimento de bombeamento garantido pelo lema e escolhe-se cuidadosamente uma cadeia pertencente à linguagem. Em seguida, demonstra-se que qualquer decomposição possível da cadeia viola uma das propriedades exigidas pelo lema.
-
-É importante observar que o lema do bombeamento fornece uma **condição necessária**, mas não suficiente, para uma linguagem ser livre de contexto. Portanto, se uma linguagem não satisfaz o lema, podemos concluir que ela não é livre de contexto. Por outro lado, satisfazer o lema não constitui, isoladamente, uma prova de que a linguagem seja livre de contexto.
-
-## Exemplo de Linguagem que não é Livre de Contexto
-
-Considere novamente
-
-$$
-L=\{a^ib^ic^i\mid i>0\}.
-$$
-
-Suponha, por contradição, que $L$ seja uma linguagem livre de contexto. Pelo lema do bombeamento, existe um comprimento de bombeamento $p$. Escolhemos então a cadeia
-
-$$
-s=a^pb^pc^p.
-$$
-
-Claramente,
-
-$$
-s\in L.
-$$
-
-Pelo lema, essa cadeia pode ser dividida como
-
-$$
-s=uvxyz,
-$$
-
-satisfazendo
-
-$$
-|vxy|\leq p.
-$$
-
-A escolha da cadeia é importante porque existem três blocos consecutivos, cada um com comprimento $p$:
-
-$$
-\underbrace{aa\cdots a}_{p}
-\underbrace{bb\cdots b}_{p}
-\underbrace{cc\cdots c}_{p}.
-$$
-
-Como $vxy$ possui comprimento no máximo $p$, essa região não pode abranger simultaneamente partes dos três blocos. Portanto, $vxy$ está contido em um único bloco ou atravessa apenas uma das fronteiras entre dois blocos.
-
-Consequentemente, existem casos em que $vxy$ possui apenas símbolos $a$, apenas símbolos $b$ ou apenas símbolos $c$, e casos em que possui símbolos $a$ e $b$, ou símbolos $b$ e $c$. Não é possível que contenha simultaneamente os três tipos de símbolos.
-
-As possibilidades relevantes são, portanto,
-
-$$
-vxy=a^j,
-$$
-
-$$
-vxy=a^jb^k,
-$$
-
-$$
-vxy=b^j,
-$$
-
-$$
-vxy=b^jc^k,
-$$
-
-ou
-
-$$
-vxy=c^j.
-$$
-
-Ao bombear, por exemplo, com $i=2$, obtemos
-
-$$
-uv^2xy^2z.
-$$
-
-Nessa nova cadeia, a quantidade de símbolos modificada em pelo menos um dos blocos não é acompanhada por uma modificação equivalente nos demais blocos. Consequentemente, a cadeia resultante deixa de possuir a forma
-
-$$
-a^ib^ic^i.
-$$
-
-Isso contradiz a primeira condição do lema do bombeamento, segundo a qual a cadeia bombeada deveria continuar pertencendo à linguagem para todo $i\geq0$.
-
-Portanto, a hipótese inicial é falsa e concluímos que
-
-$$
-\boxed{\{a^ib^ic^i\mid i>0\}\text{ não é uma linguagem livre de contexto}.}
-$$
-
-Esse exemplo evidencia uma limitação fundamental das linguagens livres de contexto: embora sejam capazes de representar relações de dependência importantes, como o balanceamento de parênteses ou a correspondência entre duas quantidades, existem relações entre três ou mais componentes que não podem ser reconhecidas por um único mecanismo de pilha.
-
-
 ## Análise Sintática
 
-A **análise sintática** constitui uma das principais etapas da fase de análise de um compilador. Ela é realizada pelo **analisador sintático**, também denominado *parser*, que recebe como entrada a sequência de *tokens* produzida pelo analisador léxico e verifica se essa sequência está de acordo com as regras sintáticas da linguagem de programação.
+A análise sintática é executada pelo *parser* e sua função principal é agrupar os *tokens*, retornados do analisar léxico, em estruturas sintáticas (comando, bloco, expressão, identicador, número, etc). Uma estrutura que pode ser empregada é a árvore sintática. A árvore representa a aplicação das regras sintáticas da linguagem e definem, de certa forma, um significado para a estrutura do programa compilado. O programa está sintaticamente correto se for possível construir uma única árvore sintática, no qual a raiz é o símbolo inicial da gramática da linguagem (símbolo de partida) e as folhas são os tokens retornados do analisado léxico.
 
-Enquanto o analisador léxico identifica os elementos básicos do programa, como identificadores, palavras reservadas, operadores, números e delimitadores, o analisador sintático trabalha com esses elementos para determinar como eles estão relacionados entre si. Seu objetivo é reconhecer estruturas maiores, como expressões, comandos, declarações, blocos e programas completos.
+Apresentamos na próxima seção uma breve revisão de conceitos que serão fundamentais para essa fase da compilação, tais como: gramática, gramática livre de contexto, derivação, redução, árvore de derivação e árvore sintática.
 
-Por exemplo, considere uma expressão como:
+### Gramática
 
-$$
-a+b*c.
-$$
+A gramática pode ser definida de maneira formal como uma quádrupla $G = (V,\Sigma,R,P)$, onde $V$ é vocabulário de símbolos não-terminais de $G$, também chamados de variáveis da gramática. $\Sigma$ é o vocabulário de símbolos terminais de $G$, disjunto de $V$. $R$ são as regras de produção ou regras de sintaxe. $P$ é um símbolo de $V$ (raiz, símbolo inicial ou símbolo de partida da gramática $G$).
 
-O analisador léxico pode produzir uma sequência de *tokens* correspondente a:
+### Gramática Regular
 
-$$
-\text{IDENT}(a),\quad +,\quad \text{IDENT}(b),\quad *,\quad \text{IDENT}(c).
-$$
+A gramática regular é uma gramática, em que cada regra tem uma das formas: $X \rightarrow a$ ou $X \rightarrow aY$ ou $X \rightarrow \lambda$, onde $X$ e $Y$ são símbolos não-terminais e $a$ é um símbolo terminal. Gramáticas Regulares, Expressões Regulares e Autômatos finitos são três formalismos alternativos usados para especificar linguagens regulares. Usamos essas especificações para definir os padrões léxicos que são reconhecidos pelo analisador léxico.
 
-A análise sintática deve determinar como esses *tokens* podem ser agrupados de acordo com a gramática da linguagem. Nesse caso, uma gramática que estabeleça a precedência da multiplicação sobre a adição poderá determinar que a expressão seja estruturada como
+### Gramática Livre de Contexto
 
-$$
-a+(b*c).
-$$
+A gramática livre de contexto (GLC) é uma gramática cujas as regras de produção são da forma: $X \rightarrow \alpha$, onde $X$ é qualquer símbolo não terminal e $\alpha$ é uma elemento de $\{V \cup \Sigma\}^*$. As GLC´s são usadas para especificar, através de definições indutivas, todas as construções sintáticas válidas para as linguagens de programação. Usamos GLC para especificar a sintaxe das linguagens que são reconhecidas pelo analisador sintático de compilador. Exemplo:
 
-Dessa forma, a análise sintática não se limita a verificar se os *tokens* aparecem em uma determinada ordem. Ela também determina a **estrutura hierárquica** da sentença.
+::: center
+$G = (\{C,E,I,O\}, \{a,b,+,*,(,),\underline{:=},\underline{;}\}, R, C\}$
+:::
 
-### Estrutura sintática
+onde:
 
-Uma das principais estruturas utilizadas para representar o resultado da análise sintática é a **árvore sintática**. A árvore representa a aplicação das regras sintáticas da linguagem e organiza hierarquicamente os elementos que compõem o programa.
+::: center
+$R = \left\lbrace \begin{array}{rcl}
+    C & \rightarrow & I := E | C;C \\ 
+    E & \rightarrow & I | E O E | (E) \\ 
+    O & \rightarrow & + | * \\ 
+    I & \rightarrow & a | b \\ 
+    \end{array} 
+    \right\rbrace$
+:::
 
-De maneira geral, os nós internos da árvore representam construções sintáticas da linguagem, enquanto as folhas correspondem aos símbolos terminais ou aos *tokens* que constituem a sentença de entrada. A raiz representa a estrutura mais abrangente reconhecida pela gramática, normalmente associada ao símbolo inicial.
+### Derivação
 
-Considere, por exemplo, uma expressão aritmética. Uma possível árvore sintática para
+A derivação, representada através da relação $\Rightarrow$ significa a aplicação de uma regra de produção numa sequência que contém símbolos não-terminais a fim de se obter uma sequência só de símbolos terminais. Exemplo: Considere a gramática de expressões (para abreviar a notação da gramática estamos indicando apenas o conjunto de regras de produção):
 
-$$
-a+b*c
-$$
+::: center
+$G_1: E \rightarrow a | b | E+E | E*E | (E)$.
+:::
 
-pode representar a estrutura:
+A sentença [$(a+b)*a$]{.underline} pode ser obtida por várias derivações distintas:
 
-```text
-          +
-         / \
-        a   *
-           / \
-          b   c
-```
+-   $E\Rightarrow E*E\Rightarrow (E)*E \Rightarrow (E+E)*E \Rightarrow (a+E)*E \Rightarrow (a+b)*E \Rightarrow (a+b)*a$
 
-A árvore evidencia que a multiplicação de $b$ por $c$ constitui uma subestrutura da expressão e que seu resultado é utilizado como segundo operando da adição.
+-   $E \Rightarrow E*E \Rightarrow E*a \Rightarrow (E)*a \Rightarrow (E+E)*a \Rightarrow (E+b)*a \Rightarrow (a+b)*a$
 
-Essa representação é particularmente importante porque a estrutura sintática pode ser utilizada pelas etapas seguintes do compilador. A partir dela, por exemplo, podem ser realizadas análises semânticas, verificações de tipos e transformações necessárias para a geração de código.
+Usando as definições de derivação e gramática podemos definir novamente uma linguagem da seguinte forma:
 
-### Gramática e reconhecimento sintático
+$$L(G) = \{\alpha \in \Sigma^* | P  \overset{*}{\Rightarrow} \alpha \}$$
 
-A estrutura sintática de uma linguagem é normalmente especificada por meio de uma **gramática livre de contexto (GLC)**. A gramática define as construções que podem ser formadas e as relações existentes entre elas.
+### Árvores de Derivação
 
-Considere uma gramática simplificada para expressões:
+Se observarmos o exemplo anterior, verificamos que o que muda numa sequência de derivação para outra é a ordem na qual as produções são aplicadas. Num certo sentido todas as derivações são equivalentes. Um meio usado para representar todas as derivações que indicam a mesma estrutura são as árvores de derivação (árvores sintáticas). Na árvore de derivação a aplicação da regra $E \rightarrow E_1E_2...E_n$ é representada da seguinte forma, o símbolo não terminal $E$, do lado esquerdo da regra é a raiz da subárvore e os símbolos $E_1, E_2, ..., E_n$ , os símbolos não terminais e/ou terminais do lado direito da regra são os filhos desta raiz. Exemplo: Para gramática $G_1$ e a sequência [$(a+b)*a$]{.underline}, temos a árvore de derivação, conforme ilustrado na Figura [1.1](#fig-arvorederivacao){reference-type="ref" reference="fig:arvorederivacao"}.
 
-$$
-\begin{aligned}
-E &\rightarrow E+T \mid T\\
-T &\rightarrow T*F \mid F\\
-F &\rightarrow (E) \mid id.
-\end{aligned}
-$$
+![Árvore de Derivação](/chapters/images/arvorederivacao.png){#fig-arvorederivacao width="30%"}
 
-Nessa gramática, $E$ representa uma expressão, $T$ representa um termo e $F$ representa um fator. As produções estabelecem, entre outras propriedades, a precedência dos operadores `+` e `*`.
+### Gramática Ambígua
 
-O analisador sintático utiliza as produções da gramática para verificar se a sequência de *tokens* recebida pode ser derivada a partir do símbolo inicial. Se for possível realizar uma derivação que produza exatamente a sequência de entrada, a sentença é considerada sintaticamente válida.
+Consideremos a cadeia [a+b\*a]{.underline} para gramática $G_1$. Existem duas árvores de derivação distintas, conforme ilustrado na Figura [1.2](#fig-ambiguidade1){reference-type="ref" reference="fig:ambiguidade1"}.
 
-Assim, para uma cadeia de entrada $w$, o problema fundamental da análise sintática pode ser expresso como a determinação de
+![Exemplo de ambiguidade](/chapters/images/ambiguidade1.png){#fig-ambiguidade1 width="70%"}
 
-$$
-S\Rightarrow^* w,
-$$
+Uma gramática $G$ é dita ambígua se a linguagem $L(G)$ contém uma sentença para qual existe mais de uma árvore de derivação, usando a gramática $G$. Consideremos agora a seguinte sentença [a+a+a]{.underline}:
 
-em que $S$ é o símbolo inicial da gramática.
+::: center
+$E \Rightarrow E+E \Rightarrow E+E+E \Rightarrow a+E+E \Rightarrow a+a+E \Rightarrow a+a+a$
+:::
 
-Quando a cadeia não pode ser derivada a partir do símbolo inicial, o analisador sintático identifica uma **erro sintático**. Nesse caso, o compilador normalmente informa a ocorrência do erro e sua localização aproximada no programa-fonte.
+Devido à maneira como foi definido o conceito de derivação não está claro no passo E+E+E, qual das duas ocorrências de E foi substituída. Esta derivação corresponde a duas árvores distintas, conforme ilustrado na Figura [1.3](#fig-ambiguidade2){reference-type="ref" reference="fig:ambiguidade2"}.
 
-### Árvore de derivação e árvore sintática
+![Exemplo de ambiguidade](/chapters/images/ambiguidade2.png){#fig-ambiguidade2 width="70%"}
 
-É importante distinguir a **árvore de derivação** da **árvore sintática**. A árvore de derivação representa explicitamente a aplicação das produções da gramática. Ela contém, portanto, os elementos intermediários utilizados durante a derivação da sentença.
+A causa da ambiguidade está no fato dela não indicar as precedências entre os operadores \* e +. Consideremos agora a seguinte gramática $G_2$:
 
-A árvore sintática, por sua vez, normalmente é uma representação mais compacta da estrutura reconhecida. Elementos que são relevantes para a derivação, mas que não são necessários para representar a estrutura sintática da construção, podem ser eliminados.
+::: center
+$\begin{array}{rcl}
+    E & \rightarrow & E + T \quad | \quad T \\ 
+    T & \rightarrow & T * F \quad | \quad F \\ 
+    F & \rightarrow & a \quad | \quad b \quad | \quad (E) \\ 
+    \end{array}$
+:::
 
-Por exemplo, uma árvore de derivação pode conter variáveis como $E$, $T$ e $F$ em diversos níveis, enquanto uma árvore sintática pode representar diretamente a relação entre operadores e operandos.
+Pode-se demonstrar que a gramática $G_1$ e a $G_2$ definem a mesma linguagem e que $G_2$ não é ambígua. Há várias derivações para as sentenças a+b+a e a+a+a:
 
-Essa distinção é importante no desenvolvimento de compiladores porque diferentes analisadores sintáticos podem produzir estruturas intermediárias distintas, mas que representam a mesma estrutura sintática essencial do programa.
+$E \Rightarrow E+T \Rightarrow T+T \Rightarrow F+T \Rightarrow a + T \Rightarrow a+T*F \Rightarrow a+F*F \Rightarrow a+b+F \Rightarrow a+b+a$
 
-### Correção sintática
+$E \Rightarrow E+T \Rightarrow E+T*F \Rightarrow E+T*a \Rightarrow E+F*a \Rightarrow E+b*a \Rightarrow F+b*a \Rightarrow a+b*a$
 
-Um programa está **sintaticamente correto** quando sua sequência de *tokens* pode ser reconhecida pela gramática da linguagem. Em termos formais, isso significa que existe uma derivação a partir do símbolo inicial da gramática que produz exatamente a sequência de entrada.
+Há porém, uma única árvore de derivação para cada sentença, conforme ilustrado na Figura [1.4](#fig-derivacao){reference-type="ref" reference="fig:derivacao"}.
 
-Quando se considera uma gramática não ambígua, espera-se que uma sentença válida possua uma única estrutura sintática. Nesse caso, a árvore sintática representa de maneira não ambígua a organização dos elementos da sentença.
+![Exemplo de árvore não ambígua](/chapters/images/derivacao.png){#fig-derivacao width="70%"}
 
-A existência de mais de uma árvore de derivação para uma mesma sentença caracteriza uma **gramática ambígua**. A ambiguidade pode ser problemática em linguagens de programação porque diferentes árvores podem representar diferentes interpretações para uma mesma sequência de *tokens*. Por esse motivo, as gramáticas utilizadas na especificação de linguagens de programação devem ser projetadas de forma a evitar ambiguidades ou devem ser acompanhadas de regras que permitam determinar univocamente a estrutura pretendida.
+Deve-se notar que nem sempre é possível eliminar ambiguidade. Um outro exemplo famoso de ambiguidade é o chamado "else pendente". Consideremos a seguinte gramática $G_3$:
 
-### Analisador sintático
+::: center
+$\begin{array}{rcl}
+    C & \rightarrow &a \quad | \quad if \quad b \quad then \quad C \quad else \quad C \quad | \quad if \quad b \quad then \quad  \\ 
+    \end{array}$
+:::
 
-O analisador sintático recebe a sequência de *tokens* produzida pelo analisador léxico e procura determinar se ela pertence à linguagem definida pela gramática.
+Esta gramática é ambígua, pois temos duas árvores de derivação para a sentença [if b then if b then a else a]{.underline}, conforme ilustrado na Figura [1.5](#fig-ambiguidade3){reference-type="ref" reference="fig:ambiguidade3"}.
 
-De forma simplificada, seu funcionamento pode ser representado por:
+![Ambiguidade do else pendente](/chapters/images/ambiguidade3.png){#fig-ambiguidade3 width="70%"}
 
-```text
-Programa-fonte
-      |
-      v
-Analisador léxico
-      |
-      v
-Sequência de tokens
-      |
-      v
-Analisador sintático
-      |
-      v
-Estrutura sintática
-      |
-      v
-Árvore sintática
-```
+Isto se deve ao fato da parte else a poder ser associada tanto com o primeiro como com o segundo if. Ainda neste caso podemos eliminar a ambiguidade:
 
-Durante esse processo, o analisador sintático pode construir diretamente uma árvore ou utilizar estruturas auxiliares para posteriormente produzir a árvore correspondente. Em outros casos, a implementação pode produzir uma representação intermediária que será utilizada pelas etapas posteriores do compilador.
+::: center
+$\begin{array}{rcl}
+    C & \rightarrow & a \quad | \quad if \quad b \quad then \quad D \quad else \quad C \quad | \quad if \quad b \quad then \quad C \\
+    
+    D & \rightarrow & a \quad | \quad if \quad b \quad then \quad D \quad else \quad D \\
+    \end{array}$
+:::
 
-Quando a entrada não está de acordo com a gramática, o analisador deve detectar o erro sintático. Além de identificar que a sentença não pertence à linguagem, um analisador sintático de um compilador deve, sempre que possível, fornecer informações úteis para a localização e recuperação do erro.
-
-### Análise sintática descendente e ascendente
-
-Existem diferentes estratégias para implementar um analisador sintático. Duas famílias importantes são a **análise sintática descendente** e a **análise sintática ascendente**.
-
-Na análise descendente (*top-down*), a construção da estrutura sintática parte do símbolo inicial da gramática e procura produzir a sequência de *tokens* da entrada. O processo pode ser interpretado como uma construção da árvore a partir da raiz em direção às folhas.
-
-Uma das técnicas mais conhecidas dessa família é a análise **LL**, na qual a entrada é examinada da esquerda para a direita e a derivação utilizada é uma derivação mais à esquerda.
-
-Na análise ascendente (*bottom-up*), o processo ocorre na direção inversa. O analisador parte dos *tokens* da entrada e procura agrupá-los em estruturas maiores até chegar ao símbolo inicial da gramática. Esse processo pode ser interpretado como uma construção da árvore sintática das folhas em direção à raiz.
-
-Os métodos **LR** constituem uma importante família de analisadores sintáticos ascendentes. Nesses métodos, a análise é realizada por meio de operações como deslocamento (*shift*) e redução (*reduce*).
-
-As técnicas LL e LR serão estudadas posteriormente neste capítulo. Antes disso, é necessário revisar os conceitos fundamentais utilizados na especificação e análise de linguagens, incluindo gramáticas, gramáticas livres de contexto, derivações, reduções, árvores de derivação e árvores sintáticas.
-
-### Relação com as demais etapas do compilador
-
-A análise sintática estabelece uma ligação entre a sequência linear de *tokens* produzida pelo analisador léxico e a estrutura hierárquica necessária para as etapas posteriores do compilador.
-
-O fluxo simplificado pode ser representado da seguinte forma:
-
-```text
-Código-fonte
-     |
-     v
-Análise léxica
-     |
-     v
-Tokens
-     |
-     v
-Análise sintática
-     |
-     v
-Árvore sintática
-     |
-     v
-Análise semântica
-     |
-     v
-Representação intermediária
-     |
-     v
-Geração de código
-```
-
-A análise léxica identifica os elementos básicos do programa, enquanto a análise sintática determina como esses elementos estão organizados. A partir da estrutura sintática reconhecida, a análise semântica pode verificar propriedades que não são determinadas exclusivamente pela gramática, como compatibilidade de tipos, declaração e uso de identificadores e outras restrições semânticas da linguagem.
-
-Dessa forma, a análise sintática desempenha um papel fundamental na organização do programa para as etapas seguintes da compilação. Uma sequência de *tokens* deixa de ser apenas uma lista linear de elementos e passa a ser interpretada como uma estrutura hierárquica de acordo com as regras definidas pela linguagem.
-
-Em seguida, serão estudadas as principais estratégias de implementação de analisadores sintáticos, com destaque para os métodos **LL** e **LR**.
-
+Note-se que esta gramática sempre associa o [else]{.underline} com o [if]{.underline} mais próximo possível.
 
 ## Implementação de Analisadores Sintáticos
 

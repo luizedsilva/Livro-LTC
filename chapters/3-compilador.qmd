@@ -254,6 +254,11 @@ A árvore permite visualizar a relação entre as diferentes construções do pr
 
 Em implementações modernas, é comum utilizar uma **árvore sintática abstrata** (*Abstract Syntax Tree* -- AST), que elimina detalhes sintáticos que não são necessários às etapas posteriores. A AST fornece uma representação mais compacta e adequada para a análise semântica, otimização e geração de código.
 
+O exemplo interativo a seguir, demonstra o processo de construção da árvore sintática para um programa. Para o programa fonte digitado, após clicar no botão 'Construir Árvore', são gerados e calculados os tokens e os nós da árvore sintática. As folhas da árvore estão relacionadas as informações do código.
+
+::: {.simulacao url="/p5js/syntaxTree/" height="400" image="/printscreen/syntaxTree.png" qrcode="/qrcode/syntaxTree.png"}
+:::
+
 A ferramenta *bison* será utilizada neste curso para auxiliar na construção do analisador sintático. A partir da especificação de uma gramática livre de contexto e das ações associadas às suas produções, o *bison* gera o código necessário para realizar o processo de análise sintática.
 
 ### Análise semântica

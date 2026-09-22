@@ -2,7 +2,6 @@
 
 ![](/chapters/images/fundamentos.png){fig-align="center" width=70%}
 
-## Introdução
 
 O estudo da **Teoria de Linguagens e Autômatos** utiliza uma série de conceitos matemáticos que permitem descrever, de maneira precisa e formal, os objetos computacionais e as relações existentes entre eles. Embora muitos desses conceitos sejam elementares e façam parte da formação matemática básica, é importante apresentá-los e estabelecer sua notação antes de iniciar as definições formais da teoria.
 

@@ -43,3 +43,4 @@ format:
       - paperwidth=17cm
       - paperheight=24cm
       - margin=2cm
+    include-in-header: include-in-header.tex
