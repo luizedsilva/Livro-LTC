@@ -56,3 +56,128 @@
   \renewcommand{\footrulewidth}{0pt}
   \fancyfoot[C]{\thepage}
 }
+
+% =========================================================
+% Ambientes didáticos - Teoria de Linguagens e Compiladores
+% =========================================================
+
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+
+% =========================================================
+% Caixas para os ambientes matemáticos do Quarto
+% =========================================================
+
+% ---------------------------------------------------------
+% Definição
+% ---------------------------------------------------------
+
+\tcolorboxenvironment{definition}{
+  enhanced,
+  breakable,
+  colback=blue!2,
+  colframe=blue!50!black,
+  boxrule=0.7pt,
+  arc=1.5mm,
+  left=5mm,
+  right=5mm,
+  top=3mm,
+  bottom=3mm,
+  before skip=10pt,
+  after skip=10pt
+}
+
+% ---------------------------------------------------------
+% Teorema
+% ---------------------------------------------------------
+
+\tcolorboxenvironment{theorem}{
+  enhanced,
+  breakable,
+  colback=violet!2,
+  colframe=violet!50!black,
+  boxrule=0.7pt,
+  arc=1.5mm,
+  left=5mm,
+  right=5mm,
+  top=3mm,
+  bottom=3mm,
+  before skip=10pt,
+  after skip=10pt
+}
+
+% ---------------------------------------------------------
+% Lema
+% ---------------------------------------------------------
+
+\tcolorboxenvironment{lemma}{
+  enhanced,
+  breakable,
+  colback=green!2,
+  colframe=green!45!black,
+  boxrule=0.7pt,
+  arc=1.5mm,
+  left=5mm,
+  right=5mm,
+  top=3mm,
+  bottom=3mm,
+  before skip=10pt,
+  after skip=10pt
+}
+
+% ---------------------------------------------------------
+% Proposição
+% ---------------------------------------------------------
+
+\tcolorboxenvironment{proposition}{
+  enhanced,
+  breakable,
+  colback=orange!2,
+  colframe=orange!55!black,
+  boxrule=0.7pt,
+  arc=1.5mm,
+  left=5mm,
+  right=5mm,
+  top=3mm,
+  bottom=3mm,
+  before skip=10pt,
+  after skip=10pt
+}
+
+% ---------------------------------------------------------
+% Corolário
+% ---------------------------------------------------------
+
+\tcolorboxenvironment{corollary}{
+  enhanced,
+  breakable,
+  colback=cyan!2,
+  colframe=cyan!45!black,
+  boxrule=0.7pt,
+  arc=1.5mm,
+  left=5mm,
+  right=5mm,
+  top=3mm,
+  bottom=3mm,
+  before skip=10pt,
+  after skip=10pt
+}
+
+% ---------------------------------------------------------
+% Exemplo
+% ---------------------------------------------------------
+
+\tcolorboxenvironment{example}{
+  enhanced,
+  breakable,
+  colback=gray!3,
+  colframe=gray!55!black,
+  boxrule=0.7pt,
+  arc=1.5mm,
+  left=5mm,
+  right=5mm,
+  top=3mm,
+  bottom=3mm,
+  before skip=10pt,
+  after skip=10pt
+}

@@ -1,0 +1,72 @@
+digraph ArvoreDerivacao {
+    graph [
+        rankdir=TB,
+        bgcolor="transparent",
+        nodesep=0.45,
+        ranksep=0.55,
+        margin=0.1
+    ];
+
+    node [
+        shape=plaintext,
+        fontname="Arial",
+        fontsize=24
+    ];
+
+    edge [
+        color=black,
+        penwidth=1.2
+    ];
+
+
+    n11 [label="E"];
+    n12 [label="E"];
+    n13 [label="+"];
+    n14 [label="E"];
+     
+    n11 -> n12;
+    n11 -> n13;
+    n11 -> n14;
+
+    n15 [label="E"];
+    n16 [label="+"];
+    n17 [label="E"];
+
+    n12 -> n15;
+    n12 -> n16;
+    n12 -> n17;
+
+    n18 [label="t"];
+    n19 [label="t"];
+    n20 [label="t"];
+
+    n15 -> n18;
+    n17 -> n19;
+    n14 -> n20;
+
+    n0 [label="E"];
+    n1 [label="E"];
+    n2 [label="+"];
+    n3 [label="E"];
+     
+    n0 -> n1;
+    n0 -> n2;
+    n0 -> n3;
+
+    n10 [label="t"];
+    n1 -> n10;
+
+    n4 [label="E"]
+    n5 [label="+"];
+    n6 [label="E"];
+
+    n3 -> n4;
+    n3 -> n5;
+    n3 -> n6;
+
+    n7 [label="t"];
+    n8 [label="t"];
+
+    n4 -> n7;
+    n6 -> n8;
+}

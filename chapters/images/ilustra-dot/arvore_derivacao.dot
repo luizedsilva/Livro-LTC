@@ -1,0 +1,53 @@
+digraph ArvoreDerivacao {
+    graph [
+        rankdir=TB,
+        bgcolor="transparent",
+        nodesep=0.45,
+        ranksep=0.55,
+        margin=0.1
+    ];
+
+    node [
+        shape=plaintext,
+        fontname="Arial",
+        fontsize=24
+    ];
+
+    edge [
+        color=black,
+        penwidth=1.2
+    ];
+
+    // Níveis da árvore
+    A0 [label="A"];
+    a0 [label="a"];
+    A1 [label="A"];
+    c0 [label="c"];
+
+    a1 [label="a"];
+    A2 [label="A"];
+    c1 [label="c"];
+
+    a2 [label="a"];
+    A3 [label="A"];
+    c2 [label="c"];
+
+    B [label="B"];
+    b [label="b"];
+
+    A0 -> a0;
+    A0 -> A1;
+    A0 -> c0;
+
+    A1 -> a1;
+    A1 -> A2;
+    A1 -> c1;
+
+    A2 -> a2;
+    A2 -> A3;
+    A2 -> c2;
+
+    A3 -> B;
+    B -> b;
+
+}

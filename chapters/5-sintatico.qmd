@@ -24,52 +24,55 @@ Considere, por exemplo, a gramática:
 
 $$
 \begin{aligned}
-A &\rightarrow 0A1\\
+A &\rightarrow aAc\\
 A &\rightarrow B\\
-B &\rightarrow \#
+B &\rightarrow b
 \end{aligned}
 $$
 
-Nessa gramática, $A$ e $B$ são variáveis, enquanto $0$, $1$ e $\#$ são símbolos terminais. A variável $A$ é a variável inicial ou variável de partida.
+Nessa gramática, $A$ e $B$ são variáveis, enquanto $a$, $b$ e $c$ são símbolos terminais. A variável $A$ é a variável inicial ou variável de partida.
 
 A produção
 
 $$
-A \rightarrow 0A1
+A \rightarrow aAc
 $$
 
-pode ser utilizada para acrescentar simultaneamente um símbolo `0` à esquerda e um símbolo `1` à direita de uma cadeia. A produção $A \rightarrow B$ permite substituir a variável $A$ por $B$, enquanto $B \rightarrow \#$ encerra o processo de geração, produzindo o símbolo terminal `#`.
+pode ser utilizada para acrescentar simultaneamente um símbolo `a` à esquerda e um símbolo `c` à direita de uma cadeia. A produção $A \rightarrow B$ permite substituir a variável $A$ por $B$, enquanto $B \rightarrow `b` encerra o processo de geração, produzindo o símbolo terminal `b`.
 
 #### Geração de uma cadeia
 
 Uma gramática é utilizada para gerar as cadeias de uma linguagem por meio de sucessivas substituições. Inicialmente, escreve-se a variável inicial. Em seguida, escolhe-se uma variável presente na forma sentencial e uma produção que possa ser aplicada a ela. A variável é então substituída pelo lado direito da produção. Esse processo é repetido até que não existam mais variáveis na forma sentencial.
 
-Para a gramática apresentada anteriormente, podemos gerar a cadeia $000\#111$ por meio da sequência:
+Para a gramática apresentada anteriormente, podemos gerar a cadeia $aaabccc$ por meio da sequência:
 
 $$
 A
-\Rightarrow 0A1
-\Rightarrow 00A11
-\Rightarrow 000A111
-\Rightarrow 000B111
-\Rightarrow 000\#111.
+\Rightarrow aAc
+\Rightarrow aaAcc
+\Rightarrow aaaAccc
+\Rightarrow aaaBccc
+\Rightarrow aaabccc.
 $$
 
 A sequência de substituições utilizada para gerar uma cadeia é denominada **derivação**. O símbolo $\Rightarrow$ representa uma etapa de derivação, enquanto $\Rightarrow^*$ pode ser utilizado para representar zero ou mais etapas de derivação.
 
-Nesse exemplo, cada aplicação da produção $A \rightarrow 0A1$ acrescenta um `0` no início e um `1` no final. Depois de realizadas as substituições necessárias, a variável $A$ é substituída por $B$, e finalmente $B$ é substituída por `#`.
+Nesse exemplo, cada aplicação da produção $A \rightarrow aAc$ acrescenta um `a` no início e um `c` no final. Depois de realizadas as substituições necessárias, a variável $A$ é substituída por $B$, e finalmente $B$ é substituída por `b`.
 
 #### Árvores de derivação
 
-Outra maneira de representar uma derivação é por meio de uma **árvore de derivação**. A raiz da árvore corresponde à variável inicial. Os filhos de um nó correspondem aos símbolos presentes no lado direito da produção utilizada para expandir a variável representada pelo nó.
+Outra maneira de representar uma derivação é por meio de uma **árvore de derivação**. A raiz da árvore corresponde à variável inicial. Os filhos de um nó correspondem aos símbolos presentes no lado direito da produção utilizada para expandir a variável representada pelo nó, conforme ilustrado na @fig-arvore-derivacao.
 
-Para a derivação de $000\#111$, a árvore de derivação representa graficamente a sequência de aplicações das produções. As folhas da árvore, lidas da esquerda para a direita, formam a cadeia gerada pela gramática.
+![Árvore de Derivação](/chapters/images/arvore_derivacao.png){#fig-arvore-derivacao width="30%"}
+
+Para a derivação de $aaabccc$, a árvore de derivação representa graficamente a sequência de aplicações das produções. As folhas da árvore, lidas da esquerda para a direita, formam a cadeia gerada pela gramática.
 
 As árvores de derivação são particularmente importantes na análise sintática de linguagens de programação. Elas permitem representar a estrutura hierárquica de uma sentença e servem de base para diversas etapas posteriores do processamento de um programa.
 
+
 #### Definição formal de uma gramática livre de contexto
 
-::: {.callout-note title="Definição"}
+::: {#def-glc .definition}
 
 Uma **gramática livre de contexto (GLC)** é uma 4-upla
 
@@ -247,7 +250,12 @@ $$
 t+t+t,
 $$
 
-podem existir diferentes formas de agrupar as operações. Uma interpretação pode associar primeiro os dois primeiros operandos:
+
+podem existir diferentes formas de agrupar as operações, conforme ilustrado na @fig-ambiguidade. 
+
+![Ambiguidade](/chapters/images/ambiguidade.png){#fig-ambiguidade width="70%"}
+
+Uma interpretação pode associar primeiro os dois primeiros operandos:
 
 $$
 (t+t)+t,
@@ -506,7 +514,7 @@ Os autômatos com pilha possuem poder computacional equivalente às gramáticas 
 
 #### Definição formal de um autômato com pilha
 
-::: {.callout-note title="Definição"}
+::: {#def-ap}
 
 Um autômato com pilha pode ser definido formalmente pela 6-upla
 
@@ -1141,7 +1149,7 @@ A tabela LL(1) é:
 
 A seguinte definição permite identificar as gramáticas LL(1):
 
-::: definicao
+::: {#def-gll}
 Uma gramática G não recursiva à esquerda é LL(1)se e somente se, sempre que $A \rightarrow \alpha$ e $A \rightarrow \beta$ são regras de produção de G, ocorre que:
 
 1.  a interseção dos conjuntos $FIRST(\alpha)$ e $FIRST(\beta)$ é vazia;

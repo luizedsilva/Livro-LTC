@@ -1,0 +1,155 @@
+/* =========================================================
+   AMBIENTES DIDÁTICOS
+   Teoria de Linguagens e Compiladores
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   DEFINIÇÕES
+   --------------------------------------------------------- */
+
+.definition {
+  border-left: 5px solid #4a6fa5;
+  background-color: #f4f7fb;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.definition > p:first-child {
+  margin-top: 0;
+}
+
+.definition > p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------
+   TEOREMAS
+   --------------------------------------------------------- */
+
+.theorem {
+  border-left: 5px solid #6a4c93;
+  background-color: #f7f3fa;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ---------------------------------------------------------
+   LEMAS
+   --------------------------------------------------------- */
+
+.lemma {
+  border-left: 5px solid #2a7f62;
+  background-color: #f2f8f5;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ---------------------------------------------------------
+   PROPOSIÇÕES
+   --------------------------------------------------------- */
+
+.proposition {
+  border-left: 5px solid #b36b00;
+  background-color: #fff8ed;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ---------------------------------------------------------
+   COROLÁRIOS
+   --------------------------------------------------------- */
+
+.corollary {
+  border-left: 5px solid #557a95;
+  background-color: #f3f7f9;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ---------------------------------------------------------
+   OBSERVAÇÕES
+   --------------------------------------------------------- */
+
+.remark {
+  border-left: 5px solid #777;
+  background-color: #f7f7f7;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ---------------------------------------------------------
+   EXEMPLOS
+   --------------------------------------------------------- */
+
+.example {
+  border-left: 5px solid #198754;
+  background-color: #f3faf6;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ---------------------------------------------------------
+   PROVAS
+   --------------------------------------------------------- */
+
+.proof {
+  margin: 0.8em 0 1.2em 0;
+  padding-left: 1.2em;
+}
+
+.proof::before {
+  content: "Demonstração.";
+  font-weight: bold;
+  font-style: italic;
+}
+
+.proof::after {
+  content: "□";
+  float: right;
+  font-size: 1.1em;
+}
+
+/* ---------------------------------------------------------
+   TÍTULOS DOS AMBIENTES
+   --------------------------------------------------------- */
+
+.definition h2,
+.definition h3,
+.theorem h2,
+.theorem h3,
+.lemma h2,
+.lemma h3,
+.proposition h2,
+.proposition h3,
+.corollary h2,
+.corollary h3,
+.remark h2,
+.remark h3,
+.example h2,
+.example h3 {
+  margin-top: 0;
+}
+
+/* ---------------------------------------------------------
+   IMPRESSÃO
+   --------------------------------------------------------- */
+
+@media print {
+  .definition,
+  .theorem,
+  .lemma,
+  .proposition,
+  .corollary,
+  .remark,
+  .example {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

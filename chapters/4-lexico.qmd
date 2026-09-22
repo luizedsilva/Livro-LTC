@@ -55,7 +55,7 @@ onde:
 
 O Autômato Finito Determinístico (AFD) é matematicamente definido como:
 
-::: {.callout-note title="Definição"}
+::: {#def-afd}
 Um AFD é uma quíntupla $(E,\Sigma,\delta,i,F)$, onde:
 
 -   $E$ é o conjunto finito dos estados do autônomo;
@@ -82,7 +82,7 @@ Usando essa definição podemos descrever formalmente a máquina da @fig-afd1 co
 
 Para descrever a computação da máquina de maneira formal, usamos a definição da função de transição estendida:
 
-::: {.callout-note title="Definição"}
+::: {#def-transicao-estendida}
 Seja um AFD $A = (E,\Sigma,\delta,i,F)$. A função de transição estendida para $A$, $\hat{\delta} : E \times \Sigma^* \rightarrow E$, definida recursivamente como:
 
 -   $\hat{\delta}(a,\lambda) = a$
@@ -104,12 +104,60 @@ $$\begin{array}{ccl}
 
 Essa computação também pode ser implementada de forma bastante simples através de uma repetição que consulta a Tabela de Transição $T$, representada na @tbl-transicao, onde as linhas representam estados e as colunas os símbolos do vocabulário:
 
-    i = 0;
-    estado = 0;
-    while (entrada[i]) {
-       estado = T[estado, entrada[i]];
-       i++;
-    }
+
+```c
+#include <stdio.h>
+// definição do automato
+// M = (Q, Sigma, T, q_0, F)
+char *estados = "01234567";
+char *alfabeto = "ab";
+int T[8][2] = {1, 2,
+               0, 3,
+               3, 4,
+               2, 5,
+               5, 6,
+               4, 7,
+               7, 6,
+               6, 7};
+char inicial = 0;
+char *finais = "24";
+
+int pertence(int s, char *c)
+{
+    int i;
+    for (i = 0; c[i]; i++)
+        if (s == c[i] - '0')
+            return 1;
+    return 0;
+}
+
+int main()
+{
+    char entrada[20];
+    do
+    {
+        printf("Cadeia de entrada (usando o alfabeto: %s): ", alfabeto);
+        scanf("%s", entrada);
+        printf("|%s|\n", entrada);
+        if (entrada[0] != '.')
+        {
+            int i = 0;
+            int estado = inicial;
+            while (entrada[i])
+            {
+                estado = T[estado][entrada[i] - 'a'];
+                i++;
+            }
+            if (pertence(estado, finais))
+                puts("aceita!");
+            else
+                puts("rejeita");
+        }
+    } while (entrada[0] != '.');
+    return 0;
+}
+```
+
 
 A partir da função de transição estendida, podemos definir a linguagem $L$ reconhecida por uma autômato finito determinístico $A$ por:
 
@@ -121,7 +169,7 @@ Um outro formalismo é o Autômato Finito Não-Determinístico (AFN) que não au
 
 O indeterminismo está representado em mais de um estado inicial, em mais de uma transicão possível para o mesmo estado e símbolo e também pela possibilidade de efetuar a transição de estados sem consumir símbolos da entrada através de transições $\lambda$.
 
-::: {.callout-note title="Definição"}
+::: {#def-afn}
 Um AFN é uma quíntupla $(E,\Sigma,$ $\delta,I,F)$, onde:
 
 -   $E$ é o conjunto finito dos estados do autômato;
@@ -143,7 +191,7 @@ A computação no AFN é um pouco diferente, uma vez que precisamos simular a ex
 
 Um outro formalismo que pode ser utilizado para definição de linguagens são as Expressões Regulares (ER). Assim como as expressões aritméticas tem operadores (soma, multiplicação, divisão, \...) que são utilizados para expressar valores numéricos, as **expressões regulares** usam os operadores de concatenação, união (representado pelo símbolo +) e fecho de Kleene (representado pelo símbolo \*) para definir linguagens regulares.
 
-::: {.callout-note title="Definição"}
+::: {#def-operacoes-regulares}
 Sejam $A$ e $B$ linguagens. As operações regulares de União, Concatenação e Fecho de Kleene são definidas da seguinte forma:
 
 -   União: $A \cup B = \{x | x \in A$ ou $x \in B\}$.
@@ -153,7 +201,7 @@ Sejam $A$ e $B$ linguagens. As operações regulares de União, Concatenação e
 -   Fecho de Kleene: $A^*= \{x_1x_2...x_k | k \geq 0$ e $x_i \in A\}$.
 :::
 
-::: {.callout-note title="Definição"}
+::: {#def-expressao-regular}
 Uma ER sobre uma alfabeto $\Sigma$ é definida recursivamente como:
 
 1.  $\emptyset$, $\lambda$ e $a$ para qualquer $a \in \Sigma$ são expressões regulares; tais que ER's denotam, respectivamente, os conjuntos $\emptyset$, $\{\lambda\}$ e $\{a\}$
