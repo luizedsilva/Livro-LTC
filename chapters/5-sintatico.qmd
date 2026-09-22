@@ -67,7 +67,7 @@ Para a derivação de $000\#111$, a árvore de derivação representa graficamen
 
 As árvores de derivação são particularmente importantes na análise sintática de linguagens de programação. Elas permitem representar a estrutura hierárquica de uma sentença e servem de base para diversas etapas posteriores do processamento de um programa.
 
-### Definição formal de uma gramática livre de contexto
+#### Definição formal de uma gramática livre de contexto
 
 ::: {.callout-note title="Definição"}
 
@@ -104,7 +104,7 @@ $$
 
 Portanto, uma cadeia pertence à linguagem da gramática quando pode ser derivada a partir do símbolo inicial e, após um número finito de aplicações das produções, resultar em uma cadeia formada exclusivamente por símbolos terminais.
 
-### Aplicação das GLCs às linguagens de programação
+#### Aplicação das GLCs às linguagens de programação
 
 As gramáticas livres de contexto são amplamente utilizadas para especificar, por meio de definições indutivas, as construções sintáticas válidas de linguagens de programação. Em um compilador, a gramática pode ser utilizada pelo analisador sintático para determinar se a sequência de tokens produzida pelo analisador léxico possui uma estrutura sintática válida.
 
@@ -143,7 +143,7 @@ permite representar uma expressão delimitada por parênteses.
 
 Essa característica recursiva das GLCs é fundamental para representar estruturas hierárquicas presentes nas linguagens de programação, como expressões aritméticas, comandos condicionais, chamadas de funções e blocos de comandos.
 
-### Outro exemplo de gramática livre de contexto
+#### Outro exemplo de gramática livre de contexto
 
 Considere a gramática
 
@@ -171,7 +171,7 @@ A produção $S\rightarrow aSb$ permite inserir um símbolo `a` no início e um 
 
 Se interpretarmos `a` como um parêntese esquerdo e `b` como um parêntese direito, essa gramática está relacionada à linguagem de parênteses corretamente aninhados. Esse exemplo evidencia a capacidade das GLCs de representar estruturas recursivas e aninhadas.
 
-### Projeto de gramáticas livres de contexto
+#### Projeto de gramáticas livres de contexto
 
 A construção de uma GLC para uma determinada linguagem exige a identificação das estruturas que caracterizam as cadeias dessa linguagem. Assim como ocorre no projeto de autômatos finitos, não existe uma única estratégia que possa ser aplicada indistintamente a todos os problemas.
 
@@ -231,7 +231,7 @@ $$
 
 nas quais os símbolos acrescentados à esquerda e à direita estão relacionados. Essa construção é especialmente útil para linguagens que exigem correspondência entre partes da cadeia, como $0^n1^n$.
 
-### Ambiguidade
+#### Ambiguidade
 
 Uma GLC é denominada **ambígua** quando existe pelo menos uma sentença da linguagem que possui mais de uma árvore de derivação distinta.
 
@@ -263,7 +263,7 @@ Essas diferentes estruturas podem ser representadas por árvores de derivação 
 
 A ambiguidade é especialmente importante no projeto de linguagens de programação, pois uma sentença ambígua pode admitir mais de uma interpretação sintática. Em uma linguagem de programação, normalmente é necessário estabelecer regras que determinem de forma única a estrutura da expressão, como regras de precedência e associatividade dos operadores.
 
-### Forma Normal de Chomsky
+#### Forma Normal de Chomsky
 
 Quando se trabalha com gramáticas livres de contexto, pode ser conveniente transformar a gramática para uma forma simplificada. Uma dessas formas é a **Forma Normal de Chomsky (FNC)**.
 
@@ -293,7 +293,7 @@ A principal característica da FNC é restringir a estrutura das produções, pe
 
 Um resultado importante estabelece que toda gramática livre de contexto pode ser transformada em uma gramática equivalente na Forma Normal de Chomsky, considerando as condições apropriadas para a cadeia vazia.
 
-### Transformação para a Forma Normal de Chomsky
+#### Transformação para a Forma Normal de Chomsky
 
 A transformação de uma GLC para a FNC pode ser realizada por uma sequência de etapas. Inicialmente, introduz-se uma nova variável inicial $S_0$ e uma produção
 
@@ -354,7 +354,7 @@ $$
 
 Dessa maneira, as produções passam gradualmente a obedecer às restrições da Forma Normal de Chomsky.
 
-### Algoritmo CYK
+#### Algoritmo CYK
 
 O **algoritmo de Cocke-Younger-Kasami (CYK)** é um algoritmo de análise sintática para linguagens livres de contexto. O algoritmo utiliza uma estratégia de análise de baixo para cima associada à programação dinâmica.
 
@@ -433,7 +433,7 @@ O exemplo interativo seguinte simula esse algoritmo. A partir de um gramática n
 ::: {.simulacao url="/p5js/cyk/" height="400" image="/printscreen/cyk.png" qrcode="/qrcode/cyk.png"}
 :::
 
-### Eliminação da Recursão à Esquerda
+#### Eliminação da Recursão à Esquerda
 
 A recursão à esquerda é uma característica importante das gramáticas livres de contexto, especialmente quando essas gramáticas são utilizadas na construção de analisadores sintáticos descendentes. Uma gramática apresenta recursão à esquerda quando existe uma variável que pode derivar uma cadeia cujo primeiro símbolo é a própria variável. No caso mais simples, isso ocorre quando uma produção apresenta a forma
 
@@ -504,7 +504,7 @@ Durante uma transição, o autômato pode ler um símbolo da entrada, consultar 
 
 Os autômatos com pilha possuem poder computacional equivalente às gramáticas livres de contexto no que diz respeito às linguagens que podem ser reconhecidas. Entretanto, existe uma diferença importante entre autômatos com pilha determinísticos e não determinísticos. Diferentemente do que ocorre com os autômatos finitos, os autômatos com pilha determinísticos não possuem o mesmo poder de reconhecimento que os autômatos com pilha não determinísticos.
 
-### Definição formal de um autômato com pilha
+#### Definição formal de um autômato com pilha
 
 ::: {.callout-note title="Definição"}
 
@@ -538,7 +538,7 @@ O uso de $\Sigma_\varepsilon$ permite que uma transição seja realizada consumi
 
 A presença da pilha acrescenta ao modelo de autômato finito uma forma de memória potencialmente ilimitada. Embora o conjunto de símbolos disponíveis na pilha seja finito, a quantidade de símbolos armazenados pode crescer durante a computação. Essa característica é fundamental para o reconhecimento de diversas linguagens livres de contexto.
 
-### Exemplo de Autômato com Pilha
+#### Exemplo de Autômato com Pilha
 
 Considere novamente a linguagem
 
@@ -572,7 +572,7 @@ Quando $a=\varepsilon$, a transição é realizada sem consumir um símbolo da e
 
 Essa notação torna possível representar, em um único diagrama, tanto a leitura da entrada quanto as operações realizadas sobre a memória auxiliar do autômato.
 
-### Outros exemplos de autômatos com pilha
+#### Outros exemplos de autômatos com pilha
 
 A capacidade adicional fornecida pela pilha permite reconhecer outras linguagens que não podem ser reconhecidas por autômatos finitos. Um exemplo apresentado nos slides é a linguagem
 
@@ -594,7 +594,7 @@ $$
 
 formada pelas cadeias obtidas pela concatenação de uma cadeia $w$ com sua reversa $w^R$. O reconhecimento dessa linguagem também exige que o autômato armazene informações sobre a primeira parte da entrada para compará-las posteriormente com a segunda parte.
 
-### Equivalência entre Gramáticas Livres de Contexto e Autômatos com Pilha
+#### Equivalência entre Gramáticas Livres de Contexto e Autômatos com Pilha
 
 Existe uma relação fundamental entre gramáticas livres de contexto e autômatos com pilha. O resultado pode ser expresso pelo seguinte teorema:
 
@@ -618,7 +618,7 @@ $$
 
 Essas transformações mostram que os dois formalismos possuem exatamente o mesmo poder de representação para a classe das linguagens livres de contexto.
 
-### Construção de um autômato com pilha a partir de uma GLC
+#### Construção de um autômato com pilha a partir de uma GLC
 
 Considere a gramática
 
@@ -637,7 +637,7 @@ Quando o topo da pilha é um terminal, o autômato compara esse terminal com o p
 
 O procedimento estabelece uma correspondência entre uma derivação da gramática e uma computação do autômato. A aceitação ocorre quando toda a entrada foi consumida e a representação da derivação foi processada.
 
-### Construção de uma GLC a partir de um autômato com pilha
+#### Construção de uma GLC a partir de um autômato com pilha
 
 A transformação inversa também é possível. Considere um autômato com pilha
 
@@ -687,7 +687,7 @@ $$
 
 Essa construção é mais complexa do que a transformação de uma GLC para um autômato com pilha, mas demonstra formalmente a equivalência entre os dois modelos.
 
-### Forma simplificada de um Autômato com Pilha
+#### Forma simplificada de um Autômato com Pilha
 
 Para facilitar a construção de uma GLC equivalente, é conveniente considerar uma forma simplificada de autômato com pilha. Os slides apresentam três condições para essa forma.
 
@@ -699,7 +699,7 @@ A terceira condição estabelece que cada transição deve realizar uma única o
 
 Essas condições não alteram a classe de linguagens que pode ser reconhecida. Elas apenas tornam a estrutura do autômato mais conveniente para a transformação em uma gramática livre de contexto.
 
-### Exemplo de transformação de AP para GLC
+#### Exemplo de transformação de AP para GLC
 
 Considere um autômato com estados numerados, para o qual são introduzidas variáveis associadas a pares de estados. Se os estados forem $0$, $1$ e $2$, por exemplo, poderão ser consideradas as variáveis
 
@@ -789,7 +789,7 @@ O lema é normalmente utilizado para provar que uma linguagem **não é** livre 
 
 É importante observar que o lema do bombeamento fornece uma **condição necessária**, mas não suficiente, para uma linguagem ser livre de contexto. Portanto, se uma linguagem não satisfaz o lema, podemos concluir que ela não é livre de contexto. Por outro lado, satisfazer o lema não constitui, isoladamente, uma prova de que a linguagem seja livre de contexto.
 
-### Exemplo de Linguagem que não é Livre de Contexto
+#### Exemplo de Linguagem que não é Livre de Contexto
 
 Considere novamente
 
