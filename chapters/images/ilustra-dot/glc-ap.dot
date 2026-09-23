@@ -1,0 +1,111 @@
+digraph AutomatoPilha {
+
+    graph [
+        rankdir=TB,
+        splines=true,
+        nodesep=0.8,
+        ranksep=0.9,
+        pad=0.3
+    ];
+
+    node [
+        shape=circle,
+        width=0.65,
+        height=0.65,
+        fixedsize=true,
+        fontsize=13,
+        fontname="Helvetica"
+    ];
+
+    edge [
+        fontsize=12,
+        fontname="Helvetica",
+        arrowsize=0.8
+    ];
+
+    // =========================================================
+    // Estados
+    // =========================================================
+
+    q_inicio [
+        label="q_início",
+        shape=ellipse,
+        width=1.25
+    ];
+
+    q1 [label="q1"];
+    q2 [label="q2"];
+    q3 [label="q3"];
+    q4 [label="q4"];
+
+    q_laco [
+        label="q_laco",
+        shape=ellipse,
+        width=1.25,
+        peripheries=2
+    ];
+
+    // =========================================================
+    // Transições
+    // =========================================================
+
+    // Inicialização da pilha
+    q_inicio -> q1 [
+        label="ε, ε → $"
+    ];
+
+    // Coloca S na pilha
+    q1 -> q_laco [
+        label="ε, ε → S"
+    ];
+
+    // =========================================================
+    // Caminho para X
+    // =========================================================
+
+    q_laco -> q2 [
+        label="ε, S → b"
+    ];
+
+    q2 -> q3 [
+        label="ε, ε → X"
+    ];
+
+    q3 -> q_laco [
+        label="ε, ε → a"
+    ];
+
+    // =========================================================
+    // Caminho envolvendo X
+    // =========================================================
+
+    q_laco -> q4 [
+        label="ε, X → X"
+    ];
+
+    q4 -> q_laco [
+        label="ε, ε → a"
+    ];
+
+    // =========================================================
+    // Transições de redução
+    // =========================================================
+
+    q_laco -> q_laco [
+        label="ε, S → c\nε, X → ε\na, a → ε\nb, b → ε\nc, c → ε"
+    ];
+
+    // =========================================================
+    // Aceitação
+    // =========================================================
+
+    q_laco -> q_aceita [
+        label="ε, $ → ε",
+    ];
+
+    q_aceita [
+        label="q_aceita",
+        shape=doublecircle,
+        width=1.25
+    ];
+}

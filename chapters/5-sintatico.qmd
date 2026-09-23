@@ -670,18 +670,30 @@ Considere a gramática
 
 $$
 \begin{aligned}
-S &\rightarrow aTb\mid b,\\
-T &\rightarrow Ta\mid\varepsilon.
+S &\rightarrow aXb\mid c,\\
+X &\rightarrow aX\mid\varepsilon.
 \end{aligned}
 $$
 
 A construção de um autômato com pilha a partir de uma GLC pode ser feita de forma que a pilha contenha uma representação da derivação que ainda precisa ser processada.
 
-Inicialmente, o símbolo inicial da gramática é colocado na pilha. O autômato utiliza as produções da gramática para substituir uma variável pelo lado direito de uma produção. Esse processo pode ser realizado por transições que não consomem símbolos da entrada.
+![Modelo de conversão GLC para AP](/chapters/images/modelo-glc-ap.png){#fig-modelo-glc-ap width="80%"}
+
+Inicialmente, o símbolo inicial da gramática é colocado na pilha. O autômato utiliza as produções da gramática para substituir uma variável pelo lado direito de uma produção. Esse processo pode ser realizado por transições que não consomem símbolos da entrada, conforme ilustrado na transformacão do autômato 1 para o autômato 2 na @fig-modelo-glc-ap.
 
 Quando o topo da pilha é um terminal, o autômato compara esse terminal com o próximo símbolo da entrada. Se forem iguais, o símbolo é consumido e retirado da pilha. Dessa maneira, a pilha mantém uma representação da parte da derivação que ainda precisa ser reconhecida.
 
 O procedimento estabelece uma correspondência entre uma derivação da gramática e uma computação do autômato. A aceitação ocorre quando toda a entrada foi consumida e a representação da derivação foi processada.
+
+A conversão da gramática livre de contexto para o autômatro de pilha correspondente está representado na @fig-glc-ap.
+
+![Conversão GLC para AP](/chapters/images/glc-ap.png){#fig-glc-ap width="80%"}
+
+No nó laço estão representadas todas as regras da gramática:
+
+- No laço de q_laço para q_laço estão o empilhamento dos terminais, por exemplo, $a, a \rightarrow \varepsilon$ que significa que quando o autômato de pilha lê o símbolo $a$ ele empilha o símbolo $a$ e não desempilha nada ($\varepsilon$). Nesta transição estão as regras unitária também, como $S \rightarrow c$, representado como operação de pilha $\varepsilon, S \rightarrow c$.
+- Nas transições q_laço $\rightarrow$ q4 $\rightarrow$ q_laço, estão as operações de pilha correspondentes a regra $X \rightarrow aX$.
+- E nas transições q_laço $\rightarrow$ q2 $\rightarrow$ q3 $\rightarrow$ q_laço, estão as operações de pilha correspondentes a regra $S \rightarrow aXb$.
 
 #### Construção de uma GLC a partir de um autômato com pilha
 

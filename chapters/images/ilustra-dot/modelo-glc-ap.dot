@@ -1,0 +1,78 @@
+digraph AutomatosPilha {
+
+    graph [
+        rankdir=LR,
+        splines=true,
+        nodesep=0.8,
+        ranksep=1.0,
+        pad=0.3
+    ];
+
+    node [
+        shape=circle,
+        width=0.55,
+        height=0.55,
+        fixedsize=true,
+        fontsize=14,
+        fontname="Helvetica"
+    ];
+
+    edge [
+        fontsize=13,
+        fontname="Helvetica",
+        arrowsize=0.8
+    ];
+    
+        // =========================================================
+    // Autômato 2
+    // =========================================================
+
+    subgraph cluster_2 {
+
+        label="Autômato 2";
+        labelloc="t";
+        fontsize=15;
+        fontname="Helvetica";
+        color="gray70";
+
+        q1_b [label="q"];
+        q2_b [label="q1"];
+        q3_b [label="q2"];
+        r1_b [label="r"];
+
+        q1_b -> q2_b [
+            label="a, S → z"
+        ];
+
+        q2_b -> q3_b [
+            label="ε, ε → y"
+        ];
+
+        q3_b -> r1_b [
+            label="ε, ε → x"
+        ];
+    }
+
+    // =========================================================
+    // Autômato 1
+    // =========================================================
+
+    subgraph cluster_1 {
+
+        label="Autômato 1";
+        labelloc="t";
+        fontsize=15;
+        fontname="Helvetica";
+        color="gray70";
+
+        q1_a [label="q"];
+        r1_a [label="r"];
+
+        q1_a -> r1_a [
+            label="a, S → xyz"
+        ];
+    }
+
+
+
+}
