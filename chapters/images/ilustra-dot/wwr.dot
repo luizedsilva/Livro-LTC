@@ -1,0 +1,61 @@
+digraph PDA {
+    rankdir=LR;
+
+    graph [
+        bgcolor="transparent",
+        splines=true,
+        nodesep=0.8,
+        ranksep=1.0
+    ];
+
+    node [
+        shape=circle,
+        style="filled",
+        fillcolor="white",
+        color="black",
+        penwidth=1.5,
+        fontname="Arial",
+        fontsize=12,
+        width=0.65,
+        fixedsize=true
+    ];
+
+    edge [
+        color="black",
+        penwidth=1.2,
+        arrowsize=0.8,
+        fontname="Arial",
+        fontsize=11
+    ];
+
+    // Estados
+    q1 [label="q1", peripheries=2];
+    q2 [label="q2"];
+    q3 [label="q3"];
+    q4 [label="q4", peripheries=2];
+
+    // Estado inicial
+    inicio [shape=point, width=0.10, label=""];
+    inicio -> q1;
+
+    // Transições
+    q1 -> q2 [
+        label="ε, ε, $"
+    ];
+
+    q2 -> q2 [
+        label=<0, ε, 0<BR/>1, ε, 1>,
+    ];
+
+    q2 -> q3 [
+        label="ε, ε, ε"
+    ];
+
+    q3 -> q3 [
+        label=<0, 0, ε<BR/>1, 1, ε>,
+    ];
+
+    q3 -> q4 [
+        label="ε, $, ε"
+    ];
+}
