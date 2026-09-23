@@ -546,6 +546,8 @@ O uso de $\Sigma_\varepsilon$ permite que uma transição seja realizada consumi
 
 A presença da pilha acrescenta ao modelo de autômato finito uma forma de memória potencialmente ilimitada. Embora o conjunto de símbolos disponíveis na pilha seja finito, a quantidade de símbolos armazenados pode crescer durante a computação. Essa característica é fundamental para o reconhecimento de diversas linguagens livres de contexto.
 
+
+
 #### Exemplo de Autômato com Pilha
 
 Considere novamente a linguagem
@@ -554,7 +556,9 @@ $$
 L=\{0^n1^n\mid n\geq0\}.
 $$
 
-Um autômato com pilha pode reconhecer essa linguagem armazenando na pilha um símbolo para cada $0$ encontrado na entrada. Quando começam a ser encontrados os símbolos $1$, o autômato retira um símbolo da pilha para cada $1 lido.
+Um autômato com pilha pode reconhecer essa linguagem armazenando na pilha um símbolo para cada $0$ encontrado na entrada. Quando começam a ser encontrados os símbolos $1$, o autômato retira um símbolo da pilha para cada $1$ lido, representado na @fig-ap.
+
+![Autômato de Pilha](/chapters/images/0n1n.png){#fig-ap width="80%"}
 
 Inicialmente, a máquina coloca um marcador na pilha para indicar sua base. Ao processar os símbolos $0$, um novo símbolo $0$ é empilhado para cada símbolo lido. Assim, depois de processar $0^n$, a pilha contém $n$ símbolos $0$, além do marcador de fundo.
 
@@ -580,9 +584,35 @@ Quando $a=\varepsilon$, a transição é realizada sem consumir um símbolo da e
 
 Essa notação torna possível representar, em um único diagrama, tanto a leitura da entrada quanto as operações realizadas sobre a memória auxiliar do autômato.
 
+O autômato de pilha da @fig-ap pode ser formalmente definido como:
+
+Seja $M_1 = (Q, \Sigma, \Gamma, \delta, q_1, F)$ e
+
+$$
+L(M_1) = \{0^n1^n \mid n \geq 0\}.
+$$
+
+Os componentes de $M_1$ são:
+
+- $Q = \{q_1, q_2, q_3, q_4\}$;
+- $\Sigma = \{0, 1\}$;
+- $\Gamma = \{0, \$\}$;
+- $F = \{q_1, q_4\}$; e
+- $\delta$ é dada pela tabela a seguir:
+
+| Entrada |  | **0** |  |  | **1** |  |  | $\varepsilon$ |  |
+|:--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| Pilha | $0$ | $\$$ | $\varepsilon$ | $0$ | $\$$ | $\varepsilon$ | $0$ | $\$$ | $\varepsilon$ |
+| $q_1$ |  |  |  |  |  |  |  |  | $\{(q_2,\$)\}$ |
+| $q_2$ |  |  | $\{(q_2,0)\}$ | $\{(q_3,\varepsilon)\}$ |  |  |  |  |  |
+| $q_3$ |  |  |  | $\{(q_3,\varepsilon)\}$ |  |  |  | $\{(q_4,\varepsilon)\}$ |  |
+| $q_4$ |  |  |  |  |  |  |  |  |  |
+
 #### Outros exemplos de autômatos com pilha
 
-A capacidade adicional fornecida pela pilha permite reconhecer outras linguagens que não podem ser reconhecidas por autômatos finitos. Um exemplo apresentado nos slides é a linguagem
+A capacidade adicional fornecida pela pilha permite reconhecer outras linguagens que não podem ser reconhecidas por autômatos finitos. 
+
+Um exemplo apresentado representado na @fig-ap1
 
 $$
 L(M_2)=
@@ -590,15 +620,19 @@ L(M_2)=
 \text{ e } i=j \text{ ou } i=k\}.
 $$
 
+![Autômato de Pilha $M_2$](/chapters/images/aibjck.png){#fig-ap1 width="80%"}
+
 Nesse caso, o autômato precisa verificar uma de duas condições possíveis: a quantidade de símbolos $a$ deve ser igual à quantidade de símbolos $b$, ou a quantidade de símbolos $a$ deve ser igual à quantidade de símbolos $c$.
 
 O não determinismo é essencial nessa construção. O autômato pode, de forma não determinística, escolher qual das duas condições tentará verificar. Essa possibilidade ilustra uma diferença importante entre autômatos com pilha determinísticos e não determinísticos.
 
-Outro exemplo é a linguagem
+Outro exemplo é a linguagem seguinte, ilustrada na @fig-ap2
 
 $$
 L(M_3)=\{ww^R\mid w\in\{0,1\}^*\},
 $$
+
+![Autômato de Pilha $M_3$](/chapters/images/wwr.png){#fig-ap2 width="80%"}
 
 formada pelas cadeias obtidas pela concatenação de uma cadeia $w$ com sua reversa $w^R$. O reconhecimento dessa linguagem também exige que o autômato armazene informações sobre a primeira parte da entrada para compará-las posteriormente com a segunda parte.
 
@@ -606,7 +640,11 @@ formada pelas cadeias obtidas pela concatenação de uma cadeia $w$ com sua reve
 
 Existe uma relação fundamental entre gramáticas livres de contexto e autômatos com pilha. O resultado pode ser expresso pelo seguinte teorema:
 
-> **Teorema.** Uma linguagem é livre de contexto se, e somente se, algum autômato com pilha a reconhece.
+:::{#thm-eq-glc-ap}
+
+Uma linguagem é livre de contexto se, e somente se, algum autômato com pilha a reconhece.
+
+:::
 
 Esse resultado estabelece uma equivalência entre duas formas diferentes de representar uma mesma classe de linguagens. Uma linguagem livre de contexto pode ser descrita por meio de uma **gramática**, que especifica como suas cadeias podem ser geradas, ou por meio de um **autômato com pilha**, que especifica como suas cadeias podem ser reconhecidas.
 
@@ -694,64 +732,6 @@ A_{pp}\rightarrow\varepsilon.
 $$
 
 Essa construção é mais complexa do que a transformação de uma GLC para um autômato com pilha, mas demonstra formalmente a equivalência entre os dois modelos.
-
-#### Forma simplificada de um Autômato com Pilha
-
-Para facilitar a construção de uma GLC equivalente, é conveniente considerar uma forma simplificada de autômato com pilha. Os slides apresentam três condições para essa forma.
-
-A primeira condição é que o autômato possua **um único estado de aceitação**. Isso simplifica a identificação das computações completas que correspondem a cadeias aceitas.
-
-A segunda condição é que a pilha esteja **vazia antes da aceitação**. Assim, uma computação aceita pode ser caracterizada tanto pelo estado final quanto pelo esvaziamento da pilha.
-
-A terceira condição estabelece que cada transição deve realizar uma única operação sobre a pilha: **empilhar ou desempilhar**, mas não realizar as duas operações simultaneamente.
-
-Essas condições não alteram a classe de linguagens que pode ser reconhecida. Elas apenas tornam a estrutura do autômato mais conveniente para a transformação em uma gramática livre de contexto.
-
-#### Exemplo de transformação de AP para GLC
-
-Considere um autômato com estados numerados, para o qual são introduzidas variáveis associadas a pares de estados. Se os estados forem $0$, $1$ e $2$, por exemplo, poderão ser consideradas as variáveis
-
-$$
-A_{00},A_{11},A_{22},A_{01},A_{02},A_{12}.
-$$
-
-Se o autômato começa no estado $0$ e deve terminar no estado $2$, a variável inicial será
-
-$$
-A_{02}.
-$$
-
-A partir das transições do autômato, são construídas produções como
-
-$$
-A_{02}\rightarrow A_{01}A_{12},
-$$
-
-$$
-A_{01}\rightarrow A_{01}A_{11},
-$$
-
-$$
-A_{12}\rightarrow A_{11}A_{12},
-$$
-
-e
-
-$$
-A_{11}\rightarrow 0A_{11}1.
-$$
-
-Também são introduzidas produções que representam computações vazias, como
-
-$$
-A_{00}\rightarrow\varepsilon,
-\qquad
-A_{11}\rightarrow\varepsilon,
-\qquad
-A_{22}\rightarrow\varepsilon.
-$$
-
-O conjunto dessas produções descreve, por meio de derivações da gramática, as possíveis computações do autômato. Dessa forma, uma cadeia pertence à linguagem do autômato exatamente quando pode ser gerada pela gramática construída.
 
 ### Linguagens que não são Livres de Contexto
 
