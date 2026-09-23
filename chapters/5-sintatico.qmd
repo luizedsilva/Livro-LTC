@@ -920,13 +920,8 @@ $$
 
 pode representar a estrutura:
 
-```text
-          +
-         / \
-        a   *
-           / \
-          b   c
-```
+![extrutura sintática da expressão](/chapters/images/expressao.png){width="40%"}
+
 
 A árvore evidencia que a multiplicação de $b$ por $c$ constitui uma subestrutura da expressão e que seu resultado é utilizado como segundo operando da adição.
 
@@ -984,24 +979,7 @@ O analisador sintático recebe a sequência de *tokens* produzida pelo analisado
 
 De forma simplificada, seu funcionamento pode ser representado por:
 
-```text
-Programa-fonte
-      |
-      v
-Analisador léxico
-      |
-      v
-Sequência de tokens
-      |
-      v
-Analisador sintático
-      |
-      v
-Estrutura sintática
-      |
-      v
-Árvore sintática
-```
+![Processo de integração dos analisadores léxico e sintático](/chapters/images/lexico-sintatico.png){#fig-lexico-sintatico width="80%"}
 
 Durante esse processo, o analisador sintático pode construir diretamente uma árvore ou utilizar estruturas auxiliares para posteriormente produzir a árvore correspondente. Em outros casos, a implementação pode produzir uma representação intermediária que será utilizada pelas etapas posteriores do compilador.
 
@@ -1027,30 +1005,7 @@ A análise sintática estabelece uma ligação entre a sequência linear de *tok
 
 O fluxo simplificado pode ser representado da seguinte forma:
 
-```text
-Código-fonte
-     |
-     v
-Análise léxica
-     |
-     v
-Tokens
-     |
-     v
-Análise sintática
-     |
-     v
-Árvore sintática
-     |
-     v
-Análise semântica
-     |
-     v
-Representação intermediária
-     |
-     v
-Geração de código
-```
+![Fases do compilador](/chapters/images/fases.png){width="60%"}
 
 A análise léxica identifica os elementos básicos do programa, enquanto a análise sintática determina como esses elementos estão organizados. A partir da estrutura sintática reconhecida, a análise semântica pode verificar propriedades que não são determinadas exclusivamente pela gramática, como compatibilidade de tipos, declaração e uso de identificadores e outras restrições semânticas da linguagem.
 
@@ -1075,12 +1030,29 @@ Apresentamos nessa seção uma estratégia (existem outras) para análise descen
 
 Os analisadores descendentes (*top-down*) podem ser construídos com uma classe de gramática chamada LL(1). O primeiro \"L\" se refere a forma como é lida a cadeia de entrada na análise, nesse caso da esquerda para direita (*Left-to-right*). O segundo \"L\" se refere a forma como é obtida a sequência de derivação para obtenção da sentença avaliada, nesse caso derivação mais à esquerda (*leftmost*). O número \"1\" se refere ao número de símbolos a frente deve-se olhar para decidir que regra da gramática deve ser utilizada.
 
-Para construção de Analisadores LL(k), são necessárias duas funções sobre símbolos da gramática: função *FIRST* e *FOLLOW*. A Figura [1.6](#fig-firstfollow){reference-type="ref" reference="fig:firstfollow"} é usada para ilustrar o cálculo dessas funções. Intuitivamente, todos os símbolos que iniciam derivações de [A]{.underline} compõe o conjunto [*FIRST* de A]{.underline} (por exemplo, o terminal [c]{.underline} da Figura). Todo símbolo terminal que segue o símbolo [A]{.underline} em qualquer derivação faz parte do conjunto [*FOLLOW* de A]{.underline} (por exemplo, o terminal [a]{.underline} da Figura [1.6](#fig-firstfollow){reference-type="ref" reference="fig:firstfollow"})
+Para construção de Analisadores LL(k), são necessárias duas funções sobre símbolos da gramática: função *FIRST* e *FOLLOW*. A @fig-firstfollow é usada para ilustrar o cálculo dessas funções. Intuitivamente, todos os símbolos que iniciam derivações de $A$ compõe o conjunto [*FIRST* de A]{.underline} (por exemplo, o terminal [c]{.underline} da Figura). Todo símbolo terminal que segue o símbolo [A]{.underline} em qualquer derivação faz parte do conjunto [*FOLLOW* de A]{.underline} (por exemplo, o terminal [a]{.underline} da @fig-firstfollow.
 
-![Ilustração para os conjuntos First/Follow](/chapters/images/firstfollow.png){#fig-firstfollow width="6cm"}
+![Ilustração para os conjuntos First/Follow](/chapters/images/first-follow.png){#fig-firstfollow width="60%"}
 
 #### Função $FIRST$
 
+A função $FIRST$ determina quais símbolos terminais podem aparecer como primeiro símbolo de uma cadeia derivada a partir de um determinado símbolo da gramática. Além dos terminais, o conjunto $FIRST$ pode conter o símbolo $\lambda$, indicando que o símbolo analisado pode derivar a cadeia vazia. O cálculo deve ser realizado para todos os símbolos da gramática e repetido até que nenhum novo elemento possa ser acrescentado a qualquer conjunto $FIRST$.
+
+Inicialmente, considere um símbolo $X$ que seja terminal. Nesse caso, o primeiro símbolo de uma cadeia iniciada por $X$ é necessariamente o próprio $X$. Portanto, seu conjunto $FIRST$ é formado exclusivamente pelo próprio símbolo terminal, isto é, $FIRST(X)=\{X\}$. Por exemplo, se $a$ é um terminal da gramática, então $FIRST(a)=\{a\}$.
+
+Para um símbolo $X$ que seja não terminal, é necessário analisar cada uma das produções que possuem $X$ como lado esquerdo. Considere, por exemplo, uma produção da forma $X\rightarrow Y_1Y_2\ldots Y_k$, em que $k\geq1$. O primeiro símbolo que pode ser produzido a partir de $X$ depende inicialmente de $Y_1$. Assim, todos os terminais pertencentes a $FIRST(Y_1)$, exceto $\lambda$, devem ser acrescentados a $FIRST(X)$.
+
+Entretanto, existe uma situação que exige uma análise adicional. Se $\lambda$ pertence a $FIRST(Y_1)$, significa que $Y_1$ pode desaparecer durante a derivação, produzindo a cadeia vazia. Nesse caso, o primeiro símbolo da cadeia derivada de $X$ poderá vir de $Y_2$. Portanto, os elementos de $FIRST(Y_2)$, exceto $\lambda$, também devem ser acrescentados a $FIRST(X)$. Esse processo continua sucessivamente: se $\lambda$ pertence a $FIRST(Y_2)$, deve-se considerar $Y_3$, e assim por diante.
+
+De maneira geral, para uma produção $X\rightarrow Y_1Y_2\ldots Y_k$, um terminal $a$ deve ser acrescentado a $FIRST(X)$ se $a$ pertence a $FIRST(Y_i)$ para algum $i$, desde que todos os símbolos anteriores $Y_1,\ldots,Y_{i-1}$ possam derivar $\lambda$. Em outras palavras, para que um símbolo pertencente a $FIRST(Y_i)$ possa ser o primeiro símbolo derivado de $X$, todos os símbolos que o precedem na produção precisam ter a possibilidade de desaparecer.
+
+Há ainda um caso especial quando todos os símbolos da produção podem derivar $\lambda$. Se $\lambda$ pertence a $FIRST(Y_j)$ para todo $j=1,2,\ldots,k$, então toda a sequência $Y_1Y_2\ldots Y_k$ pode derivar a cadeia vazia. Consequentemente, $\lambda$ deve ser acrescentado a $FIRST(X)$. Por exemplo, se $X\rightarrow ABC$ e $\lambda\in FIRST(A)$, $\lambda\in FIRST(B)$ e $\lambda\in FIRST(C)$, então $\lambda\in FIRST(X)$.
+
+Finalmente, quando existe diretamente uma produção da forma $X\rightarrow\lambda$, o símbolo $X$ pode produzir a cadeia vazia sem a necessidade de realizar qualquer outra derivação. Nesse caso, $\lambda$ deve ser acrescentado imediatamente ao conjunto $FIRST(X)$.
+
+O cálculo de $FIRST$ é, portanto, iterativo. Os conjuntos são inicialmente construídos a partir dos terminais e das produções que permitem derivar $\lambda$. Em seguida, as produções são examinadas repetidamente para propagar os símbolos terminais e $\lambda$ entre os conjuntos $FIRST$. O processo termina quando uma nova passagem por todas as produções não acrescenta nenhum elemento a nenhum conjunto. Nesse momento, diz-se que os conjuntos $FIRST$ atingiram um ponto fixo, e seus conteúdos representam todos os possíveis primeiros símbolos das cadeias que podem ser derivadas a partir dos símbolos da gramática.
+
+:::{.callout-note title = "Resumo do Cálculo de FIRST"}
 Para calcular $FIRST$ de todos os simbolos $X$ de uma gramática, execute as seguintes regras até que nenhum novo símbolo possa ser acrescentado a qualquer conjunto $FIRST$.
 
 1.  Se $X$ é um símbolo terminal, então $FIRST(X) = \{X\}$
@@ -1088,9 +1060,61 @@ Para calcular $FIRST$ de todos os simbolos $X$ de uma gramática, execute as seg
 2.  Se $X$ é um não-terminal e $X\rightarrow Y_1Y_2...Y_k$ é uma regra de produção para algum $k \geq 1$, então acrescente $a$ a $FIRST(X)$ se, para algum $i$, $a$ estiver em $FIRST(Y_i)$, e $\lambda$ estiver em todos os $FIRST(Y_1),...,FIRST(Y_{i-1})$. Se $\lambda$ está em $FIRST(Y_j)$ para todo $j=1,2,...,k$, então adicione $\lambda$ a $FIRST(X)$.
 
 3.  Se $X \rightarrow \lambda$ é um regra de produção, então acrescente $\lambda$ a $FIRST(X)$
+:::
 
 #### Função $FOLLOW$
 
+A função $FOLLOW$ determina quais símbolos podem aparecer **imediatamente após um determinado não terminal** em uma cadeia derivada da gramática. Diferentemente da função $FIRST$, que está relacionada aos símbolos que podem iniciar uma derivação, a função $FOLLOW$ considera os símbolos que podem suceder um não terminal. O cálculo de $FOLLOW$ é realizado para todos os símbolos não terminais da gramática e utiliza os conjuntos $FIRST$ previamente calculados.
+
+O primeiro passo consiste em considerar o símbolo inicial da gramática. Seja $S$ o símbolo inicial. Como uma sentença completa deve ser seguida pelo marcador de fim de sentença, representado por $\#$, esse símbolo é acrescentado inicialmente ao conjunto $FOLLOW(S)$. Assim, temos:
+
+$$
+\# \in FOLLOW(S)
+$$
+
+O marcador $\#$ representa o fim da entrada e é considerado como estando após toda a sentença durante o processo de análise. Portanto, quando o analisador sintático alcançar o final da cadeia de entrada, esse marcador permite identificar que não existem mais símbolos a serem processados.
+
+Considere agora uma produção da forma $A\rightarrow\alpha B\beta$, na qual $B$ é um não terminal e $\beta$ representa a sequência de símbolos que aparece imediatamente após $B$. Nesse caso, todos os símbolos de $FIRST(\beta)$, com exceção de $\lambda$, devem ser acrescentados a $FOLLOW(B)$. Isso ocorre porque qualquer terminal que possa iniciar uma cadeia derivada de $\beta$ poderá aparecer imediatamente depois de $B$ durante uma derivação.
+
+Por exemplo, considere a produção:
+
+$$
+A\rightarrow \alpha Bcd
+$$
+
+Como a sequência que sucede $B$ começa pelo terminal $c$, temos $c\in FIRST(cd)$. Consequentemente, $c$ deve ser incluído em $FOLLOW(B)$. O mesmo princípio se aplica quando $\beta$ é formada por vários símbolos e seu primeiro símbolo pode desaparecer por derivação de $\lambda$.
+
+Existe ainda uma situação importante quando a sequência $\beta$ pode derivar $\lambda$. Considere novamente uma produção da forma $A\rightarrow\alpha B\beta$. Se $\lambda\in FIRST(\beta)$, então $\beta$ pode desaparecer durante a derivação. Nesse caso, os símbolos que podem aparecer depois de $A$ também podem aparecer imediatamente depois de $B$. Portanto, todos os elementos de $FOLLOW(A)$ devem ser acrescentados a $FOLLOW(B)$.
+
+O mesmo raciocínio se aplica quando $B$ aparece no final da produção, isto é, em uma produção da forma $A\rightarrow\alpha B$. Como não existe nenhum símbolo depois de $B$ nessa produção, tudo aquilo que pode aparecer depois de $A$ também poderá aparecer depois de $B$. Assim, os elementos de $FOLLOW(A)$ devem ser incluídos em $FOLLOW(B)$.
+
+O cálculo de $FOLLOW$ é, portanto, um processo **iterativo**. Inicialmente, coloca-se $\#$ no conjunto $FOLLOW$ do símbolo inicial. Em seguida, percorrem-se todas as produções, aplicando as regras de propagação dos símbolos obtidos a partir de $FIRST$ e dos conjuntos $FOLLOW$ dos não terminais. Como uma informação obtida em uma produção pode gerar novas informações em outra produção, as regras precisam ser executadas repetidamente.
+
+O processo termina quando uma nova passagem por todas as produções não acrescenta nenhum novo símbolo a nenhum conjunto $FOLLOW$. Nesse momento, os conjuntos atingiram um **ponto fixo** e contêm todos os símbolos que podem aparecer imediatamente após cada não terminal em alguma derivação possível da gramática.
+
+A função $FOLLOW(B)$ determina os símbolos que podem aparecer imediatamente após o não terminal $B$ em alguma cadeia derivada da gramática.
+
+Para o símbolo inicial $S$, acrescenta-se inicialmente o marcador de fim de sentença $\#$:
+
+$$
+\#\in FOLLOW(S)
+$$
+
+Para uma produção $A\rightarrow\alpha B\beta$, todos os símbolos de $FIRST(\beta)$, exceto $\lambda$, são acrescentados a $FOLLOW(B)$:
+
+$$
+FIRST(\beta)-\{\lambda\}\subseteq FOLLOW(B)
+$$
+
+Se $\beta$ puder derivar $\lambda$, ou se $B$ estiver no final da produção, os símbolos de $FOLLOW(A)$ também devem ser acrescentados a $FOLLOW(B)$:
+
+$$
+FOLLOW(A)\subseteq FOLLOW(B)
+$$
+
+As regras são aplicadas repetidamente a todas as produções até que nenhum novo símbolo possa ser acrescentado aos conjuntos. O resultado final corresponde ao **ponto fixo dos conjuntos $FOLLOW$** da gramática.
+
+:::{.callout-note title = "Resumo do Cálculo de FOLLOW"}
 Para calcular $FOLLOW$ de todos os simbolos NÃO-TERMINAIS $S$ de uma gramática, execute as seguintes regras até que nenhum novo símbolo possa ser acrescentado a qualquer conjunto $FOLLOW$.
 
 1.  Coloque $\#$ em $FOLLOW(S)$, onde $S$ é o símbolo inicial da gramática e $\#$ é o marcador de fim de sentença, que é incluido antes da avaliação da sentença.
@@ -1098,15 +1122,20 @@ Para calcular $FOLLOW$ de todos os simbolos NÃO-TERMINAIS $S$ de uma gramática
 2.  Se houver uma produção $A \rightarrow \alpha B \beta$, então tudo que está em $FIRST(\beta)$ exceto $\lambda$, deve estar em $FOLLOW(B)$.
 
 3.  Se houver uma produção $A \rightarrow \alpha B$ ou $A \rightarrow \alpha B \beta$, onde $FIRST(\beta)$ contém $\lambda$, então inclua $FOLLOW(A)$ em $FOLLOW(B)$.
+:::
 
 [**Exemplo:**]{.underline}
 
 Considere a seguinte gramática:
 
   $E \rightarrow TE^{'}$
+
   $E^{'} \rightarrow +TE^{'} | \lambda$
+  
   $T \rightarrow FT^{'}$
+  
   $T^{'} \rightarrow *FT^{'} | \lambda$
+  
   $F \rightarrow a | (E)$
 
 [**Conjuntos FIRST e FOLLOW:**]{.underline}
@@ -1119,15 +1148,32 @@ Considere a seguinte gramática:
 | $T'$ | $\{*, \lambda\}$ | $\{+, ), \#\}$ |
 | $F$ | $\{(, a\}$ | $\{*, +, ), \#\}$ |
 
-[**Algoritmo para construir a Tabela de Análise Preditiva LL(1):**]{.underline}
 
--   Para cada produção $A \rightarrow \alpha$ da gramática, faça:
+#### Tabela de Análise Preditiva LL(1)
 
-    1.  Para cada terminal $a$ de $FIRST(\alpha)$, adicione a produção $A \rightarrow \alpha$ a $T[A,a]$
+A construção da **tabela de análise preditiva LL(1)** constitui uma etapa fundamental para a implementação de um analisador sintático descendente preditivo. A tabela estabelece, para cada combinação entre um **não terminal da gramática** e um **terminal da entrada**, qual produção deve ser utilizada durante a análise. Dessa forma, o analisador pode determinar a produção a ser aplicada sem realizar retrocesso ou testar diferentes alternativas.
 
-    2.  Se $FIRST(\alpha)$ inclui a palavra vazia, então adicione $A \rightarrow \alpha$ a $T[A,b]$ para cada $b$ em $FOLLOW(A)$.
+A construção da tabela utiliza diretamente as informações obtidas pelos conjuntos **$FIRST$** e **$FOLLOW$** da gramática. O conjunto $FIRST$ permite identificar quais terminais podem iniciar uma cadeia derivada a partir do lado direito de uma produção. Já o conjunto $FOLLOW$ é utilizado quando essa cadeia pode derivar a palavra vazia $\lambda$, indicando que a produção pode ser escolhida com base no símbolo que aparece imediatamente após o não terminal analisado.
 
-A tabela LL(1) é:
+Considere uma produção $A\rightarrow\alpha$. Inicialmente, devem ser considerados todos os terminais pertencentes a $FIRST(\alpha)$. Para cada terminal $a\in FIRST(\alpha)$, a produção $A\rightarrow\alpha$ é inserida na posição $T[A,a]$ da tabela. Isso significa que, quando o analisador estiver considerando o não terminal $A$ e o próximo símbolo da entrada for $a$, a produção $A\rightarrow\alpha$ poderá ser utilizada.
+
+Entretanto, existe uma situação particular quando $\alpha$ pode derivar a palavra vazia. Nesse caso, $\lambda\in FIRST(\alpha)$, e não existe necessariamente um terminal de $FIRST(\alpha)$ que determine diretamente a escolha da produção. A decisão passa então a depender dos símbolos que podem aparecer imediatamente depois de $A$. Por isso, para cada terminal $b\in FOLLOW(A)$, a produção $A\rightarrow\alpha$ é inserida na posição $T[A,b]$.
+
+Assim, a construção da tabela pode ser entendida como uma combinação das informações fornecidas por $FIRST$ e $FOLLOW$: **$FIRST$** determina os terminais que podem iniciar a derivação do lado direito da produção, enquanto **$FOLLOW$** determina os terminais que permitem selecionar uma produção quando seu lado direito pode desaparecer por meio de uma derivação para $\lambda$.
+
+O algoritmo percorre todas as produções da gramática e preenche progressivamente as células da tabela. Ao final do processo, cada célula $T[A,a]$ indica a produção que deve ser utilizada quando o topo da pilha contém o não terminal $A$ e o próximo símbolo da entrada é o terminal $a$. Para uma gramática LL(1), cada célula da tabela deve conter **no máximo uma produção**. Caso duas ou mais produções diferentes sejam inseridas na mesma célula, existe um conflito, indicando que a gramática não possui uma tabela de análise preditiva LL(1) determinística para aquela situação.
+
+#### Algoritmo para construir a Tabela de Análise Preditiva LL(1)
+
+Para cada produção $A\rightarrow\alpha$ da gramática, são aplicadas as seguintes regras:
+
+1. Para cada terminal $a\in FIRST(\alpha)$, **exceto $\lambda$**, adiciona-se a produção $A\rightarrow\alpha$ à posição $T[A,a]$.
+
+2. Se $\lambda\in FIRST(\alpha)$, então, para cada terminal $b\in FOLLOW(A)$, adiciona-se a produção $A\rightarrow\alpha$ à posição $T[A,b]$.
+
+Dessa maneira, a tabela fornece ao analisador uma forma direta de selecionar a produção adequada a partir de apenas dois elementos: **o não terminal que está no topo da pilha e o próximo terminal da entrada**. Isso caracteriza o princípio fundamental da análise **LL(1)**: a entrada é lida da esquerda para a direita, produz-se uma derivação mais à esquerda e utiliza-se apenas **um símbolo de antecipação** (*lookahead*) para determinar a produção a ser aplicada.
+
+A tabela LL(1) preditiva para a gramática de expressões sem recursão à esquerda apresentada anteriormente,  é:
 
 |   | $a$ | $+$ | $*$ | $($ | $)$ | $\#$ |
 |:--:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -1138,6 +1184,108 @@ A tabela LL(1) é:
 | $F$ | $F \rightarrow a$ |  |  | $F \rightarrow (E)$ |  |  |
 
 : Tabela de análise preditiva LL(1) {#tbl-tabela-ll1}
+
+#### Exemplo de derivação utilizando a tabela preditiva
+
+Considere a @tbl-tabela-ll1 e a sentença:
+
+$$
+(a+a)*a
+$$
+
+A derivação da sentença pode ser realizada a partir do símbolo inicial $E$, sempre expandindo o **não terminal mais à esquerda**. A produção a ser utilizada em cada etapa é determinada pelo não terminal que está sendo analisado e pelo próximo símbolo da entrada (*lookahead*).
+
+A sequência de derivações para obter a sentença $(a+a)*a$ é:
+
+$$
+\begin{aligned}
+E
+&\Rightarrow TE'\\
+&\Rightarrow FT'E'\\
+&\Rightarrow (E)T'E'\\
+&\Rightarrow (TE')T'E'\\
+&\Rightarrow (FT'E')T'E'\\
+&\Rightarrow (aT'E')T'E'\\
+&\Rightarrow (aE')T'E'\\
+&\Rightarrow (a+TE')T'E'\\
+&\Rightarrow (a+FT'E')T'E'\\
+&\Rightarrow (a+aT'E')T'E'\\
+&\Rightarrow (a+aE')T'E'\\
+&\Rightarrow (a+a)T'E'\\
+&\Rightarrow (a+a)*FT'E'\\
+&\Rightarrow (a+a)*aT'E'\\
+&\Rightarrow (a+a)*aE'\\
+&\Rightarrow (a+a)*a
+\end{aligned}
+$$
+
+A derivação começa com o símbolo inicial $E$. Como o primeiro símbolo da sentença é o terminal `(`, a tabela preditiva determina a utilização da produção $E\rightarrow TE'$. Em seguida, o não terminal $T$ é analisado e, como o próximo símbolo continua sendo `(`, utiliza-se $T\rightarrow FT'$.
+
+Para o não terminal $F$, o símbolo de antecipação também é `(`. Portanto, a tabela determina a produção $F\rightarrow(E)$. Dessa maneira, a análise passa a considerar o conteúdo existente entre os parênteses.
+
+Dentro dos parênteses, o próximo símbolo é novamente `(`? Não. O primeiro símbolo é $a$. Assim, para o não terminal $E$, utiliza-se $E\rightarrow TE'$, e para $T$ utiliza-se $T\rightarrow FT'$. Como o próximo símbolo é $a$, a produção selecionada para $F$ é $F\rightarrow a$.
+
+Após reconhecer o primeiro $a$, o próximo símbolo da entrada é `+`. Nesse momento, para o não terminal $E'$, a tabela indica a produção:
+
+$$
+E'\rightarrow +TE'
+$$
+
+O símbolo `+` é, portanto, reconhecido e o não terminal $T$ passa a ser analisado para reconhecer o segundo operando da soma. Como o próximo símbolo é $a$, são utilizadas as produções:
+
+$$
+T\rightarrow FT'
+$$
+
+e
+
+$$
+F\rightarrow a.
+$$
+
+Após o reconhecimento do segundo $a$, o próximo símbolo da entrada é `)`. Como $)$ pertence a $FOLLOW(E')$, a tabela preditiva determina a utilização da produção:
+
+$$
+E'\rightarrow\lambda.
+$$
+
+Dessa forma, o conteúdo entre parênteses é concluído, resultando em:
+
+$$
+(a+a).
+$$
+
+Após o fechamento dos parênteses, o próximo símbolo da entrada é `*`. O não terminal $T'$ encontra-se então no topo da derivação e, consultando a tabela preditiva, utiliza-se a produção:
+
+$$
+T'\rightarrow *FT'.
+$$
+
+O símbolo `*` é reconhecido e, em seguida, $F$ é utilizado para reconhecer o próximo operando. Como o próximo símbolo é $a$, aplica-se:
+
+$$
+F\rightarrow a.
+$$
+
+Depois do reconhecimento do último $a$, o próximo símbolo é o marcador de fim de sentença $\#$. Nesse caso, tanto $T'$ quanto $E'$ podem ser substituídos por $\lambda$, utilizando as produções:
+
+$$
+T'\rightarrow\lambda
+$$
+
+e
+
+$$
+E'\rightarrow\lambda.
+$$
+
+A derivação é concluída quando todos os símbolos não terminais são eliminados e toda a entrada é reconhecida. Assim, obtém-se:
+
+$$
+\boxed{E\Rightarrow^*(a+a)*a}
+$$
+
+O exemplo mostra como a tabela preditiva LL(1) permite determinar, de forma determinística, a produção a ser utilizada em cada etapa da análise. A decisão depende apenas do **não terminal no topo da pilha** e do **próximo símbolo da entrada**, isto é, de um único símbolo de antecipação (*lookahead*).
 
 A seguinte definição permite identificar as gramáticas LL(1):
 
@@ -1151,44 +1299,117 @@ Uma gramática G não recursiva à esquerda é LL(1)se e somente se, sempre que 
 3.  se $\beta \overset{*}{\Rightarrow} \lambda$, então a interseção de $FIRST(\alpha)$ e $FOLLOW(A)$ é vazia;
 :::
 
-### Análise LR
+### Análise sintática LR
 
-Os analisadores ascendentes (*bottom-up*) podem ser construídos com uma classe de gramática chamada LR(1). A letra "L" se refere a forma como é lida a cadeia de entrada na análise, nesse caso da direita para esquerda (*Left-to-right*). A letra "R" do nome se refere a forma como é obtida a sequência de derivação para obtenção da sentença avaliada, nesse caso derivação mais à direita (*rigthmost*). O número "1" se refere ao número de símbolos a frente deve-se olhar para decidir que regra da gramática deve ser utilizada.
+Os analisadores sintáticos ascendentes, também denominados analisadores *bottom-up*, realizam a construção da árvore sintática partindo dos símbolos da cadeia de entrada e progredindo em direção ao símbolo inicial da gramática. Enquanto os analisadores descendentes procuram construir a sentença a partir do símbolo inicial, os analisadores ascendentes realizam o processo inverso: começam pela sentença e procuram reconstruir, por meio de reduções, a derivação que levou à sua geração.
 
-O funcionamento de um algoritmo de análise sintática ascendente pode ser descrito, informalmente da seguinte maneira:
+Uma importante classe de analisadores ascendentes é formada pelos analisadores **LR**. A denominação LR possui um significado específico. A letra **L** (*Left-to-right*) indica que a cadeia de entrada é examinada da **esquerda para a direita**. Portanto, diferentemente do que poderia sugerir a expressão "análise ascendente", a entrada não é percorrida da direita para a esquerda.
 
-1.  $\alpha$ = cadeia dada
+A letra **R** (*Rightmost*) está relacionada à derivação mais à direita. Mais precisamente, um analisador LR reconstrói, em ordem inversa, uma **derivação mais à direita** da sentença. Assim, enquanto uma derivação convencional parte do símbolo inicial e substitui sucessivamente o não terminal mais à direita, o analisador LR parte da sentença e realiza reduções que desfazem essas substituições.
 
-2.  Decompor $\alpha = \beta X_1X_2...X_n \gamma$ tal que exista uma regra de produção $X \rightarrow X_1X_2...X_n$. Adotar a cadeia $\alpha = \beta X \gamma$, associando-se uma árvore onde $X$ é a raiz e $X_1X_2...X_n$ são as subárvores da raiz $X$. (Este processo inverso da derivação é denominado REDUÇÃO).
+O número associado ao analisador, como em **LR(1)**, indica a quantidade de símbolos de antecipação (*lookahead*) utilizados para tomar as decisões de análise. No caso do LR(1), cada decisão é realizada considerando o próximo símbolo da cadeia de entrada. Existem diferentes famílias de analisadores LR, como LR(0), SLR(1), LALR(1) e LR(1), que diferem principalmente na forma como os estados e as informações de antecipação são construídos e utilizados.
 
-3.  O passo 2 é repetido até que o valor de $\alpha$ seja reduzido para o símbolo inicial da gramática.
+#### A ideia da análise ascendente
 
-Na descrição genérica do algoritmo de análise ascendente usa-se a intuição para decidir que regra de produção utilizar para redução. Em algumas situações temos mais de uma redução possível. Para automatizar o processo de análise sintática existem alguns algoritmos que utilizam uma tabela (matriz) representando a gramática para decidir de forma automática as reduções. A idéia básica deste método é que para cada símbolo da cadeia de entrada é feita uma consulta na tabela. O valor obtido da tabela (um estado) é empilhado. Em cada passo, o último estado empilhado é utilizado para decidir sobre uma eventual redução. O processo continua até que seja encontrada uma situação de erro, ou então, até que a cadeia de entrada seja reconhecida.
+A ideia fundamental de uma análise ascendente pode ser compreendida considerando uma sentença $\alpha$ pertencente à linguagem gerada por uma gramática. O objetivo do analisador é reduzir progressivamente essa sentença até obter o símbolo inicial da gramática.
 
-A tabela de análise é uma matriz retangular cujas linhas são indexadas pelos estados, e as colunas pelos símbolos do vocabulário da gramática (terminais e não-terminais). Os elementos da matriz indicam as ações que podem ser tomadas pelo algoritmo que podem ser:
+Considere uma sentença representada pela cadeia:
 
--   Empilhar o estado $e_i$
+$$
+\alpha = \beta X_1X_2\ldots X_n\gamma
+$$
 
--   Reduzir usando a j-ésima regra de produção.
+e suponha que exista uma produção da gramática da forma:
 
--   Aceitar
+$$
+X\rightarrow X_1X_2\ldots X_n.
+$$
 
--   Rejeitar
+Se a sequência $X_1X_2\ldots X_n$ corresponde ao lado direito de uma produção e representa uma parte da derivação que pode ser substituída por $X$, o analisador pode realizar a redução:
 
-Consideremos a gramática abaixo cujas produções foram numeradas para fins de referência:
+$$
+\beta X_1X_2\ldots X_n\gamma
+\Rightarrow
+\beta X\gamma.
+$$
 
-::: center
-$\begin{array}{rrcl}
-(1) & E & \rightarrow & +EE \\ 
-(2) & E & \rightarrow & *EE \\ 
-(3) & E & \rightarrow & a \\ 
-(4) & E & \rightarrow & b \\ 
-\end{array}$
+Esse processo corresponde à operação inversa de uma etapa de derivação. Na derivação, o não terminal $X$ seria substituído por $X_1X_2\ldots X_n$:
+
+$$
+X\Rightarrow X_1X_2\ldots X_n.
+$$
+
+Na análise ascendente, realiza-se justamente o caminho inverso:
+
+$$
+X_1X_2\ldots X_n\Rightarrow X.
+$$
+
+Essa operação é denominada **redução**. Durante a redução, a sequência de símbolos $X_1X_2\ldots X_n$ é reconhecida como uma instância do lado direito de uma produção e é substituída pelo seu lado esquerdo, o não terminal $X$.
+
+A operação de redução pode também ser interpretada graficamente como a construção de uma parte da árvore sintática. Os símbolos $X_1,X_2,\ldots,X_n$ correspondem aos filhos do nó $X$. Ao realizar a redução, esses símbolos são agrupados sob um novo nó cuja raiz é $X$.
+
+O processo de análise ascendente continua realizando operações desse tipo até que toda a sentença tenha sido reduzida ao símbolo inicial da gramática. Quando isso ocorre, significa que a cadeia de entrada pode ser derivada pela gramática e, portanto, pertence à linguagem gerada por ela.
+
+#### O problema da escolha da redução
+
+Na descrição genérica da análise ascendente, pode parecer simples identificar uma sequência de símbolos que corresponde ao lado direito de uma produção e substituí-la pelo respectivo não terminal. Entretanto, durante uma análise real, podem existir várias possibilidades de redução.
+
+Considere, por exemplo, uma situação em que diferentes sequências de símbolos presentes na pilha correspondam ao lado direito de diferentes produções. O analisador precisa determinar qual delas deve ser reduzida e, em determinadas situações, pode ser necessário decidir também se deve realizar uma redução ou continuar lendo símbolos da entrada.
+
+Essa decisão não pode ser feita simplesmente procurando uma produção que corresponda aos símbolos presentes na pilha. É necessário considerar o **contexto da análise** e o próximo símbolo da entrada. Os analisadores LR automatizam esse processo utilizando uma estrutura de estados e uma tabela de análise.
+
+A tabela permite determinar, para cada estado do analisador e para cada símbolo relevante da gramática, qual ação deve ser executada. Dessa maneira, o processo de análise deixa de depender de decisões intuitivas e passa a ser conduzido de forma determinística por meio de um conjunto finito de estados e ações.
+
+#### Pilha e tabela de análise
+
+Durante a análise LR, o analisador mantém uma **pilha** que representa o estado atual da análise. Os estados são utilizados para registrar informações sobre os símbolos que já foram reconhecidos e sobre as possíveis continuações da derivação.
+
+A cada etapa, o analisador considera o estado que se encontra no topo da pilha e o próximo símbolo da cadeia de entrada. A partir dessa combinação, uma consulta é realizada na tabela de análise. O conteúdo da célula determina a ação que deve ser executada.
+
+De maneira simplificada, o funcionamento pode ser descrito da seguinte forma:
+
+1. O analisador inicia no estado inicial e coloca esse estado na pilha.
+
+2. O próximo símbolo da cadeia de entrada é utilizado juntamente com o estado no topo da pilha para consultar a tabela de análise.
+
+3. A tabela determina a ação que deve ser realizada.
+
+4. Se a ação for um **deslocamento**, um novo estado é colocado na pilha e o símbolo correspondente é consumido da entrada.
+
+5. Se a ação for uma **redução**, os estados correspondentes ao lado direito de uma produção são retirados da pilha e o não terminal do lado esquerdo é considerado para determinar o próximo estado.
+
+6. O processo continua até que a entrada seja aceita ou seja identificada uma situação de erro.
+
+A tabela de análise pode ser entendida como uma matriz retangular cujas linhas correspondem aos estados do analisador e cujas colunas correspondem aos símbolos da gramática. Dependendo da organização adotada, as colunas podem ser divididas em símbolos terminais, associados às ações de análise, e símbolos não terminais, associados às transições entre estados.
+
+As principais ações encontradas em uma tabela de análise LR são:
+
+- **Deslocamento (*shift*)**: o próximo símbolo da entrada é reconhecido e um novo estado é colocado na pilha.
+- **Redução (*reduce*)**: uma sequência de símbolos já reconhecida é substituída pelo não terminal correspondente ao lado esquerdo de uma produção.
+- **Aceitação (*accept*)**: indica que toda a entrada foi reconhecida e que a sentença pertence à linguagem da gramática.
+- **Erro (*error*)**: indica que não existe uma ação válida para a combinação entre o estado atual e o símbolo de entrada.
+
+#### Exemplo de uma tabela de análise LR
+
+Considere a seguinte gramática, cujas produções foram numeradas para facilitar sua identificação durante o processo de análise:
+
+::: {.center}
+$$
+\begin{array}{rrcl}
+(1) & E & \rightarrow & +EE\\
+(2) & E & \rightarrow & *EE\\
+(3) & E & \rightarrow & a\\
+(4) & E & \rightarrow & b
+\end{array}
+$$
 :::
 
-A tabela de análise LR(k) para esta gramática é:
+Essa gramática gera expressões em uma notação prefixada. As produções (3) e (4) permitem gerar os operandos $a$ e $b$, enquanto as produções (1) e (2) permitem construir expressões utilizando os operadores $+$ e $*$.
 
-| Tabela | $E$ | $+$ | $*$ | $a$ | $b$ | $\#$ |
+Para essa gramática, considere a seguinte tabela simplificada de análise LR:
+
+| Estado | $E$ | $+$ | $*$ | $a$ | $b$ | $\#$ |
 |:------:|:---:|:---:|:---:|:---:|:---:|:---:|
 | $e_0$ | $e_1$ | $e_2$ | $e_3$ | $e_4$ | $e_5$ | |
 | $e_1$ | | | | | | $a$ |
@@ -1203,566 +1424,964 @@ A tabela de análise LR(k) para esta gramática é:
 
 : Tabela de análise LR {#tbl-analise-lr}
 
-O símbolo \# é utilizado para marcar o fim da sentença. As ações indicadas em cada célula da tabela são:
+O símbolo $\#$ é utilizado como **marcador de fim da entrada**. Ele não pertence aos símbolos da linguagem; sua função é indicar ao analisador que todos os símbolos da sentença já foram fornecidos. Assim, quando o analisador encontra $\#$ em uma situação apropriada, pode determinar que a análise chegou ao final.
 
--   $e_i$ = significa empilhar o estado $e_i$.
+Na tabela apresentada, as entradas $e_i$ representam estados do analisador. As entradas $r_j$ representam operações de redução utilizando a produção de número $j$. A entrada $a$ representa a ação de aceitação. Uma célula vazia representa uma situação para a qual não existe uma ação válida e, portanto, corresponde a uma situação de erro.
 
--   $r_j$ = significa reduzir usando a j-ésima regra de produção.
+Assim, as ações da tabela podem ser interpretadas da seguinte maneira:
 
--   $a$ = aceitar.
+- $e_i$: deslocar para o estado $e_i$ (*shift*);
+- $r_j$: realizar uma redução utilizando a produção $j$;
+- $a$: aceitar a cadeia de entrada;
+- célula vazia: erro de análise.
 
--   $branco$ = rejeitar.
+#### Funcionamento do analisador
 
-Considerando essa tabela, o algoritmo que reconhece automaticamente as construções válidas para a gramática pode ser resumido da seguinte forma:
+Considerando a tabela anterior, o algoritmo de análise pode ser descrito como um processo iterativo no qual o analisador mantém três informações principais: a **pilha de estados**, a **cadeia de entrada** e a **tabela de análise**.
 
-```text
-Inicio
-  P[0] $\leftarrow$ $e_o$ 
-  i $\leftarrow$ 0
-  termino $\leftarrow$ falso
-  reduzido $\leftarrow$ falso
-  Simbolo $\leftarrow$ PROXIMO ( )
-  Repita
-    Se reduzido
-        Entao s $\leftarrow$ SimboloReduzido
-        Senao s $\leftarrow$ Simbolo
-    Fim-se
-    Caso Tabela[P[i],s] de
-        Empilha ($e_j$):
-              i $\leftarrow$ i + 1
-              P[i] $\leftarrow$ $e_j$
-              Se reduzido
-                   Entao reduzido $\leftarrow$ falso
-                   Senao Simbolo $\leftarrow$ PROXIMO ( )
-        Reduzir ($A \rightarrow \alpha$):
-               i $\leftarrow$ i $–$ | $\alpha$ |
-               Reduzido $\leftarrow$ verdadeiro
-               SimboloReduzido $\leftarrow$ A
-        Aceitar: termino $\leftarrow$ verdadeiro
-        Rejeitar: ERRO ( )
-    Fim-caso
-  Ate termino
-Fim
-```
+Inicialmente, a pilha contém apenas o estado inicial $e_0$. O analisador consulta o primeiro símbolo da entrada e utiliza a combinação entre esse símbolo e o estado no topo da pilha para determinar a próxima ação.
 
-As estruturas e variáveis desse algoritmo são:
+Quando a tabela determina um deslocamento, o analisador reconhece o símbolo atual da entrada e avança para o estado indicado pela tabela. Esse novo estado é colocado na pilha. O símbolo da entrada que foi consumido deixa de ser considerado como o próximo símbolo de entrada.
 
--   [P]{.underline}: é a pilha de estados
+Quando a tabela determina uma redução $r_j$, o analisador identifica que uma sequência de símbolos já reconhecida corresponde ao lado direito da produção de número $j$. Essa sequência é retirada da pilha e substituída conceitualmente pelo não terminal que aparece no lado esquerdo da produção. Em seguida, o analisador consulta a parte correspondente aos não terminais da tabela para determinar o próximo estado.
 
--   [i]{.underline}: é o topo da pilha de estados
+A operação de redução é justamente o mecanismo que permite ao analisador construir a árvore sintática **de baixo para cima**. Cada redução reconhece uma subestrutura da árvore e a transforma em um único não terminal. Reduções sucessivas fazem com que estruturas menores sejam combinadas em estruturas cada vez maiores, até que toda a sentença seja representada pelo símbolo inicial $E$.
 
--   [termino]{.underline}: condição de parada do algoritmo. Determina a aceitação da sentença que está sendo avaliada.
+O analisador continua alternando entre operações de deslocamento e redução. O deslocamento permite avançar sobre a cadeia de entrada, enquanto a redução permite reconhecer estruturas sintáticas já completas. Quando a entrada é totalmente consumida e a tabela determina a ação de aceitação, a sentença é reconhecida pela gramática.
 
--   [reduzido]{.underline}: variável booleana que indica se houve redução no passo anterior do algoritmo
+Esse mecanismo pode ser resumido pela sequência:
 
--   [Simbolo]{.underline}: é o último símbolo lido na sentença de entrada.
+$$
+\boxed{
+\text{ler entrada}
+\;\longrightarrow\;
+\text{consultar tabela}
+\;\longrightarrow\;
+\text{shift ou reduce}
+\;\longrightarrow\;
+\text{atualizar pilha}
+\;\longrightarrow\;
+\text{repetir}
+}
+$$
 
--   [PROXIMO ( )]{.underline}: função que retorna o próximo símbolo da sentença de entrada (corresponde a uma versão primitiva do analisador léxico, i. e., função yylex() gerada pela ferramenta FLEX).
+A principal vantagem da análise LR está justamente na capacidade de tomar essas decisões de forma sistemática e determinística. Em vez de tentar construir explicitamente todas as possíveis derivações da gramática, o analisador utiliza os estados e a tabela para determinar quais estruturas já podem ser reduzidas e qual deve ser o próximo passo da análise.
 
--   [Tabela]{.underline}: é a tabela de análise LR, em questão.
-
--   [ERRO ( )]{.underline}: função de tratamento de erro.
-
-A Tabela [1.2](#tab:algoritmoLR){reference-type="ref" reference="tab:algoritmoLR"} apresenta o acompanhamento dos passos do algoritmo de análise LR(k) usando a tabela para a sentença [+\*a+baa#]{.underline}
-
-Algumas observações:
-
--   Conforme pode ser observado no algoritmo, o próximo símbolo a ser consultado pode ser o próximo símbolo da cadeia de entrada ou o não-terminal da última redução (se houve redução no passo anterior).
-
--   A fim de tornar o processo de análise mais claro, os estados empilhados são indicados por $s_i$, onde $s$ representa o símbolo que determinou a inclusão do estado na pilha e $i$ representa o estado propriamente dito.
-
--   Na redução são removidos k estados da pilha, onde k representa o número de símbolos no lado direito da regra de produção considerada.
-
-| **Passo** | **Pilha** | **Símbolo Reduzido** | **Cadeia de Entrada** | **Ação** |
-|:---:|:---|:---:|:---|:---:|
-| 0 | $e_0$ | | $\underline{+}*a+baa\#$ | e2 |
-| 1 | $e_0 +_2$ | | $\underline{*}a+baa\#$ | e3 |
-| 2 | $e_0 +_2 *_3$ | | $\underline{a}+baa\#$ | e4 |
-| 3 | $e_0 +_2 *_3 a_4$ | | $\underline{+}baa\#$ | r3 |
-| 4 | $e_0 +_2 *_3$ | $\underline{E}$ | $+baa\#$ | e7 |
-| 5 | $e_0 +_2 *_3 E_7$ | | $\underline{+}baa\#$ | e2 |
-| 6 | $e_0 +_2 *_3 E_7 +_2$ | | $\underline{b}aa\#$ | e5 |
-| 7 | $e_0 +_2 *_3 E_7 +_2 b_5$ | | $\underline{a}a\#$ | r4 |
-| 8 | $e_0 +_2 *_3 E_7 +_2$ | $\underline{E}$ | $aa\#$ | e6 |
-| 9 | $e_0 +_2 *_3 E_7 +_2 E_6$ | | $\underline{a}a\#$ | e4 |
-| 10 | $e_0 +_2 *_3 E_7 +_2 E_6 a_4$ | | $\underline{a}\#$ | r3 |
-| 11 | $e_0 +_2 *_3 E_7 +_2 E_6$ | $\underline{E}$ | $a\#$ | e8 |
-| 12 | $e_0 +_2 *_3 E_7 +_2 E_6 E_8$ | | $\underline{a}\#$ | r1 |
-| 13 | $e_0 +_2 *_3 E_7$ | $\underline{E}$ | $a\#$ | e9 |
-| 14 | $e_0 +_2 *_3 E_7 E_9$ | | $\underline{a}\#$ | r2 |
-| 15 | $e_0 +_2$ | $\underline{E}$ | $a\#$ | e6 |
-| 16 | $e_0 +_2 E_6$ | | $\underline{a}\#$ | e4 |
-| 17 | $e_0 +_2 E_6 a_4$ | | $\underline{\#}$ | r3 |
-| 18 | $e_0 +_2 E_6$ | $\underline{E}$ | $\#$ | e8 |
-| 19 | $e_0 +_2 E_6 E_8$ | | $\underline{\#}$ | r1 |
-| 20 | $e_0$ | $\underline{E}$ | $\#$ | e1 |
-| 21 | $e_0 E_1$ | | $\underline{\#}$ | **ACEITAR** |
-
-: Simulação da análise sintática LR {#tbl-simulacao-lr}
-
-Exercício: Fazer o acompanhamento do algoritmo de análise LR(k) usando a gramática e a tabela anterior, para a cadeia de entrada ++\*abaa#.
-
-#### Implementação do Algoritmo LR
-
-Na listagem de código seguinte é apresentada uma implementação para o algoritmo LR. Na implementação em questão a cadeia de entrada é restrita a cada símbolo ocupando uma única posição de caracter no string *sentenca*. O código apresenta várias tabelas para diversas gramáticas distintas. Ao final da execução, se a sentença verificada for aceita, o programa apresenta a sequência de derivações mais à direita que produz a sentença.
+Ao final, existem três possibilidades: a entrada pode ser **aceita**, quando o analisador consegue reduzi-la de acordo com as produções da gramática e alcança a configuração de aceitação; pode ocorrer um **erro sintático**, quando nenhuma ação válida é encontrada para o estado atual e o símbolo de entrada; ou o processo pode continuar enquanto ainda houver símbolos da entrada a serem analisados.
 
 ```c
-    /*+--------------------------------------------------------------+
-      | Implementacao do algoritmo de analise sintatica LR(K).       |
-      +--------------------------------------------------------------+*/
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-
-    /*+--------------------------------------------------------------+
-      | Vocabulario, Regras de Producao de uma gramatica             |
-      | e a Tabela de Analise LR(k) para a esta gramatic             |
-      +--------------------------------------------------------------+*/
-
-    #define NSIMBOLOS 7
-    #define NREGRAS   4
-    #define NESTADOS  9
-    char alfabeto[NSIMBOLOS+1] = "SLa[];#";
-    char *regras[NREGRAS] =
-          { "S::=a",
-            "S::=[L]",
-            "L::=S",
-            "L::=L;S"};
-
-    struct {
-      char acao;
-      int indice;
-    } TabSint[NESTADOS][NSIMBOLOS] =
-       { 'e',1, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
-         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
-         ' ',0, ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
-         'e',4, 'e',5, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
-         ' ',0, ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
-         ' ',0, ' ',0, ' ',0, ' ',0, 'e',6, 'e',7, ' ',0,
-         ' ',0, ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2,
-         'e',8, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
-         ' ',0, ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
-       };
-
-    /*
-    #define NSIMBOLOS 6
-    #define NREGRAS   4
-    #define NESTADOS  10
-    char alfabeto[NSIMBOLOS+1] = "E+*ab#";
-    char *regras[NREGRAS] =
-          { "E::=+EE",
-            "E::=*EE",
-            "E::=a",
-            "E::=b"};
-
-    struct {
-      char acao;
-      int indice;
-    } TabSint[NESTADOS][NSIMBOLOS] =
-       { 'e',1, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
-         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
-         'e',6, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
-         'e',7, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
-         ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
-         ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
-         'e',8, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
-         'e',9, 'e',2, 'e',3, 'e',4, 'e',5, ' ',0,
-         ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
-         ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2
-       };
-
-    #define NSIMBOLOS 5
-    #define NREGRAS   2
-    #define NESTADOS  6
-    char alfabeto[NSIMBOLOS+1] = "Sacb#";
-    char *regras[NREGRAS] =
-          { "S::=aSc",
-            "S::=b"};
-
-    struct {
-      char acao;
-      int indice;
-    } TabSint[NESTADOS][NSIMBOLOS] =
-       { 'e',1, 'e',2, ' ',0, 'e',3, ' ',0,
-         ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
-         'e',4, 'e',2, ' ',0, 'e',3, ' ',0,
-         ' ',0, 'r',2, 'r',2, 'r',2, 'r',2,
-         ' ',0, ' ',0, 'e',5, ' ',0, ' ',0,
-         ' ',0, 'r',1, 'r',1, 'r',1, 'r',1,
-       };
-
-    #define NSIMBOLOS 7
-    #define NREGRAS   4
-    #define NESTADOS  9
-    char alfabeto[NSIMBOLOS+1] = "SL(),a#";
-    char *regras[NREGRAS] =
-          { "S::=(L)",
-            "S::=a",
-            "L::=L,S",
-            "L::=S"};
-
-    struct {
-      char acao;
-      int indice;
-    } TabSint[NESTADOS][NSIMBOLOS] =
-       { 'e',1, ' ',0, 'e',2, ' ',0, ' ',0, 'e',3, ' ',0,
-         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
-         'e',4, 'e',5, 'e',2, ' ',0, ' ',0, 'e',3, ' ',0,
-         ' ',0, ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2,
-         ' ',0, ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
-         ' ',0, ' ',0, ' ',0, 'e',6, 'e',7, ' ',0, ' ',0,
-         ' ',0, ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
-         'e',8, ' ',0, 'e',2, ' ',0, ' ',0, 'e',3, ' ',0,
-         ' ',0, ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
-       };
-
-
-    #define NSIMBOLOS 7
-    #define NREGRAS   4
-    #define NESTADOS  9
-    char alfabeto[NSIMBOLOS+1] = "SLa[];#";
-    char *regras[NREGRAS] =
-          { "S::=a",
-            "S::=[L]",
-            "L::=S",
-            "L::=L;S"};
-
-    struct {
-      char acao;
-      int indice;
-    } TabSint[NESTADOS][NSIMBOLOS] =
-       { 'e',1, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
-         ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, ' ',0, 'a',0,
-         ' ',0, ' ',0, 'r',1, 'r',1, 'r',1, 'r',1, 'r',1,
-         'e',4, 'e',5, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
-         ' ',0, ' ',0, 'r',3, 'r',3, 'r',3, 'r',3, 'r',3,
-         ' ',0, ' ',0, ' ',0, ' ',0, 'e',6, 'e',7, ' ',0,
-         ' ',0, ' ',0, 'r',2, 'r',2, 'r',2, 'r',2, 'r',2,
-         'e',8, ' ',0, 'e',2, 'e',3, ' ',0, ' ',0, ' ',0,
-         ' ',0, ' ',0, 'r',4, 'r',4, 'r',4, 'r',4, 'r',4,
-       };
-    */
-
-    /*+--------------------------------------------------------------+
-      | Pilha sintatica utilizada pelo algoritmo de analise LR(K     |
-      +--------------------------------------------------------------+*/
-    struct {
-      char elem;
-      int ind;
-    } P[20];
-
-    void traco (int);
-    void strins (char *, int, char *, int);
-
-    /*+---------------------------------------------------------------+
-      | Programa principal que implementa o algoritmo de analise LR(K)|
-      | Este programa LE uma sentenca e verifica se esta sentenca eh  |
-      | valida ou para a gramatica representada na tabela de analise. |
-      | Durante o processo de analise o programa apresenta, de forma  |
-      | tabular, os valores das estruturas a cada passo.              |
-      +---------------------------------------------------------------+*/
-    int main()
+void analiseLR()
+{
+    Estado P[MAX_PILHA];
+    int i = 0;
+    bool termino = false;
+    bool reduzido = false;
+    t_Simbolo Simbolo;
+    t_Simbolo SimboloReduzido;
+    t_Simbolo s;
+    P[0] = e0;
+    Simbolo = PROXIMO();
+    while (!termino)
     {
-      int i, j, k, termino, reduzido, indice, ind, tam, passo,
-          nreducao, indreduz = -1, reducoes[50];
-      char sentenca[40], pilha[60], cadeia[40], str[40];
-      char s, simboloreduzido = ' ', acao;
-
-      P[0].elem = 'e';
-      P[0].ind = 0;
-      i = termino = reduzido = 0;
-
-      printf ("\nDigite a sentenca: ");
-      gets (sentenca);
-
-      strcat (sentenca, "#");
-      indice = 0;
-      passo = 0;
-      printf ("PASSO %-30s S.R. %-15s  %s\n", "PILHA", "SENTENCA", "ACAO");
-      traco (79);
-      while (!termino) {
+        /*
+         * Determina o símbolo utilizado
+         * na consulta à tabela.
+         */
         if (reduzido)
-           s = simboloreduzido;
+            s = SimboloReduzido;
         else
-           s = sentenca[indice];
-        for (j=0; alfabeto[j] != s && j <= strlen(alfabeto); j++);
-        if (alfabeto[j] != s) {
-           printf ("\nERRO: o simbolo <%c> nao e reconhecido nesta linguagem", s);
-           printf ("\n\nDigite '.' para terminar!");
-           while (getchar()!='.');
-           exit(10);
+            s = Simbolo;
+        /*
+         * Consulta a tabela LR utilizando
+         * o estado no topo da pilha e o símbolo s.
+         */
+        Acao acao = Tabela[P[i]][s];
+        switch (acao.tipo)
+        {
+            /*
+             * Deslocamento (shift).
+             */
+            case EMPILHA:
+                i = i + 1;
+                P[i] = acao.estado;
+                if (reduzido)
+                    reduzido = false;
+                else
+                    Simbolo = PROXIMO();
+                break;
+            /*
+             * Redução (reduce).
+             * A produção utilizada é:
+             *
+             *     A -> alpha
+             */
+            case REDUZIR:
+                i = i - acao.tamanhoDireito;
+                reduzido = true;
+                SimboloReduzido = acao.naoTerminal;
+                break;
+            /*
+             * Sentença reconhecida.
+             */
+            case ACEITAR:
+                termino = true;
+                break;
+            /*
+             * Erro sintático.
+             */
+            case REJEITAR:
+                ERRO();
+                return;
         }
-        acao = TabSint[P[i].ind][j].acao;
-        ind = TabSint[P[i].ind][j].indice;
-        for (j = 0, k = indice; sentenca[k]; j++, k++)
-           cadeia [j] = sentenca[k];
-        cadeia [j] = '\0';
-        strcpy (pilha, "");
-        for (k = 0; k <= i; k++) {
-           sprintf (str,"%c%d", P[k].elem, P[k].ind);
-           strcat (pilha, str);
-        }
-        printf ("%3d   %-30s %c    %-15s  %c%d\n",
-                 passo++, pilha, simboloreduzido, cadeia, acao, ind);
-        switch (acao) {
-           case 'e':  i++;
-                      P[i].elem = s;
-                      P[i].ind = ind;
-                      if (reduzido) {
-                          reduzido = 0;
-                          simboloreduzido = ' ';
-                      }
-                      else
-                         indice++;
-                      break;
-           case 'r':  tam = strlen (regras[ind-1]);
-                      i = i - tam + 4;
-                      reduzido = 1;
-                      reducoes[++indreduz] = ind-1;
-                      simboloreduzido = regras[ind-1][0];
-                      break;
-           case 'a':  termino = 1;
-                      printf ("\nA sentenca <%s> esta correta", sentenca);
-                      break;
-           case ' ':  printf ("\nA sentenca <%s> NAO e reconhecida", sentenca);
-                      printf ("\n\nDigite '.' para terminar!");
-                      while (getchar()!='.');
-                      exit (1);
-        }
-        /*getchar();*/
-      }
-      /*- Mostra a serie de derivacoes mais a direita para produzir a sentenca -*/
-      printf ("\n\nGramatica:");
-      printf ("\n==========\n");
-      for (i = 0; i < NREGRAS; i++)
-         printf ("(%d).  %s\n", i+1, regras[i]);
-      printf ("\n\nSequencia de Derivacoes mais a direita:");
-      printf ("\n=======================================\n\n");
-      sentenca[0] = regras[0][0];
-      sentenca[1] = '\0';
-      printf ("%s ", sentenca);
-      while (indreduz >= 0)
-      {
-        i = strlen (sentenca) - 1;
-        while (sentenca[i] < 'A' || sentenca[i] > 'Z') i--;
-        nreducao = reducoes[indreduz--];
-        strins (regras[nreducao], 4, sentenca, i);
-        printf ("=%d=> %s ", nreducao+1, sentenca);
-      }
-      printf ("\n\nDigite '.' para terminar!");
-      while (getchar()!='.');
     }
-
-    /*+----------------------------------------------------------------+
-      | Desenha uma linha de hifens na tela.                           |
-      +----------------------------------------------------------------+*/
-    void traco (int i) {
-      int k;
-      for (k = 0; k < i; k++)
-         printf ("-");
-      printf ("\n");
-    }
-
-    /*+----------------------------------------------------------------+
-      |Insere substring da pos1 ate o final de s1 na pos2 do string s2 |
-      +----------------------------------------------------------------+*/
-    void strins (char *s1, int pos1, char *s2, int pos2) {
-      int i, tam_s1, tam_s2;
-      for (tam_s1 = 0; s1[tam_s1]; tam_s1++);
-      for (tam_s2 = 0; s2[tam_s2]; tam_s2++);
-      for (i = tam_s2; i >= pos2; i--)
-         s2[i+tam_s1-pos1-1] = s2[i];
-      for (i = pos1; i < tam_s1; i++)
-         s2[i+pos2-pos1] = s1[i];
-      s2[tam_s1+tam_s2-pos1]='\0';
-    }
+}
 ```
 
-O resultado da execução desse programa, considerando a entrada da sentença \[a;\[a;a\]\] é:
+#### Estruturas e variáveis do algoritmo
 
-```text
-    PASSO PILHA                          S.R. SENTENCA         ACAO
-    ----------------------------------------------------------------------------
-      0   e0                                  [a;[a;a]]#       e3
-      1   e0[3                                a;[a;a]]#        e2
-      2   e0[3a2                              ;[a;a]]#         r1
-      3   e0[3                           S    ;[a;a]]#         e4
-      4   e0[3S4                              ;[a;a]]#         r3
-      5   e0[3                           L    ;[a;a]]#         e5
-      6   e0[3L5                              ;[a;a]]#         e7
-      7   e0[3L5;7                            [a;a]]#          e3
-      8   e0[3L5;7[3                          a;a]]#           e2
-      9   e0[3L5;7[3a2                        ;a]]#            r1
-     10   e0[3L5;7[3                     S    ;a]]#            e4
-     11   e0[3L5;7[3S4                        ;a]]#            r3
-     12   e0[3L5;7[3                     L    ;a]]#            e5
-     13   e0[3L5;7[3L5                        ;a]]#            e7
-     14   e0[3L5;7[3L5;7                      a]]#             e2
-     15   e0[3L5;7[3L5;7a2                    ]]#              r1
-     16   e0[3L5;7[3L5;7                 S    ]]#              e8
-     17   e0[3L5;7[3L5;7S8                    ]]#              r4
-     18   e0[3L5;7[3                     L    ]]#              e5
-     19   e0[3L5;7[3L5                        ]]#              e6
-     20   e0[3L5;7[3L5]6                      ]#               r2
-     21   e0[3L5;7                       S    ]#               e8
-     22   e0[3L5;7S8                          ]#               r4
-     23   e0[3                           L    ]#               e5
-     24   e0[3L5                              ]#               e6
-     25   e0[3L5]6                            #                r2
-     26   e0                             S    #                e1
-     27   e0S1                                #                a0
+O algoritmo de análise LR utiliza um conjunto de estruturas e variáveis para controlar o processo de reconhecimento da cadeia de entrada. A principal estrutura é a **pilha de estados**, representada por $P$. Essa pilha armazena os estados que representam a situação atual do analisador durante a leitura e redução da sentença. A cada operação de deslocamento, um novo estado é colocado na pilha; durante uma redução, os estados correspondentes aos símbolos reduzidos são removidos.
 
-    A sentenca <[a;[a;a]]#> esta correta
+A variável $i$ representa o **topo da pilha de estados**. Dessa forma, $P[i]$ corresponde ao estado que está atualmente no topo da pilha e que será utilizado, juntamente com o símbolo em análise, para realizar a consulta à tabela LR. O valor de $i$ é incrementado quando um novo estado é empilhado e decrementado quando uma redução remove estados da pilha.
 
-    Gramatica:
-    ==========
-    (1).  S::=a
-    (2).  S::=[L]
-    (3).  L::=S
-    (4).  L::=L;S
+A variável booleana `termino` determina a **condição de parada do algoritmo**. Inicialmente, essa variável recebe o valor `falso` e permanece assim enquanto a análise estiver em andamento. Quando a tabela determina a ação de aceitação, `termino` recebe o valor `verdadeiro`, fazendo com que o processo iterativo seja encerrado. Dessa maneira, o valor de `termino` indica que a sentença foi reconhecida com sucesso.
 
+A variável booleana `reduzido` indica se ocorreu uma **redução no passo anterior** do algoritmo. Essa informação é necessária porque, após uma redução, o analisador não deve imediatamente consumir um novo símbolo da entrada. Em vez disso, deve utilizar o não terminal produzido pela redução para consultar novamente a tabela de análise. Assim, essa variável permite distinguir uma consulta baseada em um símbolo da entrada de uma consulta baseada no não terminal produzido por uma redução.
 
-    Sequencia de Derivacoes mais a direita:
-    =======================================
+A variável `Simbolo` representa o **símbolo atualmente disponível na cadeia de entrada**. Esse símbolo é obtido inicialmente e, posteriormente, atualizado sempre que uma operação de deslocamento (*shift*) consome o símbolo corrente da entrada. Quando o analisador está em uma situação de redução, entretanto, o símbolo utilizado na consulta à tabela pode ser o não terminal produzido pela redução anterior, armazenado na variável `SimboloReduzido`.
 
-    S =2=> [L] =4=> [L;S] =2=> [L;[L]] =4=> [L;[L;S]] =1=> [L;[L;a]] =3=> [L;[S;a]] =1=> [L;[a;a]] =3=> [S;[a;a]] =1=> [a;[a;a]] 
-```
+A função `PROXIMO()` é responsável por retornar o **próximo símbolo da sentença de entrada**. Conceitualmente, essa função representa uma versão simplificada do analisador léxico, cuja função é fornecer ao analisador sintático os símbolos ou tokens da cadeia de entrada. Em uma implementação de compiladores, essa função pode ser associada ao mecanismo de análise léxica gerado por ferramentas como o **FLEX**, por meio da função `yylex()`. Assim, enquanto `PROXIMO()` é utilizada no algoritmo didático para obter o próximo símbolo, uma implementação real normalmente recebe do analisador léxico o próximo token identificado.
+
+A estrutura `Tabela` representa a **tabela de análise LR** utilizada pelo algoritmo. Suas linhas correspondem aos estados do analisador e suas colunas aos símbolos que podem ser considerados durante a análise. A consulta à tabela é realizada utilizando o estado que está no topo da pilha e o símbolo corrente. O conteúdo da célula determina a ação a ser executada, que pode ser um deslocamento, uma redução, a aceitação da sentença ou uma situação de erro.
+
+Finalmente, a função `ERRO()` representa o **mecanismo de tratamento de erros sintáticos**. Ela é acionada quando a tabela não apresenta uma ação válida para a combinação entre o estado atual e o símbolo analisado. Em uma implementação completa de um compilador, o tratamento de erros pode envolver a emissão de uma mensagem contendo a posição do erro, o token encontrado e outras informações úteis para auxiliar na identificação e correção do programa-fonte.
+
+A **Tabela @tbl-algoritmoLR** apresenta o acompanhamento passo a passo da execução do algoritmo de análise LR utilizando a tabela de análise para reconhecer a sentença:
+
+$$
++\!*a+baa\#
+$$
+
+O símbolo $\#$ representa o **marcador de fim da entrada**. Ele é acrescentado à cadeia para indicar ao analisador que não existem mais símbolos a serem processados. Dessa forma, a presença de $\#$ permite distinguir o final efetivo da sentença de uma situação em que ainda existem símbolos a serem analisados.
+
+| **Passo** | **Pilha** | **Símbolo Reduzido** | **Cadeia de Entrada** | **Ação** |
+|:---------:|:---------|:---------------------|:----------------------|:--------:|
+| 0  | $e_0$ | | $\underline{+}*a+baa\#$ | $e_2$ |
+| 1  | $e_0 +_2$ | | $\underline{*}a+baa\#$ | $e_3$ |
+| 2  | $e_0 +_2 *_3$ | | $\underline{a}+baa\#$ | $e_4$ |
+| 3  | $e_0 +_2 *_3 a_4$ | | $\underline{+}baa\#$ | $r_3$ |
+| 4  | $e_0 +_2 *_3$ | $\underline{E}$ | $+baa\#$ | $e_7$ |
+| 5  | $e_0 +_2 *_3 E_7$ | | $\underline{+}baa\#$ | $e_2$ |
+| 6  | $e_0 +_2 *_3 E_7 +_2$ | | $\underline{b}aa\#$ | $e_5$ |
+| 7  | $e_0 +_2 *_3 E_7 +_2 b_5$ | | $\underline{a}a\#$ | $r_4$ |
+| 8  | $e_0 +_2 *_3 E_7 +_2$ | $\underline{E}$ | $aa\#$ | $e_6$ |
+| 9  | $e_0 +_2 *_3 E_7 +_2 E_6$ | | $\underline{a}a\#$ | $e_4$ |
+| 10 | $e_0 +_2 *_3 E_7 +_2 E_6 a_4$ | | $\underline{a}\#$ | $r_3$ |
+| 11 | $e_0 +_2 *_3 E_7 +_2 E_6$ | $\underline{E}$ | $a\#$ | $e_8$ |
+| 12 | $e_0 +_2 *_3 E_7 +_2 E_6 E_8$ | | $\underline{a}\#$ | $r_1$ |
+| 13 | $e_0 +_2 *_3 E_7$ | $\underline{E}$ | $a\#$ | $e_9$ |
+| 14 | $e_0 +_2 *_3 E_7 E_9$ | | $\underline{a}\#$ | $r_2$ |
+| 15 | $e_0 +_2$ | $\underline{E}$ | $a\#$ | $e_6$ |
+| 16 | $e_0 +_2 E_6$ | | $\underline{a}\#$ | $e_4$ |
+| 17 | $e_0 +_2 E_6 a_4$ | | $\underline{\#}$ | $r_3$ |
+| 18 | $e_0 +_2 E_6$ | $\underline{E}$ | $\#$ | $e_8$ |
+| 19 | $e_0 +_2 E_6 E_8$ | | $\underline{\#}$ | $r_1$ |
+| 20 | $e_0$ | $\underline{E}$ | $\#$ | $e_1$ |
+| 21 | $e_0 E_1$ | | $\underline{\#}$ | **ACEITAR** |
+
+: Acompanhamento do algoritmo LR {#tbl-algoritmoLR}
+
+#### Observações sobre a execução do algoritmo
+
+Uma característica importante do algoritmo é que o **símbolo utilizado na consulta à tabela pode ter duas origens diferentes**. Normalmente, o analisador utiliza o próximo símbolo disponível na cadeia de entrada. Entretanto, quando uma redução é realizada, o próximo símbolo a ser considerado na consulta é o **não terminal produzido pela redução anterior**. Portanto, o algoritmo alterna entre símbolos provenientes da entrada e não terminais produzidos durante as reduções.
+
+Essa distinção explica a presença da variável `reduzido` no algoritmo. Quando não houve uma redução no passo anterior, a consulta é realizada utilizando o símbolo corrente da entrada. Quando houve uma redução, a consulta utiliza `SimboloReduzido`. Somente depois que a nova situação resultante da redução é processada é que o analisador volta a consumir símbolos da entrada.
+
+Para tornar o acompanhamento da execução mais claro, os estados empilhados na tabela de acompanhamento podem ser representados por uma notação da forma $s_i$. Nessa notação, $s$ identifica o **símbolo que determinou a inclusão do estado** na pilha, enquanto o índice $i$ representa o **estado propriamente dito**. Essa representação permite observar não apenas quais estados estão presentes na pilha, mas também qual símbolo ou não terminal levou o analisador a alcançar cada estado.
+
+Por exemplo, uma pilha representada como:
+
+$$
+e_0\quad a_4\quad b_5
+$$
+
+pode ser interpretada como uma sequência em que o estado $e_0$ é o estado inicial, enquanto os estados $e_4$ e $e_5$ foram alcançados a partir dos símbolos indicados. Essa notação é especialmente útil para acompanhar as operações de deslocamento e redução durante a execução manual do algoritmo.
+
+Outro aspecto fundamental está relacionado à quantidade de estados removidos durante uma **redução**. Considere uma produção:
+
+$$
+A\rightarrow X_1X_2\ldots X_k.
+$$
+
+Como o lado direito possui $k$ símbolos, a operação de redução deve remover da pilha os estados associados a esses $k$ símbolos. Portanto, o índice do topo da pilha é atualizado de acordo com:
+
+$$
+i\leftarrow i-k.
+$$
+
+Após essa remoção, o não terminal $A$ passa a representar a estrutura que foi reconhecida. O analisador então utiliza $A$ para consultar a tabela e determinar o próximo estado a ser empilhado.
+
+Assim, a operação de redução pode ser entendida como o processo inverso de uma etapa de derivação. Enquanto uma derivação substitui um não terminal por uma sequência de símbolos,
+
+$$
+A\Rightarrow X_1X_2\ldots X_k,
+$$
+
+a análise LR realiza o caminho inverso:
+
+$$
+X_1X_2\ldots X_k\Rightarrow A.
+$$
+
+Essa característica é responsável pela denominação **análise ascendente (*bottom-up*)**, pois a estrutura sintática é construída progressivamente a partir dos símbolos da entrada até alcançar o símbolo inicial da gramática.
 
 ### Construção da Tabela de Análise Sintática LR
 
-Já temos um método automático para verificar a sintaxe em linguagens de programação: o algoritmo de análise LR(k). Nesse algoritmo, todo trabalho do analisador sintático é orientado por uma tabela de análise que é construída a partir da gramática LR para linguagem. A questão é: como definir as ações da tabela de análise LR(k). Antes de apresentar o algoritmo para o cálculo da coleção de estados (linhas da tabela) e para definição dos valores da tabela, precisamos fazer algumas definições.
+Já dispomos de um método automático para realizar a análise sintática de linguagens de programação: o **algoritmo de análise LR(k)**. Nesse método, o processo de reconhecimento da sintaxe é orientado por uma **tabela de análise**, construída a partir da gramática que descreve a linguagem.
 
-Definições:
+Durante a análise, o analisador LR mantém uma pilha de estados e, em cada etapa, consulta a tabela utilizando o estado que está no topo da pilha e o símbolo corrente da entrada. A resposta da tabela determina a ação que deve ser realizada, como um deslocamento (*shift*), uma redução (*reduce*), uma aceitação ou uma situação de erro.
 
-1.  **Item**: É uma regra de produção na qual foi marcada uma posição na cadeia do lado direito; esta posição será indicada por meio do símbolo $\bullet$ (ponto). Exemplo: Seja a gramática:
+Surge, portanto, uma questão fundamental: **como construir essa tabela de análise e, principalmente, como determinar as ações que devem ser armazenadas em suas células?**
 
-    ::: center
-    $\begin{array}{rcl}
-    E & \rightarrow & +EE \\ 
-    E & \rightarrow & *EE \\ 
-    E & \rightarrow & a \\ 
-    E & \rightarrow & b \\ 
-    \end{array}$
-    :::
+A construção da tabela LR envolve duas etapas principais. Primeiro, é necessário determinar a **coleção de estados** que formará as linhas da tabela. Em seguida, é necessário utilizar esses estados para determinar as ações de deslocamento, redução, aceitação e as transições entre estados.
 
-    O conjunto de itens derivados desta gramática é: $\{E \rightarrow \bullet+EE | +\bullet EE | +E\bullet E | +EE\bullet | \bullet *EE | *\bullet EE | *E\bullet E | *EE\bullet | \bullet a | a\bullet | \bullet b | b\bullet\}$. O conjunto de itens para uma gramática é sempre finito e será utilizado para construir os estados da tabela.
+Para realizar essa construção de maneira sistemática, precisamos introduzir alguns conceitos fundamentais. Esses conceitos permitem representar o progresso da análise de uma produção e estabelecer as relações entre os diferentes estados do analisador.
 
-2.  **Estado**: É um conjunto de itens. A presença no topo da pilha de um estado contendo um item da forma $A \rightarrow \alpha \bullet \beta$ indica que já foi processada e deslocada para pilha a parte inicial $alpha$ do redutendo $\alpha \beta$. O estado contendo o item da forma $A \rightarrow \alpha \bullet$ indica um redutendo completo (item completo), o que indica que a próxima ação será uma REDUÇÃO.
+#### Item
 
-3.  **Fecho**: Diremos que um conjunto K de itens é fechado se para todo item K da forma $A\rightarrow \alpha \bullet B \beta$, todos os itens da forma $B \rightarrow \bullet \gamma$ estão em K. Denotaremos por FECHO(K) o menor conjunto fechado que contém K. Exemplo: Consideremos os seguintes conjuntos de itens:
+Um **item** é uma produção da gramática na qual uma posição do lado direito da produção é marcada por meio de um símbolo especial denominado **ponto**, representado por $\bullet$. O ponto indica até que posição da produção o processo de reconhecimento já avançou.
 
-    ::: center
-    $\begin{array}{rcl}
-    K_1 & = & \{ E \rightarrow +\bullet EE \} \\ 
-    K_2 & = & \{ E \rightarrow +E\bullet E | *\bullet EE | \bullet a \} \\
-    K_3 & = & \{ E \rightarrow \bullet b \} \\
-    \end{array}$
-    :::
+Considere, por exemplo, a seguinte gramática:
 
-    Para a gramática:
+::: {.center}
+$$
+\begin{array}{rcl}
+E &\rightarrow& +EE\\
+E &\rightarrow& *EE\\
+E &\rightarrow& a\\
+E &\rightarrow& b
+\end{array}
+$$
+:::
 
-    ::: center
-    $\begin{array}{rcl}
-    E & \rightarrow & +EE \\ 
-    E & \rightarrow & *EE \\ 
-    E & \rightarrow & a \\ 
-    E & \rightarrow & b \\ 
-    \end{array}$
-    :::
+A produção:
 
-    Então seus fechos são:
+$$
+E\rightarrow +EE
+$$
 
-    ::: center
-    $\begin{array}{rcl}
-    FECHO (K_1) & = & \{ E \rightarrow +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
-    FECHO (K_2) & = & \{ E \rightarrow +E\bullet E | *\bullet EE | \bullet a | \bullet +EE | \bullet *EE | \bullet b \} \\
-    FECHO (K_3) & = &  \{ E \rightarrow \bullet b \} \\
-    \end{array}$
-    :::
+pode originar quatro itens diferentes, dependendo da posição do ponto:
 
-4.  **Transfere**: Vamos agora analisar como determinar as entradas da forma $e_j$ na tabela de análise. Suponhamos que um estado $e_i$ contenha um item incompleto da forma $A\rightarrow \alpha \bullet X \beta$. A presença deste estado no topo da pilha de análise indica que se o próximo símbolo a ser consultado for X, então terá sido processada a parte $\alpha X$ do redutendo $\alpha X \beta$, devendo ser empilhado portando um estado que contenha o item $A\rightarrow \alpha X\bullet \beta$ (com a marca depois do símbolo X). Definiremos então a função TRANSFERE (K,X), como sendo o conjunto [fechado]{.underline} de todos os itens da forma $A \rightarrow \alpha X \bullet \beta$ tais que o item $A \rightarrow \alpha \bullet X \beta$ está em K.
+$$
+\begin{aligned}
+E&\rightarrow\bullet +EE\\
+E&\rightarrow+\bullet EE\\
+E&\rightarrow+E\bullet E\\
+E&\rightarrow+EE\bullet
+\end{aligned}
+$$
 
-    Consideremos a gramática anterior e os conjuntos:
+O primeiro item indica que nenhum símbolo do lado direito foi reconhecido. No segundo, o símbolo $+$ já foi reconhecido. No terceiro, os símbolos $+E$ já foram reconhecidos. No quarto, toda a parte direita da produção foi reconhecida.
 
-    ::: center
-    $\begin{array}{rcl} 
-    K_1 & = & \{ E \rightarrow *\bullet EE \}  \\
-    K_2 & = &  FECHO(K_1) = \{ E \rightarrow +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
-    K_3  & = & \{ E \rightarrow \bullet b \} \\
-    \end{array}$
-    :::
+Aplicando o mesmo procedimento às demais produções, obtemos o conjunto de itens:
 
-    Tem-se então:
+$$
+\begin{aligned}
+\{&
+E\rightarrow\bullet +EE,\;
+E\rightarrow+\bullet EE,\;
+E\rightarrow+E\bullet E,\;
+E\rightarrow+EE\bullet,\\
+&
+E\rightarrow\bullet *EE,\;
+E\rightarrow*\bullet EE,\;
+E\rightarrow*E\bullet E,\;
+E\rightarrow*EE\bullet,\\
+&
+E\rightarrow\bullet a,\;
+E\rightarrow a\bullet,\;
+E\rightarrow\bullet b,\;
+E\rightarrow b\bullet
+\}.
+\end{aligned}
+$$
 
-    ::: center
-    $\begin{array}{lcl} 
-    TRANSFERE (K_1,*) & = &  \{\} \\
-    TRANSFERE (K_1,E) & = & \{ E \rightarrow *\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
-    TRANSFERE (K_2,+) & = & \{ E \rightarrow +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \} = K_2 \\
-    TRANSFERE (K_2,a) & = & \{ E \rightarrow a\bullet \} \\
-    TRANSFERE (K_3,E) & = & \{\} \\
-    TRANSFERE (K_3,B) & = & \{ E \rightarrow b\bullet \} \\
-    \end{array}$
-    :::
+Como cada produção possui um número finito de símbolos no lado direito, cada produção também possui um número finito de posições possíveis para o ponto. Consequentemente, o conjunto de todos os itens de uma gramática é **finito**.
 
-As funções FECHO e TRANSFERE permitem a construção dos estados que serão identificados como as linhas da tabela de análise. Assim:
+Essa propriedade é fundamental para a construção dos analisadores LR, pois os estados do analisador serão formados a partir de conjuntos desses itens.
 
-#### Algoritmo para determinar a coleção C de estados de uma gramática:
+#### Interpretação dos itens
+
+A posição do ponto fornece uma representação do quanto de uma produção já foi reconhecido pelo analisador.
+
+Um item da forma:
+
+$$
+A\rightarrow\alpha\bullet\beta
+$$
+
+indica que a sequência $\alpha$ já foi reconhecida, enquanto a sequência $\beta$ ainda precisa ser reconhecida para completar a aplicação da produção.
+
+Por exemplo, o item:
+
+$$
+E\rightarrow+\bullet EE
+$$
+
+indica que o símbolo $+$ já foi reconhecido e que ainda é necessário reconhecer duas ocorrências de $E$.
+
+Quando o ponto aparece antes de um símbolo $X$, como em:
+
+$$
+A\rightarrow\alpha\bullet X\beta,
+$$
+
+o analisador está indicando que o próximo símbolo relevante para avançar nessa produção é $X$.
+
+Por outro lado, quando o ponto aparece no final da produção:
+
+$$
+A\rightarrow\alpha\bullet,
+$$
+
+todo o lado direito da produção já foi reconhecido. Esse item é denominado **item completo** e indica que uma redução utilizando a produção $A\rightarrow\alpha$ pode ser realizada, desde que as condições da tabela LR permitam essa redução.
+
+Portanto, podemos interpretar os itens como uma espécie de "marcador de progresso" dentro das produções da gramática.
+
+#### Estado
+
+Um **estado** do analisador LR é um **conjunto de itens**. Cada estado representa uma determinada situação possível durante o processo de análise.
+
+A presença, no estado atual, de um item da forma:
+
+$$
+A\rightarrow\alpha\bullet\beta
+$$
+
+indica que a parte $\alpha$ da produção já foi reconhecida e que a parte $\beta$ ainda precisa ser processada.
+
+Quando o item possui a forma:
+
+$$
+A\rightarrow\alpha\bullet X\beta,
+$$
+
+o ponto está imediatamente antes do símbolo $X$. Se o próximo símbolo considerado for $X$, o analisador poderá avançar o ponto, obtendo o item:
+
+$$
+A\rightarrow\alpha X\bullet\beta.
+$$
+
+Esse avanço corresponde à operação de **transição para um novo estado**.
+
+Por outro lado, quando um estado contém um item completo:
+
+$$
+A\rightarrow\alpha\bullet,
+$$
+
+significa que o lado direito da produção já foi completamente reconhecido. Nesse caso, o item fornece a informação necessária para uma possível operação de **redução** utilizando a produção $A\rightarrow\alpha$.
+
+Assim, os estados constituem uma representação compacta das diferentes situações em que o analisador LR pode se encontrar durante a análise.
+
+#### Fecho
+
+A construção dos estados não consiste simplesmente em agrupar alguns itens arbitrariamente. É necessário incluir todas as possibilidades que podem surgir a partir dos itens já presentes no estado. Para isso, utilizamos a operação denominada **fecho** (*closure*).
+
+Considere um conjunto de itens $K$. Dizemos que $K$ é **fechado** quando, para todo item da forma:
+
+$$
+A\rightarrow\alpha\bullet B\beta
+$$
+
+presente em $K$, todos os itens correspondentes às produções de $B$ com o ponto inicialmente colocado no início também pertencem a $K$.
+
+Em outras palavras, se o ponto estiver imediatamente antes de um não terminal $B$, então o analisador precisa considerar as produções que podem ser utilizadas para reconhecer $B$. Para cada produção:
+
+$$
+B\rightarrow\gamma,
+$$
+
+deve ser acrescentado o item:
+
+$$
+B\rightarrow\bullet\gamma.
+$$
+
+Esse processo pode introduzir novos itens que, por sua vez, também possuem o ponto antes de outros não terminais. Por isso, o procedimento deve continuar até que nenhum novo item possa ser acrescentado.
+
+Denotaremos por:
+
+$$
+FECHO(K)
+$$
+
+o menor conjunto fechado que contém $K$.
+
+Considere novamente a gramática:
+
+::: {.center}
+$$
+\begin{array}{rcl}
+E &\rightarrow& +EE\\
+E &\rightarrow& *EE\\
+E &\rightarrow& a\\
+E &\rightarrow& b
+\end{array}
+$$
+:::
+
+Seja:
+
+$$
+K_1=\{E\rightarrow+\bullet EE\}.
+$$
+
+Como o ponto está imediatamente antes do não terminal $E$, devemos acrescentar os itens correspondentes a todas as produções de $E$:
+
+$$
+\begin{aligned}
+E&\rightarrow\bullet +EE\\
+E&\rightarrow\bullet *EE\\
+E&\rightarrow\bullet a\\
+E&\rightarrow\bullet b
+\end{aligned}
+$$
+
+Portanto:
+
+$$
+\begin{aligned}
+FECHO(K_1)=\{&
+E\rightarrow+\bullet EE,\\
+&
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\}.
+\end{aligned}
+$$
+
+Observe que o processo de fechamento é recursivo. Entretanto, nesse exemplo, os novos itens adicionados possuem o ponto antes de terminais ou não possuem símbolos depois do ponto que exijam a inclusão de novos itens. Portanto, o processo termina nesse ponto.
+
+Considere agora:
+
+$$
+K_2=
+\{
+E\rightarrow+E\bullet E,\;
+E\rightarrow*\bullet EE,\;
+E\rightarrow\bullet a
+\}.
+$$
+
+Como existem itens nos quais o ponto aparece imediatamente antes de $E$, devemos acrescentar novamente todas as produções de $E$ com o ponto no início. Assim, obtemos:
+
+$$
+\begin{aligned}
+FECHO(K_2)=\{&
+E\rightarrow+E\bullet E,\;
+E\rightarrow*\bullet EE,\;
+E\rightarrow\bullet a,\\
+&
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet b
+\}.
+\end{aligned}
+$$
+
+Por fim, considere:
+
+$$
+K_3=\{E\rightarrow\bullet b\}.
+$$
+
+Como o ponto está imediatamente antes de um terminal e não de um não terminal, nenhuma nova produção precisa ser acrescentada. Portanto:
+
+$$
+FECHO(K_3)=K_3.
+$$
+
+O operador $FECHO$ é, portanto, responsável por completar um conjunto de itens, incluindo todas as produções que podem ser necessárias a partir dos não terminais encontrados imediatamente após o ponto.
+
+#### Transição entre estados
+
+Depois de definir o fecho, precisamos estabelecer como passar de um estado para outro. Para isso, utilizamos a operação **TRANSFERE**.
+
+Suponha que um estado $K$ contenha um item da forma:
+
+$$
+A\rightarrow\alpha\bullet X\beta.
+$$
+
+O ponto está imediatamente antes de $X$. Se o símbolo $X$ for reconhecido, o ponto deve avançar uma posição, produzindo:
+
+$$
+A\rightarrow\alpha X\bullet\beta.
+$$
+
+A operação `TRANSFERE(K,X)` reúne todos os itens obtidos pelo avanço do ponto sobre o símbolo $X$ e, em seguida, calcula o fecho do conjunto resultante.
+
+Formalmente, podemos definir:
+
+$$
+TRANSFERE(K,X)
+=
+FECHO(\{A\rightarrow\alpha X\bullet\beta
+\mid
+A\rightarrow\alpha\bullet X\beta\in K\}).
+$$
+
+Essa definição estabelece uma relação direta entre os estados do analisador. Se $K$ representa um estado e $X$ é um símbolo que pode ser reconhecido nesse estado, então:
+
+$$
+TRANSFERE(K,X)
+$$
+
+representa o estado alcançado após reconhecer $X$.
+
+Considere novamente a gramática:
+
+::: {.center}
+$$
+\begin{array}{rcl}
+E &\rightarrow& +EE\\
+E &\rightarrow& *EE\\
+E &\rightarrow& a\\
+E &\rightarrow& b
+\end{array}
+$$
+:::
+
+Considere o conjunto:
+
+$$
+K_1=\{E\rightarrow*\bullet EE\}.
+$$
+
+Como o ponto está imediatamente antes de $E$, temos:
+
+$$
+TRANSFERE(K_1,E)
+=
+FECHO(\{E\rightarrow*E\bullet E\}).
+$$
+
+Como o ponto continua antes de um não terminal $E$, o fecho acrescenta as produções de $E$ com o ponto no início. Portanto:
+
+$$
+\begin{aligned}
+TRANSFERE(K_1,E)=\{&
+E\rightarrow*E\bullet E,\\
+&
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\}.
+\end{aligned}
+$$
+
+Por outro lado, não existe nenhum item em $K_1$ cujo ponto esteja imediatamente antes do terminal $*$, pois o item existente é:
+
+$$
+E\rightarrow*\bullet EE.
+$$
+
+Nesse item, o símbolo $*$ está **depois** do ponto. Portanto:
+
+$$
+TRANSFERE(K_1,*)=\varnothing.
+$$
+
+Esse detalhe é importante: uma transição `TRANSFERE(K,X)` somente existe quando há, no estado atual, pelo menos um item no qual o ponto esteja imediatamente antes de $X$.
+
+Considere agora:
+
+$$
+K_2=
+FECHO(\{E\rightarrow+\bullet EE\}).
+$$
+
+Como $K_2$ contém o item:
+
+$$
+E\rightarrow+\bullet EE,
+$$
+
+podemos transferir pelo símbolo $+$, obtendo:
+
+$$
+E\rightarrow+\bullet EE.
+$$
+
+Após calcular o fecho, obtemos novamente o próprio estado $K_2$. Portanto:
+
+$$
+TRANSFERE(K_2,+)=K_2.
+$$
+
+Para o terminal $a$, considerando um estado que contenha o item:
+
+$$
+E\rightarrow\bullet a,
+$$
+
+a transferência produz:
+
+$$
+TRANSFERE(K,a)=\{E\rightarrow a\bullet\}.
+$$
+
+Nesse caso, o ponto chega ao final da produção. O resultado é, portanto, um **item completo**, indicando que uma redução pela produção:
+
+$$
+E\rightarrow a
+$$
+
+poderá ser realizada.
+
+De forma análoga:
+
+$$
+TRANSFERE(K,b)=\{E\rightarrow b\bullet\}.
+$$
+
+#### Construção da coleção de estados
+
+As operações $FECHO$ e $TRANSFERE$ constituem os mecanismos fundamentais para construir os estados do analisador LR. O processo começa com um estado inicial obtido a partir da produção inicial da gramática. Para facilitar a construção, é comum adicionar uma nova produção, denominada **produção aumentada**, à gramática.
+
+Se a produção original é:
+
+$$
+S\rightarrow\alpha,
+$$
+
+introduzimos um novo símbolo inicial $S'$ e a produção:
+
+$$
+S'\rightarrow S.
+$$
+
+O estado inicial é então definido por:
+
+$$
+I_0=FECHO(\{S'\rightarrow\bullet S\}).
+$$
+
+A partir de $I_0$, aplicamos sucessivamente a operação $TRANSFERE$ para todos os símbolos que aparecem imediatamente após o ponto. Cada conjunto obtido representa um novo estado. O processo continua até que nenhuma nova coleção de itens seja produzida.
+
+Dessa maneira, a construção dos estados pode ser representada conceitualmente por:
+
+$$
+I_0
+\overset{X}{\longrightarrow}
+I_1
+\overset{Y}{\longrightarrow}
+I_2
+\overset{Z}{\longrightarrow}
+\cdots
+$$
+
+em que cada transição é determinada por:
+
+$$
+I_j=TRANSFERE(I_i,X).
+$$
+
+Como o conjunto de itens da gramática é finito, o número de conjuntos distintos que podem ser construídos também é finito. Quando um conjunto obtido por `TRANSFERE` já existir na coleção de estados, não é necessário criar um novo estado; basta estabelecer a transição para o estado existente.
+
+Ao final desse processo, teremos uma coleção finita:
+
+$$
+\mathcal{C}=\{I_0,I_1,\ldots,I_n\}.
+$$
+
+Cada conjunto $I_i$ corresponde a um **estado do autômato LR** e, consequentemente, a uma linha da tabela de análise.
+
+#### Relação entre estados e tabela LR
+
+A coleção de estados fornece a estrutura necessária para construir as linhas da tabela de análise LR. Para cada estado $I_i$, analisamos os itens que o compõem.
+
+Quando um item possui a forma:
+
+$$
+A\rightarrow\alpha\bullet a\beta,
+$$
+
+em que $a$ é um terminal, a presença desse item indica que, ao encontrar $a$ na entrada, o analisador poderá realizar um deslocamento para o estado:
+
+$$
+TRANSFERE(I_i,a).
+$$
+
+Quando o símbolo após o ponto é um não terminal $A$, a transição correspondente será utilizada na parte de **GOTO** da tabela:
+
+$$
+GOTO(I_i,A)=TRANSFERE(I_i,A).
+$$
+
+Por outro lado, quando um estado contém um item completo:
+
+$$
+A\rightarrow\alpha\bullet,
+$$
+
+esse item indica a possibilidade de realizar uma redução pela produção $A\rightarrow\alpha$. Nos analisadores LR(k), a decisão de realizar essa redução depende também das informações de antecipação (*lookahead*) associadas ao item.
+
+Finalmente, quando o estado contém o item completo da produção aumentada:
+
+$$
+S'\rightarrow S\bullet,
+$$
+
+e o símbolo de antecipação é o marcador de fim de entrada $\#$, a tabela recebe a ação de **aceitação**.
+
+Assim, a coleção de estados, juntamente com as informações de antecipação, permite determinar sistematicamente as ações da tabela LR:
+
+$$
+\boxed{
+\text{Itens}
+\longrightarrow
+\text{Estados}
+\longrightarrow
+\text{Transições}
+\longrightarrow
+\text{Tabela LR}
+}
+$$
+
+O processo de construção da tabela deixa, portanto, de depender de decisões intuitivas. As funções $FECHO$ e $TRANSFERE$ permitem construir automaticamente os estados do analisador, enquanto a interpretação dos itens permite determinar as ações de deslocamento, redução, aceitação e erro.
+
+> **Observação:** os conceitos de item, fecho e transferência apresentados nesta seção correspondem à ideia fundamental da construção dos estados LR. Nas versões LR(1), os itens também incorporam explicitamente um símbolo de antecipação (*lookahead*), sendo representados, por exemplo, como $[A\rightarrow\alpha\bullet\beta,a]$. Essa informação adicional será utilizada posteriormente para determinar com precisão em quais símbolos de entrada uma redução deve ser realizada.
+
+:::{.callout-note title = "Coleção de estado LR(k)"}
 
 1.  Adota-se o estado $e_0 = FECHO ( \{ S^{'} \rightarrow \bullet S\# \} )$ como sendo o valor inicial da coleção $C$. Observe que deve ser acrescentada à gramática, uma regra para caracterizar o instante que a sentença toda será reduzida para o símbolo inicial. O símbolo terminal \# é artificialmente acrescentado a gramática para marcar o fim da sentença que será analisada.
 
 2.  Se existe um estado $e$ de $C$ e um símbolo $X$ de $\Sigma$ (vocabulário) tais que $e^{'} = TRANSFERE (e, X) \neq \emptyset$ e $e^{'} \notin C$, então $e^{'}$ é acrescentado à coleção $C$.
 
 3.  O passo 2 é repetido até que não se possam acrescentar mais estados à coleção C.
+:::
 
 C é o conjunto de estado tipo LR(0) da gramática.
 
-Exemplo: Consideremos a gramática:
+[**Exemplo:**]{.underline} 
 
-::: center
-$\begin{array}{lcl}
-E^{'} & \rightarrow & E\# \\
-E & \rightarrow & +EE \\
-E & \rightarrow & *EE \\
-E & \rightarrow & a \\
-E & \rightarrow & b \\
-\end{array}$
+Para ilustrar a construção da coleção de estados e, posteriormente, da tabela de análise LR, considere a seguinte gramática aumentada:
+
+::: {.center}
+$$
+\begin{array}{rcl}
+E' &\rightarrow& E\#\\
+E  &\rightarrow& +EE\\
+E  &\rightarrow& *EE\\
+E  &\rightarrow& a\\
+E  &\rightarrow& b
+\end{array}
+$$
 :::
 
-Aplicando-se o algoritmo anterior obtém-se os seguintes estados para esta gramática: $$\begin{aligned}
-e_0 & = &  FECHO (\{ E’ \rightarrow \bullet E\# \}) & =  
-\{ E’ \rightarrow \bullet E\# \\
-   &  & &  
-       E \rightarrow  \bullet +EE | \bullet *EE | \bullet a | \bullet b \} \\
-e_1  & = & TRANSFERE (e_0, E) & =  \{ E’ \rightarrow E\bullet \# \}\\
-e_2 & = & TRANSFERE (e_0, +) & =   \{ E \rightarrow  +\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
-e_3 & = & TRANSFERE (e_0, *) & =  \{ E \rightarrow  *\bullet EE | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
-e_4 & = & TRANSFERE (e_0, a) & =   \{ E \rightarrow  a\bullet  \}\\
-e_5 & = & TRANSFERE (e_0, a) & =  \{ E \rightarrow  b\bullet  \}\\
-e_6 & = & TRANSFERE (e_2, E) & =  \{ E \rightarrow  +E\bullet E | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
-   & & TRANSFERE (e_2, +) & =   e_2\\
-   & & TRANSFERE (e_2, *) & =   e_3\\
-   & & TRANSFERE (e_2, a) & =   e_4\\
-   & & TRANSFERE (e_2, b) & =   e_5\\
-e_7 & = & TRANSFERE (e_3, E) & =   \{ E \rightarrow  *E\bullet E | \bullet +EE | \bullet *EE | \bullet a | \bullet b \}\\
-      & & TRANSFERE (e_3, +) & =  e_2\\
-      & & TRANSFERE (e_3, *) & =  e_3\\
-      & & TRANSFERE (e_3, a) & =   e_4\\
-      & & TRANSFERE (e_3, b) & =   e_5\\
-e_8 & = & TRANSFERE (e_6, E) & =   \{ E \rightarrow  +EE\bullet  \}\\
-      & & TRANSFERE (e_6, +) & =   e_2\\
-      & & TRANSFERE (e_6, *) & =   e_3\\
-      & & TRANSFERE (e_6, a) & =   e_4\\
-      & & TRANSFERE (e_6, b) & =   e_5\\
-e_9 & = & TRANSFERE (e_7, E) & =  \{ E \rightarrow  *EE\bullet  \}\\
-      & & TRANSFERE (e_7, +) & =   e_2\\
-      & & TRANSFERE (e_7, *) & =   e_3\\
-      & & TRANSFERE (e_7, a) & =   e_4\\
-      & & TRANSFERE (e_7, b) & =   e_5\\
-%\end{array} $
-\end{aligned}$$
+A primeira produção, $E'\rightarrow E\#$, é uma **produção aumentada** utilizada para identificar a situação de aceitação da análise. O símbolo $E'$ é introduzido como um novo símbolo inicial e $\#$ representa o marcador de fim da sentença. Dessa forma, quando o analisador reconhecer a produção completa
 
-A tabela de análise LR construída com essa coleção de estados é:
+$$
+E'\rightarrow E\bullet\#
+$$
+
+e o próximo símbolo da entrada for $\#$, a sentença poderá ser aceita.
+
+A partir da produção aumentada, iniciamos a construção da coleção de estados. O estado inicial é obtido calculando-se o fecho do item:
+
+$$
+E'\rightarrow\bullet E\#
+$$
+
+Assim, temos:
+
+$$
+\begin{aligned}
+e_0
+&=FECHO(\{E'\rightarrow\bullet E\#\})\\
+&=\{
+E'\rightarrow\bullet E\#,\;
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\}.
+\end{aligned}
+$$
+
+O estado $e_0$ representa a situação inicial do analisador. Como existem itens com o ponto imediatamente antes de $E$, $+$, $*$, $a$ e $b$, podem existir transições a partir desse estado utilizando esses símbolos.
+
+A transferência pelo não terminal $E$ produz:
+
+$$
+e_1=TRANSFERE(e_0,E)
+=\{E'\rightarrow E\bullet\#\}.
+$$
+
+Nesse estado, o ponto está imediatamente antes do marcador de fim $\#$. Quando $\#$ for encontrado, a produção aumentada estará completamente reconhecida e a sentença poderá ser aceita.
+
+As transferências pelos terminais $+$, $*$, $a$ e $b$ produzem, respectivamente:
+
+$$
+\begin{aligned}
+e_2
+&=TRANSFERE(e_0,+)\\
+&=\{
+E\rightarrow+\bullet EE,\;
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\},
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+e_3
+&=TRANSFERE(e_0,*)\\
+&=\{
+E\rightarrow*\bullet EE,\;
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\},
+\end{aligned}
+$$
+
+$$
+e_4=TRANSFERE(e_0,a)
+=\{E\rightarrow a\bullet\},
+$$
+
+e
+
+$$
+e_5=TRANSFERE(e_0,b)
+=\{E\rightarrow b\bullet\}.
+$$
+
+Os estados $e_4$ e $e_5$ possuem itens completos. No estado $e_4$, por exemplo, o item
+
+$$
+E\rightarrow a\bullet
+$$
+
+indica que a produção $E\rightarrow a$ foi completamente reconhecida e, portanto, poderá ocorrer uma redução por essa produção.
+
+A partir do estado $e_2$, também existem novas transferências. A transferência pelo não terminal $E$ produz:
+
+$$
+\begin{aligned}
+e_6
+&=TRANSFERE(e_2,E)\\
+&=\{
+E\rightarrow+E\bullet E,\;
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\}.
+\end{aligned}
+$$
+
+As demais transferências a partir de $e_2$ não produzem novos estados. Elas conduzem a estados que já foram construídos:
+
+$$
+\begin{aligned}
+TRANSFERE(e_2,+)&=e_2,\\
+TRANSFERE(e_2,*)&=e_3,\\
+TRANSFERE(e_2,a)&=e_4,\\
+TRANSFERE(e_2,b)&=e_5.
+\end{aligned}
+$$
+
+O estado $e_3$ apresenta uma estrutura semelhante à de $e_2$, mas está associado à produção que possui o operador $*$:
+
+$$
+\begin{aligned}
+e_7
+&=TRANSFERE(e_3,E)\\
+&=\{
+E\rightarrow*E\bullet E,\;
+E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\}.
+\end{aligned}
+$$
+
+Novamente, as transferências pelos terminais conduzem a estados já existentes:
+
+$$
+\begin{aligned}
+TRANSFERE(e_3,+)&=e_2,\\
+TRANSFERE(e_3,*)&=e_3,\\
+TRANSFERE(e_3,a)&=e_4,\\
+TRANSFERE(e_3,b)&=e_5.
+\end{aligned}
+$$
+
+A partir de $e_6$, a transferência pelo não terminal $E$ produz um item completo:
+
+$$
+e_8
+=TRANSFERE(e_6,E)
+=\{E\rightarrow+EE\bullet\}.
+$$
+
+As demais transferências são:
+
+$$
+\begin{aligned}
+TRANSFERE(e_6,+)&=e_2,\\
+TRANSFERE(e_6,*)&=e_3,\\
+TRANSFERE(e_6,a)&=e_4,\\
+TRANSFERE(e_6,b)&=e_5.
+\end{aligned}
+$$
+
+De maneira análoga, a partir de $e_7$, obtemos:
+
+$$
+e_9
+=TRANSFERE(e_7,E)
+=\{E\rightarrow*EE\bullet\}.
+$$
+
+As demais transferências são:
+
+$$
+\begin{aligned}
+TRANSFERE(e_7,+)&=e_2,\\
+TRANSFERE(e_7,*)&=e_3,\\
+TRANSFERE(e_7,a)&=e_4,\\
+TRANSFERE(e_7,b)&=e_5.
+\end{aligned}
+$$
+
+Dessa forma, a coleção de estados obtida para a gramática é:
+
+$$
+\mathcal{C}=
+\{e_0,e_1,e_2,e_3,e_4,e_5,e_6,e_7,e_8,e_9\}.
+$$
+
+Cada um desses estados corresponde a uma linha da tabela de análise LR. As transferências determinadas pela função $TRANSFERE$ permitem preencher as células correspondentes aos deslocamentos e às transições entre estados.
+
+### Construção da tabela de análise
+
+A partir da coleção de estados, podemos construir a tabela de análise LR. Para cada estado, analisamos os itens que o compõem e as respectivas transferências.
+
+Quando um item possui um terminal imediatamente após o ponto, a transferência correspondente determina uma ação de **deslocamento** (*shift*). Quando o ponto está imediatamente antes de um não terminal, a transferência determina uma entrada de **GOTO**. Quando o item está completo, a produção correspondente determina uma ação de **redução**.
+
+Para a gramática considerada, a tabela obtida é:
 
 | **Tabela** | $E$ | $+$ | $*$ | $a$ | $b$ | $\#$ |
 |:----------:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -1779,13 +2398,75 @@ A tabela de análise LR construída com essa coleção de estados é:
 
 : Tabela de análise LR {#tbl-tabela-lr}
 
-Observações:
+Nessa tabela, $e_i$ representa uma transição ou um estado a ser empilhado, enquanto $r_j$ representa uma redução utilizando a produção de número $j$. A ação $a$ indica que a sentença foi aceita.
 
--   Não foi calculado o estado $TRANSFERE (e_1,\#)$ pois esta situação corresponde à aceitação da sentença de entrada.
+Os estados $e_4$, $e_5$, $e_8$ e $e_9$ possuem apenas itens completos. Consequentemente, nesses estados o analisador está diante de uma estrutura que corresponde completamente ao lado direito de uma produção. Por isso, esses estados estão associados a operações de redução.
 
--   Os estados calculados contêm apenas um item completo $(e_4, e_5, e_8, e_9)$, ou apenas itens incompletos $(e_0, e_1, e_2, e_3, e_6, e_7)$. Os estados constituídos de itens completos indicam que os últimos estados empilhados correspondem a um redutendo, e que portanto deve haver redução, independente do próximo símbolo.
+Por outro lado, os estados $e_0$, $e_2$, $e_3$, $e_6$ e $e_7$ possuem apenas itens incompletos. Nesses estados, o ponto ainda não chegou ao final das produções, indicando que o analisador ainda precisa reconhecer novos símbolos antes que uma redução possa ser realizada.
 
-O simulador seguinte implementa todo o processo de conversão da gramática para tabela de análise. Ainda é possível testar uma sentença para a gramática usando o algoritmo de análise LR:
+O estado $e_1$ constitui uma situação especial. Ele contém o item:
+
+$$
+E'\rightarrow E\bullet\#
+$$
+
+Como o ponto está imediatamente antes do marcador de fim de entrada, a próxima ação depende da leitura de $\#$. Quando esse símbolo for encontrado, a produção aumentada será reconhecida completamente e o analisador poderá aceitar a sentença.
+
+Por essa razão, não é necessário calcular:
+
+$$
+TRANSFERE(e_1,\#).
+$$
+
+Em vez disso, a combinação do estado $e_1$ com o símbolo $\#$ corresponde diretamente à ação de **aceitação** da tabela.
+
+### Observações sobre a coleção de estados
+
+A construção apresentada permite observar algumas propriedades importantes do processo de geração da tabela LR.
+
+Primeiramente, a coleção de estados é **finita**. Embora a aplicação sucessiva de $FECHO$ e $TRANSFERE$ possa produzir novos conjuntos de itens, a quantidade total de itens possíveis para uma gramática é finita. Consequentemente, quando uma transferência produz um conjunto que já pertence à coleção, não é criado um novo estado; simplesmente reutiliza-se o estado existente.
+
+Além disso, os estados com itens completos desempenham um papel fundamental na determinação das reduções. Neste exemplo, os estados $e_4$, $e_5$, $e_8$ e $e_9$ possuem exclusivamente itens completos. Eles correspondem, respectivamente, às produções:
+
+$$
+E\rightarrow a,
+$$
+
+$$
+E\rightarrow b,
+$$
+
+$$
+E\rightarrow +EE,
+$$
+
+e
+
+$$
+E\rightarrow *EE.
+$$
+
+Assim, quando o analisador alcança esses estados, a sequência correspondente ao lado direito da produção já foi reconhecida e pode ser reduzida ao não terminal $E$.
+
+A coleção de estados constitui, portanto, a estrutura central a partir da qual a tabela de análise é construída. O processo pode ser resumido por:
+
+$$
+\boxed{
+\text{Gramática}
+\rightarrow
+\text{Itens}
+\rightarrow
+FECHO
+\rightarrow
+TRANSFERE
+\rightarrow
+\text{Coleção de estados}
+\rightarrow
+\text{Tabela LR}
+}
+$$
+
+O simulador apresentado a seguir implementa esse processo de forma automática. A partir da gramática fornecida, ele calcula os itens, constrói os respectivos fechos, determina as transferências entre os estados e gera a tabela de análise. Além disso, permite utilizar a tabela construída para testar uma sentença e acompanhar, passo a passo, sua análise pelo algoritmo LR.
 
 ::: {.simulacao url="/p5js/lr/" height="400" image="/printscreen/lr.png" qrcode="/qrcode/lr.png"}
 :::

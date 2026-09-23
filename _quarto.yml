@@ -39,7 +39,7 @@ format:
       - cosmo
       - brand
     css: styles.css
-    
+
   pdf:
     documentclass: book
     geometry:
