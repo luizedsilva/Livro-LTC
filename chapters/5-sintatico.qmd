@@ -2481,6 +2481,8 @@ $$
 \end{array}
 $$
 
+:::
+
 A gramática possui três regras de produção. O símbolo $E$ é um **não terminal** e representa uma expressão. Já o símbolo $id$ é um **terminal**, normalmente correspondente a um token produzido pelo analisador léxico. Os terminais representam os elementos efetivamente presentes na cadeia de entrada, enquanto os não terminais são utilizados para representar estruturas sintáticas.
 
 A partir dessa gramática, podemos gerar, por exemplo, a expressão $x+y*z$. Uma possível derivação é:
@@ -2646,9 +2648,47 @@ Quando encontra conflitos, Yacc apresenta mensagens de advertência durante a ge
 
 Embora essas regras permitam que o analisador seja gerado, não significa que o conflito deva ser ignorado. Um conflito pode representar uma ambiguidade real na especificação da linguagem e, consequentemente, produzir uma análise sintática diferente daquela pretendida pelo projetista do compilador.
 
-## Implementação de uma calculadora de expressões com Yacc
+### Implementação de uma calculadora de expressões
 
-A partir dos conceitos apresentados, podemos observar como uma ferramenta geradora de analisadores sintáticos, como **Yacc**, permite transformar uma gramática em um analisador sintático executável.
+A partir dos conceitos apresentados, podemos usar a ferramenta **bison** para construir como um exemplo uma calculadora de expressões aritméticas. Esse processo é ilustrado na @fig-flex-bison.
+
+![Processo de construção da calculadora](/chapters/images/flex-bison.png){#fig-flex-bison width="90%"}
+
+A figura apresenta, de forma esquemática, a **integração entre o analisador léxico e o analisador sintático na utilização conjunta de Flex e Bison**. O fluxo pode ser explicado a partir dos arquivos de especificação, dos arquivos gerados pelas ferramentas e da comunicação estabelecida entre os componentes.
+
+O processo começa com o arquivo **`calc.l`**, que contém a especificação do analisador léxico. Nele são definidas as expressões regulares responsáveis por reconhecer os diferentes elementos da linguagem. No exemplo, as regras reconhecem os operadores `+` e `-` e retornam, respectivamente, os tokens `MAIS` e `MENOS`. O arquivo também pode conter regras para números, identificadores, espaços em branco e outros elementos léxicos. 
+
+A partir de `calc.l`, o **Flex** gera o arquivo **`lexico.c`**. Esse arquivo contém a implementação do analisador léxico, incluindo a função `yylex()`, responsável por percorrer a entrada e identificar os tokens. A geração pode ser realizada, por exemplo, pelo comando:
+
+```bash
+flex -o lexico.c calc.l
+```
+
+Assim, o arquivo escrito pelo programador (`calc.l`) constitui a especificação do analisador, enquanto `lexico.c` corresponde ao código-fonte C produzido automaticamente pelo Flex.
+
+De maneira semelhante, o arquivo **`calc.y`** contém a especificação do analisador sintático. Nesse arquivo são declarados os tokens utilizados pela gramática e definidas as produções que descrevem a estrutura sintática das expressões. No exemplo representado na figura, a gramática contém produções para expressões envolvendo os tokens `MAIS` e `MENOS`. As regras podem ainda ser acompanhadas de ações semânticas, responsáveis por realizar algum processamento quando uma produção é reduzida. 
+
+O **Bison** recebe `calc.y` e gera o arquivo **`calc.c`**, que implementa o analisador sintático. Internamente, o Bison constrói as estruturas necessárias para realizar a análise ascendente, incluindo os estados do autômato e a tabela de análise sintática. A opção `-v` pode ser utilizada para solicitar a geração de um arquivo contendo informações detalhadas sobre os estados e as ações do analisador, enquanto a opção `-d` solicita a geração de um arquivo de cabeçalho com as definições dos tokens.
+
+O arquivo **`calc.h`** desempenha um papel importante na integração entre o analisador léxico e o analisador sintático. Ele contém as definições dos tokens gerados pelo Bison. Na figura, por exemplo, aparecem códigos como `MAIS = 258` e `MENOS = 259`. Dessa forma, tanto o código gerado pelo Flex quanto o código gerado pelo Bison utilizam a mesma representação numérica para os tokens.
+
+A comunicação entre os dois analisadores ocorre principalmente por meio da função **`yylex()`**. Quando o analisador sintático necessita de um novo token, ele solicita esse token ao analisador léxico. O `yylex()` examina a entrada, reconhece o próximo lexema e retorna o código correspondente ao token. Por exemplo, ao encontrar o caractere `+`, o analisador léxico pode retornar `MAIS`; ao encontrar `-`, pode retornar `MENOS`.
+
+Além do código do token, o analisador léxico pode fornecer um **valor semântico** associado ao token. Esse mecanismo é utilizado, por exemplo, quando um número inteiro é reconhecido. Nesse caso, o texto identificado pelo Flex pode ser convertido para um valor numérico e armazenado em `yylval`, permitindo que o analisador sintático e suas ações semânticas tenham acesso ao valor reconhecido.
+
+A figura também mostra o arquivo **`calc.output`**, produzido quando o Bison é executado com a opção `-v`. Esse arquivo é particularmente útil para compreender o funcionamento interno do analisador. Ele apresenta informações sobre os **estados do autômato LR**, os itens que compõem cada estado e as ações de deslocamento e redução associadas aos símbolos da gramática. O trecho apresentado na figura, por exemplo, mostra o estado inicial contendo um item semelhante a:
+
+```text
+estado 0:
+
+    $ : . calculo <end>
+```
+
+O ponto indica a posição corrente durante a construção do item LR. Nesse caso, o analisador encontra-se no estado inicial e ainda não reconheceu nenhum símbolo da produção.
+
+Finalmente, o arquivo **`calc.c`**, juntamente com o código gerado pelo Flex e os demais arquivos necessários, pode ser compilado para produzir o programa executável. O resultado é um analisador sintático capaz de receber uma sequência de caracteres, solicitar tokens ao analisador léxico e verificar se essa sequência pode ser reconhecida pela gramática especificada em `calc.y`.
+
+### Arquivo de especificação para Bison
 
 Um arquivo de entrada do Yacc é tradicionalmente dividido em três partes:
 
@@ -2685,10 +2725,11 @@ O analisador léxico é responsável por ler os caracteres da entrada e agrupá-
 Por exemplo, podemos declarar um token para representar números inteiros:
 
 ```c
-%token INTEGER
+%token MAIS
+%token NUMERO
 ```
 
-A partir dessa declaração, o Yacc identifica `INTEGER` como um dos terminais utilizados pela gramática. Durante a geração do analisador, são produzidas as estruturas necessárias para que o analisador léxico e o analisador sintático utilizem uma representação comum dos tokens.
+A partir dessa declaração, o Yacc identifica `NUMERO` como um dos terminais utilizados pela gramática. Durante a geração do analisador, são produzidas as estruturas necessárias para que o analisador léxico e o analisador sintático utilizem uma representação comum dos tokens.
 
 O arquivo gerado contém, entre outras informações, os códigos numéricos associados aos tokens. O analisador léxico pode então incluir o arquivo de cabeçalho produzido pelo Yacc/Bison para ter acesso às definições desses tokens.
 
@@ -2701,11 +2742,11 @@ Por exemplo, ao reconhecer um número inteiro, o analisador léxico pode executa
 ```c
 [0-9]+ {
     yylval = atoi(yytext);
-    return INTEGER;
+    return NUMERO;
 }
 ```
 
-Nesse caso, `yytext` contém o texto reconhecido pelo analisador léxico. A função `atoi()` converte esse texto para um valor inteiro, que é armazenado em `yylval`. Em seguida, a função retorna o token `INTEGER` para o analisador sintático.
+Nesse caso, `yytext` contém o texto reconhecido pelo analisador léxico. A função `atoi()` converte esse texto para um valor inteiro, que é armazenado em `yylval`. Em seguida, a função retorna o token `NUMERO` para o analisador sintático.
 
 O tipo de `yylval` é determinado pela definição de `YYSTYPE`. Em exemplos simples, pode ser utilizado o tipo `int`. Em compiladores mais complexos, entretanto, diferentes tokens podem transportar diferentes tipos de informação, como valores numéricos, nomes de identificadores ou estruturas de dados.
 
@@ -2723,13 +2764,13 @@ Considere a produção:
 
 ```c
 expr:
-      expr '+' expr   { $$ = $1 + $3; }
+      expr MAIS expr   { $$ = $1 + $3; }
 ```
 
 Os símbolos `$1`, `$2` e `$3` representam os valores associados aos símbolos que aparecem no lado direito da produção. Nesse caso:
 
 * `$1` representa o valor da primeira ocorrência de `expr`;
-* `$2` representa o valor associado ao operador `+`;
+* `$2` representa o valor associado ao token `MAIS`;
 * `$3` representa o valor da segunda ocorrência de `expr`;
 * `$$` representa o valor associado ao não terminal `expr` após a redução.
 
@@ -2745,42 +2786,105 @@ Quando a produção é:
 
 ```c
 expr:
-      INTEGER   { $$ = $1; }
+      NUMERO   { $$ = $1; }
 ```
 
-o valor do token `INTEGER` é simplesmente transferido para o não terminal `expr`. Essa ação permite que o valor numérico reconhecido pelo analisador léxico seja propagado pela árvore sintática durante as reduções.
+o valor do token `NUMERO` é simplesmente transferido para o não terminal `expr`. Essa ação permite que o valor numérico reconhecido pelo analisador léxico seja propagado pela árvore sintática durante as reduções.
 
 Esse mecanismo estabelece uma ligação direta entre a **análise sintática** e a **análise semântica**. Enquanto as produções determinam a estrutura sintática da linguagem, as ações semânticas permitem associar informações e operações a essa estrutura.
 
 ### Exemplo de uma calculadora simples
 
-Uma gramática elementar para uma calculadora que realiza operações de adição e subtração pode ser especificada como:
+Os padrões léxicos utilizados nas expressões aritméticas é especificada da seguinte forma para flex (arquivo `calc.l`):
 
 ```c
-%token INTEGER
+%{
+#include "calc.h"
+void yyerror(char *);
+%}
 
 %%
-
-program:
-      program expr '\n'   { printf("%d\n", $2); }
-    |
-    ;
-
-expr:
-      INTEGER              { $$ = $1; }
-    | expr '+' expr        { $$ = $1 + $3; }
-    | expr '-' expr        { $$ = $1 - $3; }
-    ;
-
+[0-9]+     {  
+              yylval = atoi(yytext);
+              return NUMERO;
+           }
+"+"        return MAIS;
+"-"        return MENOS;
+"*"        return VEZES;
+"/"        return DIV;
+"("        return ABRE;
+")"        return FECHA;
+[ \t]+     ;
+\n         return ENTER;
+.          {
+             char msg[100];
+             sprintf(msg, "[%s] desconhecido!", yytext);
+             yyerror(msg);
+           }
 %%
+
+int yywrap () {
+    return 1;
+}
 ```
 
-A produção `program` permite reconhecer uma sequência de expressões, cada uma terminada por uma quebra de linha. Quando uma expressão é reconhecida, seu valor é apresentado na saída.
+
+Uma gramática elementar para uma calculadora que realiza operações de adição, subtração, multiplicação, divisão e expressões entre parênteses pode ser especificada como (arquivo `calc.y`):
+
+```c
+%{
+#include <stdio.h>
+#include <stdlib.h>
+int yylex(void);
+void yyerror(char *);
+%}
+
+%token ENTER
+%token MAIS
+%token MENOS
+%token VEZES
+%token DIV
+%token NUMERO
+%token ABRE
+%token FECHA
+
+%start linha
+
+%left MAIS MENOS 
+%left VEZES DIV
+
+%%
+
+calculo: calculo expr ENTER { printf ("resultado = %d\n", $2); }
+       | 
+       ;
+
+expr : expr MAIS expr { $$ = $1 + $3; }
+     | expr MENOS expr { $$ = $1 - $3; }
+     | expr VEZES expr { $$ = $1 * $3; }
+     | expr DIV expr   { $$ = $1 / $3; }
+     | ABRE expr FECHA { $$ = $2; }
+     | NUMERO { $$ = $1; }
+     ;
+
+%%
+
+void yyerror (char *msg) {
+    printf("Erro: %s\n", msg);
+} 
+
+int main() {
+    yyparse();
+    return 0;
+}
+```
+
+A produção `calculo` permite reconhecer uma sequência de expressões, cada uma terminada por uma quebra de linha. Quando uma expressão é reconhecida, seu valor é apresentado na saída.
 
 A produção:
 
 ```c
-expr: expr '+' expr
+expr: expr MAIS expr
 ```
 
 define uma expressão como a soma de duas outras expressões. Quando essa produção é reduzida, a ação semântica calcula a soma dos valores associados às duas subexpressões.
@@ -2788,14 +2892,26 @@ define uma expressão como a soma de duas outras expressões. Quando essa produ�
 De maneira análoga:
 
 ```c
-expr: expr '-' expr
+expr: expr MENOS expr
 ```
 
 calcula a diferença entre os valores das duas expressões.
 
 O uso de ações semânticas dessa forma permite que o analisador não apenas reconheça se uma sequência pertence à linguagem definida pela gramática, mas também **execute operações associadas à estrutura sintática reconhecida**.
 
+Esse processo está ilustrado na árvore de derivação apresentada na @fig-arvore-expressao. As ações semânticas associadas às produções podem ser entendidas como operações executadas durante o processo de análise sintática, à medida que o analisador percorre a árvore de derivação. Quando uma ação semântica é alcançada, ela é executada e os valores associados aos símbolos da árvore são calculados ou atualizados. Dessa forma, as informações semânticas são propagadas pela árvore, permitindo que o valor de uma construção sintática seja determinado a partir dos valores de seus componentes.
+
+![Árvore de Derivação para expressão `2 * 3 + 5`](/chapters/images/arvore-expressao.png){#fig-arvore-expressao width="90%"}
+
 Esse princípio é fundamental para a construção de compiladores. Durante a análise sintática, as reduções podem ser utilizadas para construir árvores sintáticas, verificar informações semânticas, gerar representações intermediárias ou executar ações específicas associadas às construções da linguagem.
+
+Para geração da calculadora devemos executar a seguinte sequência de comandos:
+
+```c
+flex -o lexico.c calc.l
+bison -o calc.c calc.y -v -d;
+gcc lexico.c calc.c -o calc;
+```
 
 ### Tratamento de erros sintáticos
 
@@ -2814,107 +2930,69 @@ Essa função recebe uma mensagem associada ao erro detectado pelo analisador si
 
 O tratamento de erros é uma característica importante de analisadores sintáticos utilizados em compiladores reais. Um compilador não deve apenas detectar que uma entrada é inválida, mas também fornecer informações que auxiliem o programador a localizar e corrigir o problema.
 
+### Uso da calculadora de expressões
 
-#### Nova versão da calculadora
+Com o executável gerado `calc` podemos realizar alguns cálculos:
 
-Nesta seção nós estenderemos a calculadora da seção anterior para incorporar algumas novas funcionalidades. As novas características incluem operadores aritméticos de multiplicação e divisão. Parênteses pode ser usado para alterar a precedência das operações e variáveis de uma única letra podem ser especificadas para comandos de atribuição. O exemplo seguinte ilustra algumas entradas e saídas da calculadora:
+```c
+$ ./calc
+12 + 4
+resultado = 16
+2 * (3 + 4)
+resultado = 14
+2 + 3 + 4
+resultado = 9
+^C
+$ 
+```
 
-    user:  3 * (4 + 5)
-    calc:  27
-    user:  x = 3 * (5 + 4)
-    user:  y = 5
-    user:  x
-    calc:  27
-    user:  y
-    calc:  5
-    user:  x + 2*y
-    calc:  37
+## Projeto de Compilador - Parte 2
 
-O analisador léxico retorna os tokens VARIABLE e INTEGER. Para variável, yylval especifica o índice para sym, nossa tabela de símbolos.Para este programa, sym simplesmente pega o valor da variável associada. Quando o token INTEGER é retornado, yylval contém o número encontrado. Abaixo a especificação para lex:
+Na **Parte 1**, foi implementada uma versão do analisador léxico responsável por percorrer o programa fonte e identificar os tokens presentes na entrada. Para algumas classes de tokens, como `T_NUMERO` e `T_IDENTIF`, o analisador léxico também armazena, na variável global `atomo`, o lexema correspondente ao token reconhecido. Dessa forma, além de identificar a classe léxica do elemento encontrado, o analisador mantém a informação necessária para que esse lexema possa ser utilizada nas etapas posteriores do processo de compilação.
 
-    %{
-        #include <stdlib.h>
-        #include "y.tab.h"
-        void yyerror(char *);
-    %}
+Nesta **segunda etapa**, o analisador léxico será integrado ao analisador sintático, que será gerado automaticamente a partir da especificação da gramática utilizando a ferramenta **Bison**. O objetivo é avançar da identificação isolada dos tokens para o reconhecimento da estrutura sintática dos programas escritos na linguagem definida para o projeto.
 
-    %%
+A linguagem utilizada para a construção do compilador é uma versão didática denominada **linguagem `Simples`**. Essa linguagem foi especialmente concebida para facilitar o desenvolvimento e a compreensão de uma primeira versão de um compilador. Por esse motivo, sua estrutura é deliberadamente reduzida, contendo apenas os elementos necessários para explorar as principais etapas da construção de um compilador, desde a análise léxica e sintática até as etapas posteriores.
 
-        /* variables */
-    [a-z]       {
-                    yylval = *yytext - 'a';
-                    return VARIABLE;
-                }
+A linguagem `Simples` possui apenas os tipos de dados **`lógico`** e **`inteiro`**. As declarações de variáveis seguem uma sintaxe inspirada em linguagens da família C, enquanto os comandos disponíveis incluem operações de entrada e saída, atribuição, seleção e repetição. Entre os comandos definidos pela linguagem estão `leia VARIAVEL`, para leitura de valores; `escreva expressão`, para saída de resultados; atribuições utilizando o operador `<-`; além das estruturas condicionais `se ... entao ... senao ... fimse` e de repetição `enquanto ... faca ... fimenquanto`.
 
-        /* integers */
-    [0-9]+      {
-                    yylval = atoi(yytext);
-                    return INTEGER;
-                }
+Um programa simples escrito nessa linguagem pode ser representado pelo seguinte exemplo:
 
-        /* operators */
-    [-+()=/*\n] { return *yytext; }
+```text
+programa teste
+   inteiro A B C 
+inicio
+   leia A
+   leia B
+   se A > B 
+      entao C <- A
+            A <- B 
+            B <- C 
+      senao 
+   fimse
+   enquanto A < B faca
+      escreva A
+      A <- A + 1
+   fimenquanto
+fimprograma
+```
 
-        /* skip whitespace */
-    [ \t]        ;
+O exemplo apresenta algumas das principais construções disponíveis na linguagem. Inicialmente, o programa é identificado pelo comando `programa`, seguido de seu nome. Em seguida, são declaradas as variáveis inteiras `A`, `B` e `C`. O bloco iniciado pela palavra-chave `inicio` contém os comandos que serão executados pelo programa.
 
-        /* anything else is an error */
-    .               yyerror("invalid character");
+As instruções `leia A` e `leia B` representam operações de entrada de dados. Na sequência, a estrutura condicional verifica se o valor de `A` é maior que o valor de `B`. Caso a condição seja verdadeira, são realizadas três atribuições que utilizam a variável auxiliar `C` para trocar os valores de `A` e `B`. O comando `senao` representa o ramo alternativo da estrutura condicional, ainda que, neste exemplo, ele não contenha comandos.
 
-    %%
+Posteriormente, o programa apresenta uma estrutura de repetição definida pelos comandos `enquanto ... faca` e `fimenquanto`. Enquanto a condição `A < B` for verdadeira, o valor de `A` é apresentado por meio do comando `escreva` e, em seguida, incrementado por meio da atribuição `A <- A + 1`. Finalmente, o comando `fimprograma` delimita o término do programa.
 
-    int yywrap(void) {
-        return 1;
-    }
+Uma característica importante da linguagem `Simples` é a ausência deliberada de alguns elementos de pontuação encontrados normalmente nas linguagens de programação, como os símbolos `;` e `,`. Essa decisão tem como objetivo tornar a linguagem mais simples para os primeiros experimentos com a construção de compiladores, reduzindo a quantidade de elementos sintáticos que precisam ser tratados pelo analisador léxico e pelo analisador sintático.
 
-A especificação para Yacc é apresentada em seguida. Os tokens para INTEGER e VARIABLE são usados por yacc para criar definições do tipo #defines no arquivo y.tab.h para usar em lex. Esta é seguida pela definição da aritmética de operadores. Nós podemos especificar %left, para associatividade à esquerda ou %right, para associatividade à direita.A última definição listada é a quem tem maior precedência. Então multiplicação e divisão tem precedência maior que adição e subtração. Todos os quatro operadores são associados à esquerda. Usando esta técnica simples, nós tiramos a ambiguidade de nossa gramática:
+Entretanto, essa simplificação também introduz desafios na definição da gramática. Na ausência de delimitadores explícitos entre determinadas construções, o analisador sintático pode encontrar situações nas quais diferentes interpretações da sequência de tokens são possíveis ou nas quais não é possível determinar claramente onde termina uma construção e começa outra. Como será discutido nas próximas etapas do desenvolvimento do compilador, essas características da linguagem `Simples` terão impacto direto na construção da gramática e poderão resultar em conflitos durante a geração do analisador sintático pelo Bison.
 
-    %token INTEGER VARIABLE
-    %left '+' '-'
-    %left '*' '/'
+Assim, nesta etapa do projeto, o foco passa da identificação individual dos tokens para a **análise da sequência de tokens como uma estrutura sintática**. O analisador léxico desenvolvido na etapa anterior fornecerá os tokens ao Bison por meio da função `yylex()`, enquanto o analisador sintático gerado pelo Bison utilizará esses tokens para verificar se o programa está de acordo com a gramática da linguagem `Simples`.
 
-    %{
-        void yyerror(char *);
-        int yylex(void);
-        int sym[26];
-    %}
 
-    %%
+### Gramática da linguagem simples
 
-    program:
-            program statement '\n'
-            | 
-            ;
-
-    statement:
-            expr                      { printf("%d\n", $1); }
-            | VARIABLE '=' expr       { sym[$1] = $3; }
-            ;
-
-    expr:
-            INTEGER
-            | VARIABLE                { $$ = sym[$1]; }
-            | expr '+' expr           { $$ = $1 + $3; }
-            | expr '-' expr           { $$ = $1 - $3; }
-            | expr '*' expr           { $$ = $1 * $3; }
-            | expr '/' expr           { $$ = $1 / $3; }
-            | '(' expr ')'            { $$ = $2; }
-            ;
-
-    %%
-
-    void yyerror(char *s) {
-        printf("%s\n", s);
-    }
-
-    int main(void) {
-        yyparse();
-        return 0;
-    }
-
-## Analisador Sintático para a Linguagem Simples
-
-A gramática da linguagem Simples é:
+Usando a notação apresentada neste livro, a gramática da linguagem Simples é:
 
 $$\begin{aligned}
   programa & \rightarrow cabecalho \quad variaveis \quad T\_INICIO \quad lista\_comandos \quad T\_FIM \\
@@ -2960,139 +3038,141 @@ $$\begin{aligned}
 
 Os símbolos não terminais (variáveis da gramática) estão grafados com letras minúsculas e são: *programa*, *cabecalho*, *variaveis*, *declaracao_variaveis*, *tipo*, *lista_variaveis*, *lista_comandos*, *comando*, *entrada_saida*, *leitura*, *escrita*, *repeticao*, *condicao*, *atribuicao*, *expressao* e *termo*. O símbolo de partida é o não-terminal *programa*.
 
-Os símbolos terminais (alfabeto da gramática) estão representados pelas constantes: T_PROGRAMA, T_INICIO, T_FIM, T_IDENTIF, T_INTEIRO, T_LOGICO, T_LEIA, T_ESCREVA, T_ENQTO, T_FACA, T_FIMENQTO, T_SE, T_ENTAO, T_SENAO, T_FIMSE, T_ATRIB, T_VEZES, T_DIV, T_MAIS, T_MENOS, T_MAIOR, T_MENOR, T_IGUAL, T_E, T_OU, T_V, T_F, T_NAO, T_ABRE e T_FECHA. Essas constantes representam codificações numéricas dos símbolos que são reconhecidos e retornados pelo analisador léxico.
+Os símbolos terminais (alfabeto da gramática) estão representados pelas constantes com o prefixo `T_`como: T_PROGRAMA, T_INICIO, T_FIM, T_IDENTIF, T_INTEIRO, T_LOGICO, T_LEIA, T_ESCREVA, T_ENQTO, T_FACA, T_FIMENQTO, T_SE, T_ENTAO, T_SENAO, T_FIMSE, T_ATRIB, T_VEZES, T_DIV, T_MAIS, T_MENOS, T_MAIOR, T_MENOR, T_IGUAL, T_E, T_OU, T_V, T_F, T_NAO, T_ABRE e T_FECHA. Essas constantes representam codificações numéricas dos símbolos que são reconhecidos e retornados pelo analisador léxico.
 
 Para bison, as constantes que definem as codificações numéricas dos tokens são definidas através da seguinte declaração:
 
-    %token T_PROGRAMA
-    %token T_INICIO
-    %token T_FIM
-    %token T_IDENTIF
-    %token T_LEIA
-    %token T_ESCREVA
-    %token T_ENQTO
-    %token T_FACA
-    %token T_FIMENQTO
-    %token T_SE
-    %token T_ENTAO
-    %token T_SENAO
-    %token T_FIMSE
-    %token T_ATRIB
-    %token T_VEZES
-    %token T_DIV
-    %token T_MAIS
-    %token T_MENOS
-    %token T_MAIOR
-    %token T_MENOR
-    %token T_IGUAL
-    %token T_E
-    %token T_OU
-    %token T_V
-    %token T_F
-    %token T_NUMERO
-    %token T_NAO
-    %token T_ABRE
-    %token T_FECHA
-    %token T_LOGICO
-    %token T_INTEIRO
+```c 
+%token T_PROGRAMA
+%token T_INICIO
+%token T_FIM
+%token T_IDENTIF
+%token T_LEIA
+%token T_ESCREVA
+%token T_ENQTO
+%token T_FACA
+%token T_FIMENQTO
+%token T_SE 
+%token T_ENTAO
+%token T_SENAO
+%token T_FIMSE
+%token T_ATRIB
+%token T_VEZES
+%token T_DIV
+%token T_MAIS
+%token T_MENOS
+%token T_MAIOR
+%token T_MENOR
+%token T_IGUAL
+%token T_E 
+%token T_OU
+%token T_V 
+%token T_F 
+%token T_NUMERO
+%token T_NAO 
+%token T_ABRE
+%token T_FECHA
+%token T_LOGICO
+%token T_INTEIRO
+```
 
 Os códigos utilizados aqui são os mesmos retornados pelo analisador léxico. Basta incluir o arquivo de cabeçalho que é gerado com a declaração dessas contantes pela ferramenta bison.
 
 Como pode ser observado, a gramatica de expressões usada na linguagem Simples é ambígua. Essa ambiguidade é resolvida definindo-se prioridade entre as operações para a ferramenta Yacc. Fazemos isso com a seguinte declaração:
 
-    %left T_E T_OU
-    %left T_IGUAL
-    %left T_MAIOR T_MENOR
-    %left T_MAIS T_MENOS
-    %left T_VEZES T_DIV
+```c 
+%left T_E T_OU
+%left T_IGUAL
+%left T_MAIOR T_MENOR
+%left T_MAIS T_MENOS
+%left T_VEZES T_DIV
+```
 
 Com essa declaração, definimos que a multiplicação e a divisão tem associatividade mais à esquerda e precedência sobre a soma e a subtração. Soma e subtração tem precedência sobre Operadores relacionais Maior, Menor e Igual. Os operadores relacionais tem precedência sobre os operadores lógicos E e OU.
 
 As regras de produção da gramática SIMPLES usando a notação de bison fica:
 
-    programa
-          : cabecalho variaveis T_INICIO lista_comandos T_FIM
-          ;
+```c
+programa
+    : cabecalho variaveis T_INICIO lista_comandos T_FIM
+    ;
 
-    cabecalho
-          : T_PROGRAMA T_IDENTIF
-          ;
+cabecalho
+    : T_PROGRAMA T_IDENTIF
+    ;
 
-    variaveis
-          :  /* vazio */
-          | declaracao_variaveis
-          ;
+variaveis
+    : /* vazio */
+    | declaracao_variaveis
+    ;
 
-    declaracao_variaveis
-          : tipo lista_variaveis declaracao_variaveis
-          | tipo lista_variaveis
-          ;
+declaracao_variaveis
+    : tipo lista_variaveis declaracao_variaveis
+    | tipo lista_variaveis
+    ;
 
-    tipo
-          : T_LOGICO
-          | T_INTEIRO
-          ;
+tipo
+    : T_LOGICO
+    | T_INTEIRO
+    ;
 
-    lista_variaveis
-          : T_IDENTIF lista_variaveis
-          | T_IDENTIF
-          ;
+lista_variaveis
+    : T_IDENTIF lista_variaveis
+    | T_IDENTIF
+    ;
 
-    lista_comandos
-          : /* vazio */
-          | comando lista_comandos
-          ;
+lista_comandos
+    : /* vazio */
+    | comando lista_comandos
+    ;
 
-    comando
-          : entrada_saida
-          | repeticao
-          | selecao
-          | atribuicao
-          ;
+comando
+    : leitura
+    | escrita
+    | repeticao
+    | selecao
+    | atribuicao
+    ;
 
-    entrada_saida
-          : leitura
-          | escrita
-          ;
+leitura
+    : T_LEIA T_IDENTIF
+    ;
 
-    leitura
-          : T_LEIA T_IDENTIF
-          ;
+escrita
+    : T_ESCREVA expressao
+    ;
 
-    escrita
-          : T_ESCREVA expressao
-          ;
+repeticao
+    : T_ENQTO expressao T_FACA lista_comandos T_FIMENQTO
+    ;
 
-    repeticao
-          : T_ENQTO expressao T_FACA lista_comandos T_FIMENQTO
-          ;
+selecao
+    : T_SE expressao T_ENTAO lista_comandos T_SENAO lista_comandos T_FIMSE
+    ;
 
-    selecao
-          : T_SE expressao T_ENTAO lista_comandos T_SENAO lista_comandos T_FIMSE
-          ;
+atribuicao
+    : T_IDENTIF T_ATRIB expressao
+    ;
 
-    atribuicao
-          : T_IDENTIF T_ATRIB expressao
-          ;
+expressao
+    : expressao T_VEZES expressao
+    | expressao T_DIV expressao
+    | expressao T_MAIS expressao
+    | expressao T_MENOS expressao
+    | expressao T_MAIOR expressao
+    | expressao T_MENOR expressao
+    | expressao T_IGUAL expressao
+    | expressao T_E expressao
+    | expressao T_OU expressao
+    | termo
+    ;
 
-    expressao
-          : expressao T_VEZES expressao
-          | expressao T_DIV expressao
-          | expressao T_MAIS expressao
-          | expressao T_MENOS expressao
-          | expressao T_MAIOR expressao
-          | expressao T_MENOR expressao
-          | expressao T_IGUAL expressao
-          | expressao T_E expressao
-          | expressao T_OU expressao
-          | termo
-          ;
-
-    termo
-          : T_IDENTIF
-          | T_NUMERO
-          | T_V
-          | T_F
-          | T_NAO termo
-          | T_ABRE expressao T_FECHA
-          ;
+termo
+    : T_IDENTIF
+    | T_NUMERO
+    | T_V
+    | T_F
+    | T_NAO termo
+    | T_ABRE expressao T_FECHA
+    ; 
+```

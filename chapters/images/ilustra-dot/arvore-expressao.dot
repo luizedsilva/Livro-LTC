@@ -1,0 +1,142 @@
+digraph ArvoreSintatica {
+    graph [
+        rankdir=TB,
+        bgcolor="white",
+        pad=0.3,
+        nodesep=0.65,
+        ranksep=0.85,
+        splines=polyline
+    ];
+
+    node [
+        shape=plaintext,
+        fontname="Helvetica",
+        fontsize=20
+    ];
+
+    edge [
+        color="black",
+        penwidth=2
+    ];
+
+    // Raiz
+    L [label="calculo"];
+
+    // Produção L -> L E n
+    L0 [label="calculo"];
+    E0 [label="expr"];
+    n  [label="ENTER"];
+
+    L -> L0;
+    L -> E0;
+    L -> n;
+
+    vazio [label = "ε"]
+
+    L0 -> vazio
+
+    // Ação semântica da produção L -> E n
+    a1 [
+        label="{print $2}",
+        fontcolor="red",
+        fontsize=15
+    ];
+    L -> a1 [
+        color="red",
+        penwidth=1.2,
+        style=dashed,
+
+    ];
+
+    // Produção E -> E * E
+    E1 [label="expr"];
+    mult [label="+"];
+    E2 [label="expr"];
+
+    E0 -> E1;
+    E0 -> mult;
+    E0 -> E2;
+
+    // Ação semântica E.val = E1.val * E2.val
+    a2 [
+        label="{$$ = $1 + $3}",
+        fontcolor="red",
+        fontsize=15
+    ];
+    E0 -> a2 [
+        color="red",
+        penwidth=1.2,
+        style=dashed,
+
+    ];
+
+    // Produção E -> E + E
+    E3 [label="expr"];
+    plus [label="*"];
+    E4 [label="expr"];
+
+    E1 -> E3;
+    E1 -> plus;
+    E1 -> E4;
+
+    // Ação semântica E.val = E1.val + E2.val
+    a3 [
+        label="{$$ = $1 * $3}",
+        fontcolor="red",
+        fontsize=15
+    ];
+    E1 -> a3 [
+        color="red",
+        penwidth=1.2,
+        style=dashed,
+
+    ];
+
+    // Produção E -> num
+    num1 [label="NUMERO\n[2]"];
+    E3 -> num1;
+
+    a4 [
+        label="{$$ = $1}",
+        fontcolor="red",
+        fontsize=15
+    ];
+    E3 -> a4 [
+        color="red",
+        penwidth=1.2,
+        style=dashed,
+
+    ];
+
+    // Produção E -> num
+    num2 [label="NUMERO\n[3]"];
+    E4 -> num2;
+
+    a5 [
+        label="{$$ = $1}",
+        fontcolor="red",
+        fontsize=15
+    ];
+    E4 -> a5 [
+        color="red",
+        penwidth=1.2,
+        style=dashed,
+
+    ];
+
+    // Produção E -> num
+    num3 [label="NUMERO\n[5]"];
+    E2 -> num3;
+
+    a6 [
+        label="{$$ = $1}",
+        fontcolor="red",
+        fontsize=15
+    ];
+    E2 -> a6 [
+        color="red",
+        penwidth=1.2,
+        style=dashed,
+
+    ];
+}
