@@ -2116,12 +2116,6 @@ $$
 TRANSFERE(I_i,a).
 $$
 
-Quando o símbolo após o ponto é um não terminal $A$, a transição correspondente será utilizada na parte de **GOTO** da tabela:
-
-$$
-GOTO(I_i,A)=TRANSFERE(I_i,A).
-$$
-
 Por outro lado, quando um estado contém um item completo:
 
 $$
@@ -2473,183 +2467,353 @@ O simulador apresentado a seguir implementa esse processo de forma automática. 
 
 ## Yacc/Bison - Geradores e Analisadores Sintáticos 
 
-As gramáticas para Yacc estão definidas usando uma notação similar a notação de Backus Naur Form (BNF). Esta técnica foi criada por John Backus e Peter Naur, e usada para descrever a sintaxe de ALGOL60. Uma gramática BNF pode ser usada para especificar gramáticas livres de contexto. Muitas construções sintáticas de linguagens de programação modernas podem ser expressas usando BNF. Por exemplo, a gramática de expressões que multiplica e adiciona números é:
+As gramáticas utilizadas por ferramentas como **Yacc** e **Bison** são especificadas por meio de uma notação semelhante à **Forma de Backus-Naur (BNF)**. A BNF foi desenvolvida por John Backus e Peter Naur e utilizada originalmente para a descrição da sintaxe da linguagem ALGOL 60. Por sua simplicidade e capacidade de representar estruturas hierárquicas, a BNF e suas variantes tornaram-se amplamente utilizadas na especificação da sintaxe de linguagens de programação.
+
+Uma gramática livre de contexto permite descrever muitas das construções sintáticas encontradas em linguagens de programação. Considere, por exemplo, a seguinte gramática para expressões formadas por identificadores e pelos operadores de adição e multiplicação:
 
 ::: center
-$\begin{array}{rccl}
+
+$$
+\begin{array}{rccl}
 (1) & E & \rightarrow & E + E \\
 (2) & E & \rightarrow & E * E \\
-(3) & E & \rightarrow & id \\
-\end{array}$
-:::
+(3) & E & \rightarrow & id
+\end{array}
+$$
 
-Três regras de produção foram especificadas. Os termos que aparecem no lado esquerdo das regras de produção, como E, são não-terminais. Termos como id (identificadores) são terminais (tokens retornados pelo analisador léxico) e somente podem aparecer no lado direito de uma regra de produção. Esta gramática especifica que expressões podem ser a soma de duas expressões, o produto de duas expressões ou um identificador. Nós podemos usar esta gramática para gerar expressões:
+A gramática possui três regras de produção. O símbolo $E$ é um **não terminal** e representa uma expressão. Já o símbolo $id$ é um **terminal**, normalmente correspondente a um token produzido pelo analisador léxico. Os terminais representam os elementos efetivamente presentes na cadeia de entrada, enquanto os não terminais são utilizados para representar estruturas sintáticas.
 
-::: center
-$\begin{array}{rcll}
-E &\Rightarrow & E * E &            (r2) \\
-  &\Rightarrow & E * z &            (r3) \\
-  &\Rightarrow & E + E * z  &       (r1) \\
-  &\Rightarrow & E + y * z  &       (r3) \\
-  &\Rightarrow & x + y * z  &       (r3) \\
-\end{array}$
-:::
-
-A cada passo expande-se um termo, trocando um símbolo não-terminal no lado esquerdo de um regra pela sequência de símbolos terminais e/ou não terminais no lado direito da mesma regra. O número no lado direito indica que regra foi aplicada. Para analisar a expressão, nós usamos uma operação inversa. Ao invés de começar com o símbolo não-terminal inicial e gerar a expressão da gramática, nós devemos reduzir a expressão para um único símbolo não-terminal (o símbolo inicial). Este método, mais simples de implementar é chamado de análise ascendente ou análise de redução e deslocamento (bottom-up or shift-reduce parsing), e usa uma pilha para armazenar os termos. Aqui está o mesma da derivação, mas em ordem inversa:
+A partir dessa gramática, podemos gerar, por exemplo, a expressão $x+y*z$. Uma possível derivação é:
 
 ::: center
-$\begin{array}{rlll}
- 1 &  \bullet x + y * z  &   shift & \\
- 2 &  x \bullet + y * z  &   reduce(r3) & \\
- 3 &  E \bullet + y * z  &   shift & \\
- 4 &  E + \bullet y * z  &   shift & \\
- 5 &  E + y \bullet * z  &   reduce(r3) & \\
- 6 &  E + E \bullet * z  &   shift & \\
- 7 &  E + E * \bullet z  &   shift & \\
- 8 &  E + E * z \bullet  &   reduce(r3) & \\
- 9 &  E + E * E \bullet  &   reduce(r2) &  emit \quad multiply \\
-10 &  E + E \bullet      &  reduce(r1) &  emit \quad add \\
-11 &  E \bullet          &   accept & \\
-\end{array}$
+
+$$
+\begin{array}{rcll}
+E &\Rightarrow & E * E & (r2)\\
+  &\Rightarrow & E * z & (r3)\\
+  &\Rightarrow & E + E * z & (r1)\\
+  &\Rightarrow & E + y * z & (r3)\\
+  &\Rightarrow & x + y * z & (r3)
+\end{array}
+$$
+
 :::
 
-Os termos do lado esquerdo do ponto estão na pilha, enquanto o restante da entrada está no lado direito do ponto. Quando o topo da pilha corresponde ao lado direito de uma regra nós trocamos os tokens correspondentes com o símbolo não terminal do lado esquerdo da regra de produção. Conceitualmente, os tokens do lado direito são desempilhados e o símbolo não terminal do lado esquerdo da regra é empilhado. Os seqüência de tokens encontrados são chamados de redutendo (handle), e nós estamos reduzindo o redutendo para o símbolo do lado esquerdo da regra de produção. Este processo continua até que tenhamos deslocado todos os símbolos para a pilha e somente o símbolo não terminal inicial permanecer na pilha. No passo 1 nós deslocamos o x para a pilha. No passo 2 nós aplicamos a regra r3 para a pilha, trocando o símbolo x por um E. Nós continuamos deslocando e reduzindo, até que um único não terminal, o símbolo inicial, permaneça na pilha. No passo 9, quando nós reduzimos usando a regra r2, escrevemos a instrução de multiplicação. Da mesma forma, escrevemos a instrução de soma no passo 10. Portanto a multiplicação tem precedência maior que a soma.
+Em cada passo da derivação, um não terminal é substituído pelo lado direito de uma de suas produções. O número indicado entre parênteses identifica a regra de produção utilizada. A derivação começa com o símbolo inicial $E$ e termina quando todos os não terminais foram substituídos por símbolos terminais.
 
-Considere, entretanto, o deslocamento no passo 6. Ao invés de deslocar, nós poderíamos ter reduzido, aplicando a regra r1. Isto resultaria na adição tendo maior precedência que a multiplicação. Isto é conhecido como conflito de redução-deslocamento (shift-reduce conflict). Nossa gramática é ambígua, pois existe mais de uma derivação que produzirá a expressão. Neste caso, a precedência dos operadores é afetada. Outro exemplo, a associatividade na regra:
+Na **análise sintática ascendente**, o processo ocorre na direção inversa. Em vez de iniciar pelo símbolo inicial e gerar a cadeia de entrada, parte-se da própria cadeia e procura-se reconstruir o símbolo inicial por meio de sucessivas **reduções**. Por esse motivo, esse tipo de análise também é denominado **análise por redução e deslocamento** (*shift-reduce parsing*) ou simplesmente **análise bottom-up**.
+
+O analisador ascendente examina a cadeia de entrada da esquerda para a direita e utiliza uma pilha para armazenar os símbolos que já foram processados. Durante a análise, duas operações fundamentais são realizadas:
+
+* **deslocamento (*shift*)**: um símbolo da entrada é deslocado para a pilha;
+* **redução (*reduce*)**: uma sequência de símbolos no topo da pilha que corresponde ao lado direito de uma produção é substituída pelo não terminal que aparece no lado esquerdo dessa produção.
+
+Assim, uma redução representa a aplicação de uma produção **no sentido inverso**. Se a produção é
+
+$$
+A \rightarrow \alpha,
+$$
+
+a análise ascendente procura uma ocorrência de $\alpha$ e a substitui por $A$.
+
+Para a expressão $x+y*z$, uma possível sequência de deslocamentos e reduções é:
 
 ::: center
-$\begin{array}{ccl}
-E & \rightarrow & E + E \\
-\end{array}$
+
+$$
+\begin{array}{rlll}
+1 & \bullet x + y * z & \text{shift} & \\
+2 & x \bullet + y * z & \text{reduce}(r3) & \\
+3 & E \bullet + y * z & \text{shift} & \\
+4 & E + \bullet y * z & \text{shift} & \\
+5 & E + y \bullet * z & \text{reduce}(r3) & \\
+6 & E + E \bullet * z & \text{shift} & \\
+7 & E + E * \bullet z & \text{shift} & \\
+8 & E + E * z \bullet & \text{reduce}(r3) & \\
+9 & E + E * E \bullet & \text{reduce}(r2) & \text{emit multiply}\\
+10 & E + E \bullet & \text{reduce}(r1) & \text{emit add}\\
+11 & E \bullet & \text{accept} &
+\end{array}
+$$
+
 :::
 
-é ambígua, pois podemos recursivamente substituir o não terminal mais à esquerda ou mais à direita na regra. Para resolver esta situação, nós deveríamos reescrever a gramática, ou indicar para Yacc a precedência que existe entre os operadores. O último método é mais simples e será demonstrado numa prática posterior.
+Nessa representação, o ponto indica a fronteira entre a parte da cadeia que já foi deslocada para a pilha e a parte que ainda permanece na entrada. Assim, os símbolos à esquerda do ponto representam os símbolos já processados, enquanto aqueles à direita ainda precisam ser analisados.
 
-A seguinte gramática tem um conflito de redução e redução. Com um id na pilha nós podemos reduzir para T ou reduzir para E.
+No primeiro passo, o símbolo $x$ é deslocado para a pilha. No passo seguinte, como $x$ corresponde ao lado direito da produção $E\rightarrow id$, realiza-se uma redução, substituindo $x$ pelo não terminal $E$. A análise prossegue alternando operações de deslocamento e redução até que todos os símbolos da entrada tenham sido processados e o símbolo inicial da gramática seja obtido.
+
+A sequência de símbolos que pode ser reduzida em determinado momento é denominada **redutendo** (*handle*). Em uma implementação baseada em pilha, a redução consiste conceitualmente em desempilhar os símbolos que correspondem ao lado direito da produção e, em seguida, empilhar o não terminal correspondente ao lado esquerdo.
+
+Por exemplo, considerando a produção
+
+$$
+E\rightarrow E*E,
+$$
+
+quando a sequência $E*E$ estiver disponível para redução, os três símbolos são removidos da pilha e substituídos por um único símbolo $E$. A operação pode ser representada por:
+
+$$
+E*E \Rightarrow E.
+$$
+
+Essa operação é exatamente o inverso da aplicação da produção durante uma derivação.
+
+### Ambiguidade e conflito deslocamento-redução
+
+A sequência de operações realizada pelo analisador não é necessariamente única. Considere, por exemplo, o momento em que a pilha contém $E+E$ e o próximo símbolo da entrada é $*$. O analisador pode deslocar o símbolo $*$ para a pilha, formando:
+
+$$
+E+E*.
+$$
+
+Entretanto, também poderia reduzir imediatamente $E+E$ utilizando a produção
+
+$$
+E\rightarrow E+E.
+$$
+
+Temos, portanto, duas possibilidades de ação: **deslocar** o próximo símbolo ou **reduzir** os símbolos que já estão na pilha. Essa situação caracteriza um **conflito deslocamento-redução** (*shift-reduce conflict*).
+
+Esse conflito está relacionado à ambiguidade da gramática. A gramática
+
+$$
+E\rightarrow E+E \mid E*E \mid id
+$$
+
+não especifica, por si só, qual operador possui maior precedência. Consequentemente, a expressão
+
+$$
+x+y*z
+$$
+
+pode ser interpretada como:
+
+$$
+(x+y)*z
+$$
+
+ou como:
+
+$$
+x+(y*z).
+$$
+
+As duas interpretações correspondem a diferentes árvores sintáticas e, portanto, a diferentes derivações.
+
+No exemplo apresentado anteriormente, o analisador escolheu realizar a redução de $E*E$ antes de reduzir $E+E$. Essa escolha produz a interpretação
+
+$$
+x+(y*z),
+$$
+
+na qual a multiplicação possui precedência maior que a adição. Na implementação de um compilador, essa diferença é fundamental, pois a árvore sintática produzida influencia diretamente a geração do código e, consequentemente, o significado da expressão.
+
+Uma maneira de resolver esse problema é **reescrever a gramática**, de modo que a própria estrutura das produções represente as relações de precedência e associatividade entre os operadores. Outra possibilidade, particularmente conveniente em ferramentas como Yacc e Bison, consiste em declarar explicitamente a precedência e a associatividade dos operadores. Nesse caso, a ferramenta pode utilizar essas informações para resolver determinados conflitos durante a construção do analisador.
+
+### Conflito redução-redução
+
+Outro tipo de conflito ocorre quando duas reduções diferentes podem ser aplicadas na mesma situação. Considere a gramática:
 
 ::: center
-$\begin{array}{ccl}
-E & \rightarrow & T \\
-E & \rightarrow & id \\
-T & \rightarrow & id \\
-\end{array}$
+
+$$
+\begin{array}{ccl}
+E &\rightarrow& T\\
+E &\rightarrow& id\\
+T &\rightarrow& id
+\end{array}
+$$
+
 :::
 
-Yacc executa uma ação default quando há um conflito. Para conflito de redução-deslocamento, yacc deslocará o símbolo para pilha. Para conflito de redução-redução ele usará a primeira regra da listagem. Ele também apresenta uma mensagem indicando a existência do conflito. O aviso pode ser excluído tornando a gramática não ambígua. Vários métodos para remover ambigüidade serão apresentados na seção seguinte.
+Quando o token $id$ está disponível para redução, existem duas possibilidades. Pode-se utilizar a produção
 
-#### Implementação de uma calculadora de expressões usando Yacc
+$$
+E\rightarrow id
+$$
+
+ou a produção
+
+$$
+T\rightarrow id.
+$$
+
+Temos, portanto, um **conflito redução-redução** (*reduce-reduce conflict*). Diferentemente do conflito deslocamento-redução, no qual a escolha ocorre entre uma redução e um deslocamento, aqui o analisador precisa escolher entre duas reduções distintas.
+
+Esse tipo de conflito normalmente indica que a gramática precisa ser revisada, pois diferentes produções podem reconhecer a mesma sequência de entrada sem que exista informação suficiente para determinar qual delas deve ser aplicada.
+
+Quando encontra conflitos, Yacc apresenta mensagens de advertência durante a geração do analisador. Na ausência de informações adicionais, a ferramenta utiliza regras de desempate predefinidas. Para conflitos deslocamento-redução, Yacc tradicionalmente privilegia o deslocamento. Para conflitos redução-redução, utiliza a primeira produção na ordem em que elas aparecem na especificação da gramática.
+
+Embora essas regras permitam que o analisador seja gerado, não significa que o conflito deva ser ignorado. Um conflito pode representar uma ambiguidade real na especificação da linguagem e, consequentemente, produzir uma análise sintática diferente daquela pretendida pelo projetista do compilador.
+
+## Implementação de uma calculadora de expressões com Yacc
+
+A partir dos conceitos apresentados, podemos observar como uma ferramenta geradora de analisadores sintáticos, como **Yacc**, permite transformar uma gramática em um analisador sintático executável.
+
+Um arquivo de entrada do Yacc é tradicionalmente dividido em três partes:
 
 ```c
-    ... definicoes ...
-    %%
-    ... regras ...
-    %%
-    ... subrotinas ...
-``` 
+%{
+    /* definições e declarações em C */
+%}
 
-O arquivo de entrada para yacc é dividido em três seções. A seção de definições consiste de declaração de tokens, e código C delimintado por \"%\" e \"%\". A gramática BNF é colocada na seção de regras e as rotinas do usuário são colocados na seção de subrotinas.
+/* declarações de tokens */
 
-Podemos ilustrar isto melhor através de um exemplo que contrói uma pequena calculadora que pode adicionar e subtrair números. Começaremos examinando a ligação entre lex e yacc. Abaixo está a seção de definição para o arquivo de entrada yacc:
+%%
 
-```c
-    %token INTEGER
+/* regras gramaticais e ações semânticas */
+
+%%
+
+/* subrotinas do usuário */
 ```
 
-Esta definição declara um token INTEGER. Quando nós rodamos yacc, ele gera o analisador sintático (parser) no arquivo y.tab.c, e também cria um arquivo (include file), y.tab.h:
+A primeira seção contém declarações necessárias ao analisador e código C que deve ser incorporado ao programa gerado. Nessa seção também podem ser declarados os tokens utilizados pela gramática.
+
+A segunda seção contém as **regras de produção** da gramática. Cada produção pode ser acompanhada por uma **ação semântica**, escrita entre chaves, que será executada quando a produção correspondente for reduzida.
+
+A terceira seção contém as funções auxiliares e demais rotinas escritas pelo programador.
+
+Essa organização permite separar a especificação da gramática da implementação das rotinas auxiliares, tornando o desenvolvimento do analisador mais sistemático.
+
+### Integração entre Lex/Flex e Yacc/Bison
+
+A construção de um analisador sintático com Yacc normalmente envolve sua integração com um analisador léxico, tradicionalmente implementado com **Lex** ou, atualmente, com ferramentas compatíveis como **Flex**.
+
+O analisador léxico é responsável por ler os caracteres da entrada e agrupá-los em **tokens**. O analisador sintático, por sua vez, recebe esses tokens e verifica se a sequência obtida está de acordo com a gramática.
+
+Por exemplo, podemos declarar um token para representar números inteiros:
 
 ```c
-    #ifndef YYSTYPE
-    #define YYSTYPE int
-    #endif
-    #define INTEGER 258
-    extern YYSTYPE yylval;
+%token INTEGER
 ```
 
-Lex inclui este arquivo e utiliza a definição para o valor do token. Para obter tokens, yacc chama yylex. A função yylex é do tipo int, e retorna o código numérico do token. Valores associados com o token são retornados por lex na variável yylval. Por exemplo,
+A partir dessa declaração, o Yacc identifica `INTEGER` como um dos terminais utilizados pela gramática. Durante a geração do analisador, são produzidas as estruturas necessárias para que o analisador léxico e o analisador sintático utilizem uma representação comum dos tokens.
 
-    [0-9]+      {
-                    yylval = atoi(yytext);
-                    return INTEGER;
-                }
+O arquivo gerado contém, entre outras informações, os códigos numéricos associados aos tokens. O analisador léxico pode então incluir o arquivo de cabeçalho produzido pelo Yacc/Bison para ter acesso às definições desses tokens.
 
-armazenaria o valor do inteiro em yylval, e retorna o token INTEGER para yacc. O tipo de yylval é determinado por YYSTYPE. Como o tipo default é inteiro, o valor retornado está correto para este caso. Os valores de tokens entre 0 e 255 são reservados para os caracteres. Por exemplo, se você tem um regra como
+A comunicação entre o analisador léxico e o sintático ocorre, tradicionalmente, por meio da função `yylex()`. Quando o analisador sintático necessita de um novo token, ele chama essa função. O analisador léxico identifica o próximo elemento da entrada e retorna o código correspondente ao token.
 
-    [-+]       return *yytext;    /* return operator */
+Além do código do token, o analisador léxico pode fornecer um **valor associado** ao token por meio da variável `yylval`. Esse mecanismo é particularmente importante para tokens que carregam informações adicionais, como números, identificadores e literais.
 
-será retornado o valor caracter para os operadores de subtração e soma. Note que nós colocamos o caracter menos antes do caracter mais porque senão ele poderia ser confundido com o designador de intervalo numa classe de caracteres. Os valores do tokens gerados começam normalmente do valor 258 (Lex ainda reseva alguns valores para fim de arquivo e códigos de erro). Aqui está uma especificação lex completa para nossa calculadora:
+Por exemplo, ao reconhecer um número inteiro, o analisador léxico pode executar:
 
-    %{
-        #include "y.tab.h"
-        #include <stdlib.h>
-        void yyerror(char *);
-    %}
+```c
+[0-9]+ {
+    yylval = atoi(yytext);
+    return INTEGER;
+}
+```
 
-    %%
+Nesse caso, `yytext` contém o texto reconhecido pelo analisador léxico. A função `atoi()` converte esse texto para um valor inteiro, que é armazenado em `yylval`. Em seguida, a função retorna o token `INTEGER` para o analisador sintático.
 
-    [0-9]+      {
-                    yylval = atoi(yytext);
-                    return INTEGER;
-                }
+O tipo de `yylval` é determinado pela definição de `YYSTYPE`. Em exemplos simples, pode ser utilizado o tipo `int`. Em compiladores mais complexos, entretanto, diferentes tokens podem transportar diferentes tipos de informação, como valores numéricos, nomes de identificadores ou estruturas de dados.
 
-    [-+\n]      return *yytext;
+### Pilhas utilizadas pelo analisador sintático
 
-    [ \t]       ; /* skip whitespace */
+Durante a análise, o Yacc mantém informações que representam o estado corrente do processo de reconhecimento. Didaticamente, podemos considerar duas estruturas principais: a **pilha de análise** e a **pilha de valores**.
 
-    .           yyerror("invalid character");
+A pilha de análise representa a estrutura sintática que está sendo construída. Nela são mantidas informações relacionadas aos símbolos e aos estados do analisador. A pilha de valores, por sua vez, mantém os valores semânticos associados aos símbolos.
 
-    %%
+As duas estruturas permanecem sincronizadas. Quando um token é deslocado para a pilha durante uma operação *shift*, seu valor correspondente também é armazenado na estrutura de valores.
 
-    int yywrap(void) {
-        return 1;
-    }
+Durante uma redução, os símbolos correspondentes ao lado direito da produção são removidos e substituídos pelo não terminal do lado esquerdo. Simultaneamente, a ação semântica associada à produção pode calcular o valor que será associado ao novo símbolo.
 
-Internamente, Yacc mantém duas pilhas na memória, a pilha de análise e a pilha de valores. A pilha de análise contém terminais e não-terminais e representa o estado de análise corrente. A pilha de valores é um vetor de elementos do tipo YYSTYPE, e associa um valor com cada elemento da pilha de análise. Por exemplo, quando lex retorna um token INTEGER, yacc desloca este token para a pilha de análise. Ao mesmo tempo, o yylval correspondente é deslocado para a pilha de valores. A pilha de análise e de valores estão sempre sincronizadas. Abaixo está a especificação do arquivo de entrada yacc para a nossa calculadora:
+Considere a produção:
 
-    %{
-        int yylex(void);
-        void yyerror(char *);
-    %}
+```c
+expr:
+      expr '+' expr   { $$ = $1 + $3; }
+```
 
+Os símbolos `$1`, `$2` e `$3` representam os valores associados aos símbolos que aparecem no lado direito da produção. Nesse caso:
 
-    %token INTEGER
+* `$1` representa o valor da primeira ocorrência de `expr`;
+* `$2` representa o valor associado ao operador `+`;
+* `$3` representa o valor da segunda ocorrência de `expr`;
+* `$$` representa o valor associado ao não terminal `expr` após a redução.
 
-    %%
+Assim, a ação:
 
-    program:
-            program expr '\n'         { printf("%d\n", $2); }
-            | 
-            ;
+```c
+{ $$ = $1 + $3; }
+```
 
-    expr:
-            INTEGER                   { $$ = $1; }
-            | expr '+' expr           { $$ = $1 + $3; }
-            | expr '-' expr           { $$ = $1 - $3; }
-            ;
+calcula o valor da expressão resultante e o associa ao símbolo `expr` produzido pela redução.
 
-    %%
+Quando a produção é:
 
-    void yyerror(char *s) {
-        printf("%s\n", s);
-    }
+```c
+expr:
+      INTEGER   { $$ = $1; }
+```
 
-    int main(void) {
-        yyparse();
-        return 0;
-    }
+o valor do token `INTEGER` é simplesmente transferido para o não terminal `expr`. Essa ação permite que o valor numérico reconhecido pelo analisador léxico seja propagado pela árvore sintática durante as reduções.
 
-A seção de regras descreve a gramática BNF discutida anteriormente. O lado esquerdo da regra de produção, ou não-terminal, deve estar todo justificado à esquerda, seguido por dois pontos. Este é seguido pelo lado direito da regra de produção. As ações associadas as regras devem estar entre chaves. Pela utilização da recursão à esquerda, nós especificamos que um programa consiste de zero ou mais expressões. Cada expressão terminada por nova linha (ENTER). Quando uma nova linha é detectada, nós escrevemos o valor associado com a expressão. Quando nós aplicamos a regra:
+Esse mecanismo estabelece uma ligação direta entre a **análise sintática** e a **análise semântica**. Enquanto as produções determinam a estrutura sintática da linguagem, as ações semânticas permitem associar informações e operações a essa estrutura.
 
-    expr: expr '+' expr              { $$ = $1 + $3; }
+### Exemplo de uma calculadora simples
 
-Nós trocamos o lado direito da regra de produção na pilha de análise com o símbolo não terminal no lado esquerdo da mesma regra. Neste caso nós desempilhamos \"expr '+' expr\" e empilhamos \"expr\". Nós reduzimos a pilha desempilhando três termos e empilhando de volta um termo. Nós podemos referenciar as posições na pilha de valores no código em C especificando \"\$1\" para o primeiro termo no lado direito da regra de produção, \"\$2\" para o segundo termo, e assim por diante. \"\$\$\" determina o valor do topo da pilha depois que a redução é executada. As ações acima adicionam os valores associados com as duas expressões, desempilha três termos da pilha, e empilha de volta a soma. Então a pilha de análise e de valores permanecem sincronizadas.
+Uma gramática elementar para uma calculadora que realiza operações de adição e subtração pode ser especificada como:
 
-Os valores numéricos estão inicialmente todos na pilha quanto reduzimos de INTEGER para expr. Depois que INTEGER é deslocado para a pilha, aplicamos a regra:
+```c
+%token INTEGER
 
-    expr: INTEGER                   { $$ = $1; }
+%%
 
-O token INTEGER é desempilhado da pilha de análise, seguido pelo empilhamento de expr. Para a pilha de valores, nós desempilhamos o valor inteiro e então empilhamos ele de volta. Em outras palavras, nós não fazemos nada. De fato , esta é uma operação default e não precisa ser especificada. Finalmente, quando uma nova linha é encontrada, o valor associado com expr será apresentado na saída.
+program:
+      program expr '\n'   { printf("%d\n", $2); }
+    |
+    ;
 
-No caso de erro de sintaxe, yacc chama a função definida pelo usuário yyerror. Se você necessita modificar a interface para yyerror, você pode alterar a implementação que Yacc inclui automaticamente para satisfazer as suas necessidades. A última função em nossa especificação Yacc é main. Este exemplo tem uma gramática ambígua. Yacc emitirá avisos de conflito shift-reduce, mas processará a gramática usando o deslocamento como operação default.
+expr:
+      INTEGER              { $$ = $1; }
+    | expr '+' expr        { $$ = $1 + $3; }
+    | expr '-' expr        { $$ = $1 - $3; }
+    ;
+
+%%
+```
+
+A produção `program` permite reconhecer uma sequência de expressões, cada uma terminada por uma quebra de linha. Quando uma expressão é reconhecida, seu valor é apresentado na saída.
+
+A produção:
+
+```c
+expr: expr '+' expr
+```
+
+define uma expressão como a soma de duas outras expressões. Quando essa produção é reduzida, a ação semântica calcula a soma dos valores associados às duas subexpressões.
+
+De maneira análoga:
+
+```c
+expr: expr '-' expr
+```
+
+calcula a diferença entre os valores das duas expressões.
+
+O uso de ações semânticas dessa forma permite que o analisador não apenas reconheça se uma sequência pertence à linguagem definida pela gramática, mas também **execute operações associadas à estrutura sintática reconhecida**.
+
+Esse princípio é fundamental para a construção de compiladores. Durante a análise sintática, as reduções podem ser utilizadas para construir árvores sintáticas, verificar informações semânticas, gerar representações intermediárias ou executar ações específicas associadas às construções da linguagem.
+
+### Tratamento de erros sintáticos
+
+Quando o analisador sintático encontra uma sequência de tokens que não pode ser derivada pela gramática, ocorre um **erro sintático**. O Yacc/Bison disponibiliza mecanismos para tratar esses erros, tradicionalmente por meio da função `yyerror()`.
+
+Uma implementação simples pode ser:
+
+```c
+void yyerror(char *s)
+{
+    printf("%s\n", s);
+}
+```
+
+Essa função recebe uma mensagem associada ao erro detectado pelo analisador sintático e pode ser modificada para produzir mensagens mais informativas, incluindo, por exemplo, a linha e a coluna em que o erro ocorreu, o token encontrado e os tokens esperados.
+
+O tratamento de erros é uma característica importante de analisadores sintáticos utilizados em compiladores reais. Um compilador não deve apenas detectar que uma entrada é inválida, mas também fornecer informações que auxiliem o programador a localizar e corrigir o problema.
+
 
 #### Nova versão da calculadora
 
