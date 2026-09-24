@@ -1,200 +1,206 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador do Algoritmo CYK</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador do Algoritmo CYK</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
 
-  <style>
-    * { box-sizing: border-box; }
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f4f6f8;
-      color: #17202a;
-    }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f6f8;
+        color: #17202a;
+      }
 
-    header {
-      background: #17202a;
-      color: white;
-      padding: 18px 24px;
-    }
+      header {
+        background: #17202a;
+        color: white;
+        padding: 18px 24px;
+      }
 
-    header h1 {
-      margin: 0 0 6px;
-      font-size: 24px;
-    }
+      header h1 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
 
-    header p {
-      margin: 0;
-      color: #d0d5dd;
-    }
+      header p {
+        margin: 0;
+        color: #d0d5dd;
+      }
 
-    main {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 18px;
-    }
+      main {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 18px;
+      }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 18px;
-      align-items: start;
-    }
+      .layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 18px;
+        align-items: start;
+      }
 
-    .card {
-      background: white;
-      border: 1px solid #d0d5dd;
-      border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.06);
-    }
+      .card {
+        background: white;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
 
-    .card h2 {
-      margin: 0 0 12px;
-      font-size: 20px;
-    }
+      .card h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
 
-    .card h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-    }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
 
-    label {
-      display: block;
-      margin: 12px 0 6px;
-      font-weight: bold;
-    }
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        font-weight: bold;
+      }
 
-    textarea,
-    input[type="text"] {
-      width: 100%;
-      border: 1px solid #98a2b3;
-      border-radius: 7px;
-      padding: 9px;
-      font-family: "Courier New", monospace;
-      font-size: 14px;
-      background: white;
-    }
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        border: 1px solid #98a2b3;
+        border-radius: 7px;
+        padding: 9px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        background: white;
+      }
 
-    textarea {
-      min-height: 160px;
-      resize: vertical;
-    }
+      textarea {
+        min-height: 160px;
+        resize: vertical;
+      }
 
-    .hint {
-      margin-top: 8px;
-      font-size: 12px;
-      line-height: 1.45;
-      color: #667085;
-    }
+      .hint {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #667085;
+      }
 
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 10px;
-    }
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 10px;
+      }
 
-    button {
-      border: 0;
-      border-radius: 7px;
-      padding: 9px 12px;
-      cursor: pointer;
-      font-weight: bold;
-      background: #e4e7ec;
-      color: #17202a;
-    }
+      button {
+        border: 0;
+        border-radius: 7px;
+        padding: 9px 12px;
+        cursor: pointer;
+        font-weight: bold;
+        background: #e4e7ec;
+        color: #17202a;
+      }
 
-    button:hover { filter: brightness(.96); }
+      button:hover {
+        filter: brightness(0.96);
+      }
 
-    button.primary {
-      background: #2563eb;
-      color: white;
-    }
+      button.primary {
+        background: #2563eb;
+        color: white;
+      }
 
-    button.step {
-      background: #7c3aed;
-      color: white;
-    }
+      button.step {
+        background: #7c3aed;
+        color: white;
+      }
 
-    .instructions {
-      margin-top: 18px;
-      padding: 10px;
-      background: #e9eef5;
-      border-radius: 8px;
-      font-size: 14px;
-      line-height: 1.35;
-    }
+      .instructions {
+        margin-top: 18px;
+        padding: 10px;
+        background: #e9eef5;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.35;
+      }
 
-    .result-card,
-    .tree-card {
-      margin-top: 10px;
-    }
+      .result-card,
+      .tree-card {
+        margin-top: 10px;
+      }
 
-    #result {
-      min-height: 28px;
-      font-size: 15px;
-      line-height: 1.45;
-    }
+      #result {
+        min-height: 28px;
+        font-size: 15px;
+        line-height: 1.45;
+      }
 
-    #cyk-canvas-container {
-      width: 100%;
-      overflow: auto;
-      background: white;
-    }
+      #cyk-canvas-container {
+        width: 100%;
+        overflow: auto;
+        background: white;
+      }
 
-    #cyk-canvas-container canvas {
-      display: block;
-      max-width: none;
-    }
+      #cyk-canvas-container canvas {
+        display: block;
+        max-width: none;
+      }
 
-    #tree-info {
-      color: #667085;
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
+      #tree-info {
+        color: #667085;
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
 
-    #tree-canvas {
-      display: block;
-      width: 100%;
-      height: 300px;
-      border: 1px solid #d0d5dd;
-      border-radius: 8px;
-      background: white;
-    }
+      #tree-canvas {
+        display: block;
+        width: 100%;
+        height: 300px;
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        background: white;
+      }
 
-    @media (max-width: 950px) {
-      .layout { grid-template-columns: 1fr; }
-      main { padding: 12px; }
-    }
-  </style>
-</head>
+      @media (max-width: 950px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        main {
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
 
-<body>
-  <header>
-    <h1>Simulador do Algoritmo CYK</h1>
-    <p>
-      Simulação do algoritmo CYK para reconhecimento de cadeias em
-      Gramáticas Livres de Contexto.
-    </p>
-  </header>
+  <body>
+    <header>
+      <h1>Simulador do Algoritmo CYK</h1>
+      <p>
+        Simulação do algoritmo CYK para reconhecimento de cadeias em Gramáticas
+        Livres de Contexto.
+      </p>
+    </header>
 
-  <main>
-    <div class="layout">
+    <main>
+      <div class="layout">
+        <section class="card">
+          <h2>Entrada</h2>
 
-      <section class="card">
-        <h2>Entrada</h2>
+          <label for="grammar"> 1. Gramática (Forma Normal de Chomsky) </label>
 
-        <label for="grammar">
-          1. Gramática (Forma Normal de Chomsky)
-        </label>
-
-        <textarea id="grammar">S -> AB
+          <textarea id="grammar">
+S -> AB
 S -> BC
 A -> BA
 A -> a
@@ -202,91 +208,94 @@ B -> CC
 B -> b
 C -> AB
 C -> a
-C -> b</textarea>
+C -> b</textarea
+          >
 
-        <div class="hint">
-          Uma produção por linha.<br>
-          Use: <code>S -> AB</code> ou <code>A -> a</code>.
-        </div>
-
-        <label for="sentence">2. Cadeia de entrada</label>
-
-        <input id="sentence" type="text" value="baaba">
-
-        <!-- TODOS OS BOTÕES ABAIXO DA CADEIA -->
-        <div class="button-row">
-          <button
-            id="run-button"
-            class="primary"
-            type="button"
-            onclick="executarCYK()">
-            Executar
-          </button>
-
-          <button
-            id="step-button"
-            class="step"
-            type="button"
-            onclick="proximoPassoCYK()">
-            Próximo passo
-          </button>
-
-          <button
-            id="reset-button"
-            type="button"
-            onclick="limparCYK()">
-            Limpar
-          </button>
-
-          <button
-            id="tree-prev-button"
-            type="button"
-            onclick="arvoreAnteriorCYK()">
-            Árvore anterior
-          </button>
-
-          <button
-            id="tree-next-button"
-            type="button"
-            onclick="proximaArvoreCYK()">
-            Próxima árvore
-          </button>
-        </div>
-
-        <div class="instructions">
-          <h3>Como usar</h3>
-          1. Informe uma gramática na Forma Normal de Chomsky.<br>
-          2. Informe a cadeia.<br>
-          3. Clique em <i>Executar</i> para preencher toda a tabela e
-          construir a árvore.<br>
-          4. Use <i>Próximo passo</i> para acompanhar a execução passo a passo.
-        </div>
-      </section>
-
-      <section class="results">
-
-        <div class="card">
-          <h2>Tabela CYK</h2>
-          <div id="cyk-canvas-container"></div>
-        </div>
-
-        <div class="card result-card">
-          <h2>Resultado</h2>
-          <div id="result">
-            Informe uma gramática e uma cadeia e clique em <b>Executar</b>.
+          <div class="hint">
+            Uma produção por linha.<br />
+            Use: <code>S -> AB</code> ou <code>A -> a</code>.
           </div>
-        </div>
 
-        <div class="card tree-card">
-          <h2>Árvore(s) de derivação</h2>
-          <div id="tree-info">Nenhuma árvore disponível.</div>
-          <canvas id="tree-canvas"></canvas>
-        </div>
+          <label for="sentence">2. Cadeia de entrada</label>
 
-      </section>
-    </div>
-  </main>
+          <input id="sentence" type="text" value="baaba" />
 
-  <script src="sketch.js"></script>
-</body>
+          <!-- TODOS OS BOTÕES ABAIXO DA CADEIA -->
+          <div class="button-row">
+            <button
+              id="run-button"
+              class="primary"
+              type="button"
+              onclick="executarCYK()">
+              Executar
+            </button>
+
+            <button
+              id="step-button"
+              class="step"
+              type="button"
+              onclick="proximoPassoCYK()">
+              Próximo passo
+            </button>
+
+            <button id="reset-button" type="button" onclick="limparCYK()">
+              Limpar
+            </button>
+          </div>
+
+          <div class="instructions">
+            <h3>Como usar</h3>
+            1. Informe uma gramática na Forma Normal de Chomsky.<br />
+            2. Informe a cadeia.<br />
+            3. Clique em <i>Executar</i> para preencher toda a tabela e
+            construir a árvore.<br />
+            4. Use <i>Próximo passo</i> para acompanhar a execução passo a
+            passo.
+          </div>
+        </section>
+
+        <section class="results">
+          <div class="card">
+            <h2>Tabela CYK</h2>
+            <div id="cyk-canvas-container"></div>
+          </div>
+
+          <div class="card result-card">
+            <h2>Resultado</h2>
+            <div id="result">
+              Informe uma gramática e uma cadeia e clique em <b>Executar</b>.
+            </div>
+          </div>
+
+          <div class="card tree-card">
+            <h2>Árvore(s) de derivação</h2>
+            <div class="button-row">
+              <button
+                id="tree-prev-button"
+                type="button"
+                class="primary"
+                onclick="arvoreAnteriorCYK()">
+                Árvore anterior
+              </button>
+
+              <button
+                id="tree-next-button"
+                type="button"
+                class="step"
+                onclick="proximaArvoreCYK()">
+                Próxima árvore
+              </button>
+            </div>
+
+            <div id="tree-info" style="margin-top: 10px">
+              Nenhuma árvore disponível.
+            </div>
+            <canvas id="tree-canvas"></canvas>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="sketch.js"></script>
+  </body>
 </html>

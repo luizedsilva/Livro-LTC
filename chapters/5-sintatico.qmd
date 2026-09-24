@@ -438,7 +438,7 @@ em que $n$ é o tamanho da cadeia de entrada e $|G|$ representa o tamanho da gra
 
 O exemplo interativo seguinte simula esse algoritmo. A partir de um gramática na Forma Normal de Chomsky e um sentença o simulador preenche a tabela dinâmica de controi todas as árvores de derivação para a sentença dada, se esta for reconhecida pela linguagem reconhecida pela gramática FNC.
 
-::: {.simulacao url="/p5js/cyk/" height="400" image="/printscreen/cyk.png" qrcode="/qrcode/cyk.png"}
+::: {.simulacao url="/p5js/cyk/" height="600" image="/printscreen/cyk.png" qrcode="/qrcode/cyk.png"}
 :::
 
 #### Eliminação da Recursão à Esquerda
@@ -2000,14 +2000,22 @@ Esse detalhe é importante: uma transição `TRANSFERE(K,X)` somente existe quan
 Considere agora:
 
 $$
+\begin{aligned}
 K_2=
-FECHO(\{E\rightarrow+\bullet EE\}).
+FECHO(\{E\rightarrow+\bullet EE\}) = \\
+& \{E\rightarrow+\bullet EE \\
+& E\rightarrow\bullet +EE,\;
+E\rightarrow\bullet *EE,\;
+E\rightarrow\bullet a,\;
+E\rightarrow\bullet b
+\}.
+\end{aligned}
 $$
 
 Como $K_2$ contém o item:
 
 $$
-E\rightarrow+\bullet EE,
+E\rightarrow \bullet +EE,
 $$
 
 podemos transferir pelo símbolo $+$, obtendo:
@@ -2371,9 +2379,8 @@ Cada um desses estados corresponde a uma linha da tabela de análise LR. As tran
 
 ### Construção da tabela de análise
 
-A partir da coleção de estados, podemos construir a tabela de análise LR. Para cada estado, analisamos os itens que o compõem e as respectivas transferências.
+A definição das ações de deslocamento e redução da tabela LR é realizada a partir dos resultados dos cálculos da coleção de estados da gramática. Os **deslocamentos** (*shift*) são determinados pela função de transição $\operatorname{TRANSFERE}(e_j,x)=e_i$. Assim, quando existe uma transição do estado $e_j$ para o estado $e_i$ ao consumir o símbolo $x$, na linha correspondente ao estado $e_j$ e na coluna correspondente ao símbolo $x$ da tabela, é inserida a operação $e_i$, indicando que o analisador deve consumir o símbolo $x$ e empilhar o estado $e_i$. Já as **reduções** (*reduce*) são determinadas pelos estados que contêm itens completos. Por exemplo, se o estado $e_j$ contém o item $A \rightarrow \alpha\bullet$ e essa regra se refere a produção $r_i$, então, para cada símbolo $x \in FOLLOW(A)$, na linha correspondente ao estado $e_j$ e na coluna correspondente a $x$, insere-se a ação $r_i$, indicando que o analisador deve realizar uma redução utilizando a regra de produção $i$. Dessa forma, os deslocamentos são obtidos diretamente das transições entre os estados, enquanto as reduções são determinadas pelos itens completos e pelo conjunto $FOLLOW$ do não terminal produzido.
 
-Quando um item possui um terminal imediatamente após o ponto, a transferência correspondente determina uma ação de **deslocamento** (*shift*). Quando o ponto está imediatamente antes de um não terminal, a transferência determina uma entrada de **GOTO**. Quando o item está completo, a produção correspondente determina uma ação de **redução**.
 
 Para a gramática considerada, a tabela obtida é:
 
@@ -2462,7 +2469,7 @@ $$
 
 O simulador apresentado a seguir implementa esse processo de forma automática. A partir da gramática fornecida, ele calcula os itens, constrói os respectivos fechos, determina as transferências entre os estados e gera a tabela de análise. Além disso, permite utilizar a tabela construída para testar uma sentença e acompanhar, passo a passo, sua análise pelo algoritmo LR.
 
-::: {.simulacao url="/p5js/lr/" height="400" image="/printscreen/lr.png" qrcode="/qrcode/lr.png"}
+::: {.simulacao url="/p5js/lr/" height="600" image="/printscreen/lr.png" qrcode="/qrcode/lr.png"}
 :::
 
 ## Yacc/Bison - Geradores e Analisadores Sintáticos 
@@ -2995,7 +3002,8 @@ Assim, nesta etapa do projeto, o foco passa da identificação individual dos to
 Usando a notação apresentada neste livro, a gramática da linguagem Simples é:
 
 $$\begin{aligned}
-  programa & \rightarrow cabecalho \quad variaveis \quad T\_INICIO \quad lista\_comandos \quad T\_FIM \\
+  programa & \rightarrow cabecalho \quad variaveis \quad \\
+           & T\_INICIO \quad lista\_comandos \quad T\_FIM \\
   cabecalho & \rightarrow T\_PROGRAMA \quad T\_IDENTIF \\
   variaveis & \rightarrow \lambda \quad \\
             & \quad | \quad declaracao\_variaveis \\
@@ -3094,7 +3102,9 @@ As regras de produção da gramática SIMPLES usando a notação de bison fica:
 
 ```c
 programa
-    : cabecalho variaveis T_INICIO lista_comandos T_FIM
+    : cabecalho 
+      variaveis 
+      T_INICIO lista_comandos T_FIM
     ;
 
 cabecalho
@@ -3117,7 +3127,7 @@ tipo
     ;
 
 lista_variaveis
-    : T_IDENTIF lista_variaveis
+    : lista_variaveis T_IDENTIF
     | T_IDENTIF
     ;
 
@@ -3143,11 +3153,14 @@ escrita
     ;
 
 repeticao
-    : T_ENQTO expressao T_FACA lista_comandos T_FIMENQTO
+    : T_ENQTO expressao T_FACA 
+      lista_comandos T_FIMENQTO
     ;
 
 selecao
-    : T_SE expressao T_ENTAO lista_comandos T_SENAO lista_comandos T_FIMSE
+    : T_SE expressao T_ENTAO 
+      lista_comandos T_SENAO 
+      lista_comandos T_FIMSE
     ;
 
 atribuicao

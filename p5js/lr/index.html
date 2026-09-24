@@ -234,7 +234,7 @@
           grid-template-columns: 1fr;
         }
       }
-    
+
       .derivation-box {
         margin-top: 16px;
         padding: 10px;
@@ -305,14 +305,6 @@ L -> L,S</textarea
           </div>
 
           <div id="status">Clique em <b>Construir analisador</b>.</div>
-
-          <h3 style="margin-top: 18px">Simulação</h3>
-
-          <button id="step-button" class="step">Próximo passo</button>
-
-          <button id="run-button">Executar</button>
-
-          <button id="reset-button">Reiniciar</button>
         </section>
 
         <!-- ======================================================
@@ -368,8 +360,17 @@ L -> L,S</textarea
             <div id="table-content"></div>
 
             <!-- <h2>Simulação da análise LR</h2> -->
-            <h3 style="margin-top: 10px">Simulação da análise LR</h3>
-            <div class="simulation-grid">
+            <!-- <h3 style="margin-top: 10px">Simulação da análise LR</h3> -->
+
+            <h3 style="margin-top: 10px">Simulação</h3>
+
+            <button id="step-button" class="step">Próximo passo</button>
+
+            <button id="run-button">Executar</button>
+
+            <button id="reset-button">Reiniciar</button>
+
+            <div class="simulation-grid" style="margin-top: 10px">
               <!-- <div class="card">
                 <div id="sim-state" class="big-value">—</div>
                 <div id="sim-lookahead" class="big-value">—</div>
@@ -381,7 +382,7 @@ L -> L,S</textarea
               </div>
             </div>
 
-            <h3 style="margin-top: 10px">Acompanhamento do Algoritmo LR</h3>
+            <h3 style="margin-top: 10px">Acompanhamento do Algoritmo</h3>
 
             <div class="scroll">
               <table id="trace-table">
@@ -400,7 +401,9 @@ L -> L,S</textarea
             </div>
 
             <div class="derivation-box">
-              <h3 style="margin-top: 0">Sequência de derivações mais à direita</h3>
+              <h3 style="margin-top: 0">
+                Sequência de derivações mais à direita
+              </h3>
               <div id="derivation-content"></div>
             </div>
           </div>

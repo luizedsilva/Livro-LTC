@@ -25,7 +25,7 @@ digraph ArvoreSintatica {
     // Produção L -> L E n
     L0 [label="calculo"];
     E0 [label="expr"];
-    n  [label="ENTER"];
+    n  [label="ENTER" fontcolor=blue];
 
     L -> L0;
     L -> E0;
@@ -50,11 +50,11 @@ digraph ArvoreSintatica {
 
     // Produção E -> E * E
     E1 [label="expr"];
-    mult [label="+"];
+    plus [label="MAIS\n[+]" fontcolor=blue];
     E2 [label="expr"];
 
     E0 -> E1;
-    E0 -> mult;
+    E0 -> plus;
     E0 -> E2;
 
     // Ação semântica E.val = E1.val * E2.val
@@ -72,11 +72,11 @@ digraph ArvoreSintatica {
 
     // Produção E -> E + E
     E3 [label="expr"];
-    plus [label="*"];
+    mult [label="VEZES\n[*]" fontcolor=blue];
     E4 [label="expr"];
 
     E1 -> E3;
-    E1 -> plus;
+    E1 -> mult;
     E1 -> E4;
 
     // Ação semântica E.val = E1.val + E2.val
@@ -93,7 +93,7 @@ digraph ArvoreSintatica {
     ];
 
     // Produção E -> num
-    num1 [label="NUMERO\n[2]"];
+    num1 [label="NUMERO\n[2]" fontcolor=blue];
     E3 -> num1;
 
     a4 [
@@ -109,7 +109,7 @@ digraph ArvoreSintatica {
     ];
 
     // Produção E -> num
-    num2 [label="NUMERO\n[3]"];
+    num2 [label="NUMERO\n[3]" fontcolor=blue];
     E4 -> num2;
 
     a5 [
@@ -125,7 +125,7 @@ digraph ArvoreSintatica {
     ];
 
     // Produção E -> num
-    num3 [label="NUMERO\n[5]"];
+    num3 [label="NUMERO\n[5]" fontcolor=blue];
     E2 -> num3;
 
     a6 [
