@@ -31,30 +31,29 @@ function filho(pai, f) {
 
 const T = {
     PRG: "programa",
-    DVR: "declaracao variaveis",
+    DVR: "declaração variáveis",
     TIP: "tipo",
-    LVR: "lista variaveis",
+    LVR: "lista variáveis",
     LCM: "lista comandos",
     LEI: "leitura",
     ESC: "escrita",
-    REP: "repeticao",
-    SEL: "selecao",
-    ATR: "atribuicao",
-    MUL: "multiplicacao",
+    REP: "repetição",
+    SEL: "seleção",
+    ATR: "atribuição",
+    MUL: "multiplicação",
     DIV: "divisao",
     SOM: "soma",
-    SUB: "subtracao",
+    SUB: "subtração",
     MAI: "compara maior",
     MEN: "compara menor",
     IGU: "compara igual",
-    CON: "conjuncao",
-    DIS: "disjuncao",
+    CON: "conjunção",
+    DIS: "disjunção",
     IDN: "identificador",
-    VAR: "variavel",
-    NUM: "numero",
+    NUM: "número",
     VER: "verdadeiro",
     FAL: "falso",
-    NAO: "negacao"
+    NAO: "negação"
 };
 
 let raiz = null;
@@ -359,7 +358,7 @@ expressao
 termo
     : identificador
         {
-            $$ = no(T.VAR, $1.valor);
+            $$ = no(T.IDN, $1.valor);
         }
     | T_NUMERO
         {

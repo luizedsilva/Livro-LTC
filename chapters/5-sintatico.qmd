@@ -2001,14 +2001,10 @@ Considere agora:
 
 $$
 \begin{aligned}
-K_2=
-FECHO(\{E\rightarrow+\bullet EE\}) = \\
-& \{E\rightarrow+\bullet EE \\
-& E\rightarrow\bullet +EE,\;
-E\rightarrow\bullet *EE,\;
-E\rightarrow\bullet a,\;
-E\rightarrow\bullet b
-\}.
+K_2 &= FECHO(\{E\rightarrow +\bullet EE\}) \\
+    &= \{E\rightarrow +\bullet EE, \\ 
+    &\qquad E\rightarrow\bullet +EE,\; E\rightarrow\bullet *EE,\; E\rightarrow\bullet a,\; 
+    E\rightarrow\bullet b\}.
 \end{aligned}
 $$
 
@@ -2039,7 +2035,7 @@ $$
 a transferência produz:
 
 $$
-TRANSFERE(K,a)=\{E\rightarrow a\bullet\}.
+TRANSFERE(K_2,a)=\{E\rightarrow a\bullet\}.
 $$
 
 Nesse caso, o ponto chega ao final da produção. O resultado é, portanto, um **item completo**, indicando que uma redução pela produção:
@@ -2053,7 +2049,7 @@ poderá ser realizada.
 De forma análoga:
 
 $$
-TRANSFERE(K,b)=\{E\rightarrow b\bullet\}.
+TRANSFERE(K_2,b)=\{E\rightarrow b\bullet\}.
 $$
 
 #### Construção da coleção de estados
@@ -3001,57 +2997,273 @@ Assim, nesta etapa do projeto, o foco passa da identificação individual dos to
 
 Usando a notação apresentada neste livro, a gramática da linguagem Simples é:
 
-$$\begin{aligned}
-  programa & \rightarrow cabecalho \quad variaveis \quad \\
-           & T\_INICIO \quad lista\_comandos \quad T\_FIM \\
-  cabecalho & \rightarrow T\_PROGRAMA \quad T\_IDENTIF \\
-  variaveis & \rightarrow \lambda \quad \\
-            & \quad | \quad declaracao\_variaveis \\
-  declaracao\_variaveis & \rightarrow tipo \quad lista\_variaveis \quad declaracao\_variaveis \\
-            & \quad | \quad tipo \quad lista\_variaveis \\
-  tipo & \rightarrow T\_LOGICO \\
-            & \quad | \quad T\_INTEIRO \\            
-  lista\_variaveis & \rightarrow T\_IDENTIF \quad lista\_variaveis \\
-            & \quad | \quad T\_IDENTIF\\ 
-  lista\_comandos & \rightarrow \quad comando \quad lista\_comandos \\
-            & \quad | \quad \lambda \\
-  comando & \rightarrow entrada\_saida \\
-          & \quad | \quad repeticao \\
-          & \quad | \quad selecao \\
-          & \quad | \quad atribuicao \\
-  entrada\_saida & \rightarrow leitura \quad | \quad escrita \\
-  leitura & \rightarrow T\_LEIA \quad T\_IDENTIF \\
-  escrita & \rightarrow T\_ESCREVA \quad expressao \\
-  repeticao & \rightarrow T\_ENQTO \quad expressao \quad T\_FACA \\ &\quad lista\_comandos \quad T\_FIMENQTO \\
-  selecao & \rightarrow T\_SE \quad expressao \quad T\_ENTAO \quad lista\_comandos \\
-    & \quad T\_SENAO \quad lista\_comandos \quad T\_FIMSE \\
-  atribuicao & \rightarrow T\_IDENTIF \quad T\_ATRIB \quad expressao \\
-  expressao & \rightarrow expressao \quad T\_VEZES \quad expressao \\
-     & \quad | \quad expressao \quad T\_DIV \quad expressao \\
-     & \quad | \quad expressao \quad T\_MAIS \quad expressao \\
-     & \quad | \quad expressao \quad T\_MENOS \quad expressao \\
-     & \quad | \quad expressao \quad T\_MAIOR \quad expressao \\     
-     & \quad | \quad expressao \quad T\_MENOR \quad expressao \\
-     & \quad | \quad expressao \quad T\_IGUAL \quad expressao \\     
-     & \quad | \quad expressao \quad T\_E \quad expressao \\     
-     & \quad | \quad expressao \quad T\_OU \quad expressao \\
-     & \quad | \quad termo \\
-  termo & \rightarrow  T\_IDENTIF \\
-     & \quad | \quad T\_NUMERO \\
-     & \quad | \quad T\_V \\
-     & \quad | \quad T\_F \\     
-     & \quad | \quad T\_NAO \quad termo \\
-     & \quad | \quad T\_ABRE \quad expressao \quad T\_FECHA \\                    
-\end{aligned}$$
+#### Estrutura do programa e declarações
+$$
+\begin{aligned}
+programa
+  &\rightarrow cabecalho \quad variaveis \quad T\_INICIO
+     \quad lista\_comandos \quad T\_FIM \\
+cabecalho
+  &\rightarrow T\_PROGRAMA \quad T\_IDENTIF \\
+variaveis
+  &\rightarrow \lambda \\
+  &\mid declaracao\_variaveis \\[3pt]
+declaracao\_variaveis
+  &\rightarrow tipo \quad lista\_variaveis \quad
+                declaracao\_variaveis \\
+  &\mid tipo \quad lista\_variaveis \\
+tipo
+  &\rightarrow T\_LOGICO \\
+  &\mid T\_INTEIRO \\
+lista\_variaveis
+  &\rightarrow T\_IDENTIF \quad lista\_variaveis \\
+  &\mid T\_IDENTIF
+\end{aligned}
+$$
+
+#### Lista de comandos e comandos
+
+$$
+\begin{aligned}
+lista\_comandos
+  &\rightarrow comando \quad lista\_comandos \\
+  &\mid \lambda \\[3pt]
+comando
+  &\rightarrow entrada\_saida \\
+  &\mid repeticao \\
+  &\mid selecao \\
+  &\mid atribuicao \\[3pt]
+entrada\_saida
+  &\rightarrow leitura \\
+  &\mid escrita \\[3pt]
+leitura
+  &\rightarrow T\_LEIA \quad T\_IDENTIF \\[3pt]
+escrita
+  &\rightarrow T\_ESCREVA \quad expressao
+\end{aligned}
+$$
+
+#### Estruturas de controle (repetição, seleção) e atribuição
+$$
+\begin{aligned}
+repeticao
+  &\rightarrow T\_ENQTO \quad expressao \quad T\_FACA \\
+  &\quad lista\_comandos \quad T\_FIMENQTO \\[3pt]
+selecao
+  &\rightarrow T\_SE \quad expressao \quad T\_ENTAO \\
+  &\quad lista\_comandos \\
+  &\quad T\_SENAO \quad lista\_comandos \quad T\_FIMSE \\[3pt]
+atribuicao
+  &\rightarrow T\_IDENTIF \quad T\_ATRIB \quad expressao
+\end{aligned}
+$$
+
+#### Expressões
+$$
+\begin{aligned}
+expressao
+  &\rightarrow expressao \quad T\_VEZES \quad expressao \\
+  &\mid expressao \quad T\_DIV \quad expressao \\
+  &\mid expressao \quad T\_MAIS \quad expressao \\
+  &\mid expressao \quad T\_MENOS \quad expressao \\
+  &\mid expressao \quad T\_MAIOR \quad expressao \\
+  &\mid expressao \quad T\_MENOR \quad expressao \\
+  &\mid expressao \quad T\_IGUAL \quad expressao \\
+  &\mid expressao \quad T\_E \quad expressao \\
+  &\mid expressao \quad T\_OU \quad expressao \\
+  &\mid termo \\[3pt]
+termo
+  &\rightarrow T\_IDENTIF \\
+  &\mid T\_NUMERO \\
+  &\mid T\_V \\
+  &\mid T\_F \\
+  &\mid T\_NAO \quad termo \\
+  &\mid T\_ABRE \quad expressao \quad T\_FECHA
+\end{aligned}
+$$
 
 Os símbolos não terminais (variáveis da gramática) estão grafados com letras minúsculas e são: *programa*, *cabecalho*, *variaveis*, *declaracao_variaveis*, *tipo*, *lista_variaveis*, *lista_comandos*, *comando*, *entrada_saida*, *leitura*, *escrita*, *repeticao*, *condicao*, *atribuicao*, *expressao* e *termo*. O símbolo de partida é o não-terminal *programa*.
 
 Os símbolos terminais (alfabeto da gramática) estão representados pelas constantes com o prefixo `T_`como: T_PROGRAMA, T_INICIO, T_FIM, T_IDENTIF, T_INTEIRO, T_LOGICO, T_LEIA, T_ESCREVA, T_ENQTO, T_FACA, T_FIMENQTO, T_SE, T_ENTAO, T_SENAO, T_FIMSE, T_ATRIB, T_VEZES, T_DIV, T_MAIS, T_MENOS, T_MAIOR, T_MENOR, T_IGUAL, T_E, T_OU, T_V, T_F, T_NAO, T_ABRE e T_FECHA. Essas constantes representam codificações numéricas dos símbolos que são reconhecidos e retornados pelo analisador léxico.
 
-Para bison, as constantes que definem as codificações numéricas dos tokens são definidas através da seguinte declaração:
+Para bison, os tokens são definidoss como na listagem seguinte:
 
 ```c 
 %token T_PROGRAMA
+%token T_INICIO
+%token T_FIM
+%token T_IDENTIF
+%token T_LEIA
+%token T_ESCREVA
+%token T_ENQTO
+...
+```
+
+Os códigos utilizados aqui são os mesmos retornados pelo analisador léxico. Basta incluir o arquivo de cabeçalho que é gerado com a declaração dessas contantes pela ferramenta bison.
+
+Como pode ser observado, a gramatica de expressões usada na linguagem Simples é ambígua. Essa ambiguidade é resolvida definindo-se prioridade entre as operações para a ferramenta Yacc. Fazemos isso com a seguinte declaração:
+
+```c 
+%left T_E T_OU
+%left T_IGUAL
+%left T_MAIOR T_MENOR
+%left T_MAIS T_MENOS
+%left T_VEZES T_DIV
+```
+
+Com essa declaração, definimos que a multiplicação e a divisão tem associatividade mais à esquerda e precedência sobre a soma e a subtração. Soma e subtração tem precedência sobre Operadores relacionais Maior, Menor e Igual. Os operadores relacionais tem precedência sobre os operadores lógicos E e OU.
+
+Algumas das regras de produção da gramática SIMPLES, usando a notação de bison, ficam assim:
+
+```c
+programa
+    : cabecalho 
+      variaveis 
+      T_INICIO lista_comandos T_FIM
+    ;
+cabecalho
+    : T_PROGRAMA T_IDENTIF
+    ;
+variaveis
+    : /* vazio */
+    | declaracao_variaveis
+    ;
+
+(...)
+
+lista_comandos
+    : /* vazio */
+    | comando lista_comandos
+    ;
+
+comando
+    : leitura
+    | escrita
+    | repeticao
+    | selecao
+    | atribuicao
+    ;
+
+(...)
+
+repeticao
+    : T_ENQTO expressao T_FACA 
+      lista_comandos T_FIMENQTO
+    ;
+
+(...)
+
+expressao
+    : expressao T_VEZES expressao
+    | expressao T_DIV expressao
+    | expressao T_MAIS expressao
+    | expressao T_MENOS expressao
+    | expressao T_MAIOR expressao
+    | expressao T_MENOR expressao
+    | expressao T_IGUAL expressao
+    | expressao T_E expressao
+    | expressao T_OU expressao
+    | termo
+    ;
+
+termo
+    : T_IDENTIF
+    | T_NUMERO
+    | T_V
+    | T_F
+    | T_NAO termo
+    | T_ABRE expressao T_FECHA
+    ; 
+```
+
+#### Codigos fontes
+
+
+O arquivo `lexico.l` define o **analisador léxico**, responsável por ler a sequência de caracteres do programa-fonte, reconhecer os lexemas e convertê-los nos tokens utilizados pelo analisador sintático. Na seção inicial (`%{ ... %}`), é incluído o arquivo `sintatico.h`, que contém as definições dos tokens gerados pelo Bison, além da declaração da função `erro_lexico()`. As expressões regulares `identificador`, `numero`, `espaco` e `novalinha` definem padrões para identificadores, números, espaços em branco e quebras de linha. Entre os delimitadores `%%` são especificadas as regras léxicas: palavras reservadas, operadores, símbolos lógicos e demais elementos da linguagem são reconhecidos e associados aos respectivos tokens, como `T_PROG`, `T_INICIO` e `T_NUMERO`; espaços e quebras de linha são simplesmente ignorados, enquanto identificadores e números são reconhecidos por meio das expressões regulares previamente definidas. Qualquer caractere que não corresponda a uma dessas regras é tratado como **erro léxico** pela função `erro_lexico()`, que informa o símbolo desconhecido e encerra a execução. Por fim, a função `yywrap()` informa ao Flex que não há mais arquivos de entrada a serem processados.
+
+Código do analisador léxico, adaptado para funcionar integrado com o sintático:
+
+```c
+%{
+#include "sintatico.h"
+void erro_lexico(char *);
+%}
+
+identificador [a-zA-Z]([a-zA-Z]|[0-9])*
+numero [0-9]+
+espaco [ \t]+
+novalinha [\n]
+
+%%
+programa          { return T_PROG; }
+inicio            { return T_INICIO; }
+fimprograma       { return T_FIM; }
+leia              { return T_LEIA; }
+escreva           { return T_ESCREVA; }
+se                { return T_SE; }
+entao             { return T_ENTAO; }
+senao             { return T_SENAO; }
+fimse             { return T_FIMSE; }
+enquanto          { return T_ENQTO; }
+faca              { return T_FACA; }
+fimenquanto       { return T_FIMENQTO; }
+
+inteiro           { return T_INTEIRO; }
+logico            { return T_LOGICO; }
+
+V                 { return T_V; }
+F                 { return T_F; }
+
+"+"               { return T_MAIS; }
+"-"               { return T_MENOS; }
+"*"               { return T_VEZES; }
+div               { return T_DIV; }
+">"               { return T_MAIOR; }
+"<"               { return T_MENOR; }
+"="               { return T_IGUAL; }
+E                 { return T_E; }
+OU                { return T_OU; }
+NAO               { return T_NAO; }
+"<-"              { return T_ATRIB; }
+
+{identificador}   { return T_IDENTIF; }
+{numero}          { return T_NUMERO; }
+{espaco}          {  }
+{novalinha}       {  }
+
+.                 { erro_lexico (yytext); }
+%%
+
+
+void erro_lexico(char *s) {
+    fprintf(stderr, "Erro Léxico.\n");
+    fprintf(stderr, "  símbolo %s desconhecido\n\n", s);
+    exit(10);
+}
+
+int yywrap() {
+  return 1;
+}
+
+```
+
+O arquivo `sintatico.y` define o **analisador sintático** da linguagem, utilizando o Bison para verificar se a sequência de tokens produzida pelo analisador léxico está de acordo com a gramática da linguagem. Na seção inicial (`%{ ... %}`), são incluídas as bibliotecas necessárias e declaradas as funções de comunicação com o analisador léxico, como `yylex()`, `yyerror()` e o arquivo de entrada `yyin`. As declarações `%token` definem os tokens reconhecidos pelo analisador léxico e utilizados na gramática. A diretiva `%define parse.error custom` permite personalizar as mensagens de erro sintático. Entre os delimitadores `%%` é definida a **gramática da linguagem**, formada pelas regras para estrutura do programa, cabeçalho, declaração de variáveis, tipos, comandos de leitura e escrita, estruturas de repetição e seleção, atribuições e expressões. Após a gramática, a função `yyerror()` trata mensagens gerais de erro do Bison, enquanto a função `nome_token()` associa cada símbolo interno do Bison a uma descrição em português, permitindo produzir mensagens mais compreensíveis. A função `yyreport_syntax_error()` utiliza essas descrições para informar o símbolo encontrado e os símbolos esperados quando ocorre um erro sintático. Por fim, a função `main()` verifica o nome do arquivo fornecido como argumento, abre o programa-fonte e inicia a análise sintática por meio de `yyparse()`, encerrando o processamento após o fechamento do arquivo.
+
+Código do analisador sintático:
+
+```c 
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int yylex();
+void yyerror(const char *);
+extern FILE *yyin;
+
+%}
+
+%token T_PROG
 %token T_INICIO
 %token T_FIM
 %token T_IDENTIF
@@ -3082,25 +3294,16 @@ Para bison, as constantes que definem as codificações numéricas dos tokens s�
 %token T_FECHA
 %token T_LOGICO
 %token T_INTEIRO
-```
 
-Os códigos utilizados aqui são os mesmos retornados pelo analisador léxico. Basta incluir o arquivo de cabeçalho que é gerado com a declaração dessas contantes pela ferramenta bison.
+%define parse.error custom
 
-Como pode ser observado, a gramatica de expressões usada na linguagem Simples é ambígua. Essa ambiguidade é resolvida definindo-se prioridade entre as operações para a ferramenta Yacc. Fazemos isso com a seguinte declaração:
-
-```c 
 %left T_E T_OU
 %left T_IGUAL
 %left T_MAIOR T_MENOR
 %left T_MAIS T_MENOS
 %left T_VEZES T_DIV
-```
 
-Com essa declaração, definimos que a multiplicação e a divisão tem associatividade mais à esquerda e precedência sobre a soma e a subtração. Soma e subtração tem precedência sobre Operadores relacionais Maior, Menor e Igual. Os operadores relacionais tem precedência sobre os operadores lógicos E e OU.
-
-As regras de produção da gramática SIMPLES usando a notação de bison fica:
-
-```c
+%%
 programa
     : cabecalho 
       variaveis 
@@ -3108,7 +3311,7 @@ programa
     ;
 
 cabecalho
-    : T_PROGRAMA T_IDENTIF
+    : T_PROG T_IDENTIF
     ;
 
 variaveis
@@ -3188,4 +3391,106 @@ termo
     | T_NAO termo
     | T_ABRE expressao T_FECHA
     ; 
+
+%%
+
+void yyerror(const char *mensagem)
+{
+    fprintf(stderr, "Erro Interno: %s\n", mensagem);
+}
+
+static const char *nome_token(yysymbol_kind_t token)
+{
+    static const char *nomes[] = {
+        [YYSYMBOL_T_PROG]      = "programa",
+        [YYSYMBOL_T_INICIO]    = "início",
+        [YYSYMBOL_T_FIM]       = "fim",
+        [YYSYMBOL_T_IDENTIF]   = "identificador",
+        [YYSYMBOL_T_LEIA]      = "leia",
+        [YYSYMBOL_T_ESCREVA]   = "escreva",
+        [YYSYMBOL_T_ENQTO]     = "enquanto",
+        [YYSYMBOL_T_FACA]      = "faça",
+        [YYSYMBOL_T_FIMENQTO]  = "fim-enquanto",
+        [YYSYMBOL_T_SE]        = "se",
+        [YYSYMBOL_T_ENTAO]     = "então",
+        [YYSYMBOL_T_SENAO]     = "senão",
+        [YYSYMBOL_T_FIMSE]     = "fim-se",
+        [YYSYMBOL_T_ATRIB]     = "atribuição",
+        [YYSYMBOL_T_VEZES]     = "'*'",
+        [YYSYMBOL_T_DIV]       = "'/'",
+        [YYSYMBOL_T_MAIS]      = "'+'",
+        [YYSYMBOL_T_MENOS]     = "'-'",
+        [YYSYMBOL_T_MAIOR]     = "'>'",
+        [YYSYMBOL_T_MENOR]     = "'<'",
+        [YYSYMBOL_T_IGUAL]     = "'='",
+        [YYSYMBOL_T_E]         = "e",
+        [YYSYMBOL_T_OU]        = "ou",
+        [YYSYMBOL_T_V]         = "verdadeiro",
+        [YYSYMBOL_T_F]         = "falso",
+        [YYSYMBOL_T_NUMERO]    = "número",
+        [YYSYMBOL_T_NAO]       = "não",
+        [YYSYMBOL_T_ABRE]      = "'('",
+        [YYSYMBOL_T_FECHA]     = "')'",
+        [YYSYMBOL_T_LOGICO]    = "lógico",
+        [YYSYMBOL_T_INTEIRO]   = "inteiro"
+    };
+
+    if (token >= 0 &&
+        token < sizeof(nomes) / sizeof(nomes[0]) &&
+        nomes[token] != NULL)
+        return nomes[token];
+
+    return "símbolo desconhecido";
+}
+
+static int yyreport_syntax_error(const yypcontext_t *ctx)
+{
+    yysymbol_kind_t token;
+    yysymbol_kind_t expected[10];
+
+    token = yypcontext_token(ctx);
+
+    fprintf(stderr, "Erro de sintaxe.\n");
+    fprintf(stderr, "  Símbolo encontrado: %s\n",
+            nome_token(token));
+
+    fprintf(stderr, "  Símbolos esperados: ");
+
+    int n = yypcontext_expected_tokens(ctx, expected, 10);
+
+    for (int i = 0; i < n; i++) {
+        if (i > 0)
+            fprintf(stderr, ", ");
+
+        fprintf(stderr, "%s", nome_token(expected[i]));
+    }
+    fprintf(stderr, "\n\n");
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Uso:\n \t%s <nomeprog.simples>\n\n", argv[0]);
+        exit(20);
+    }
+    yyin = fopen(argv[1], "rt");
+    yyparse();
+    fclose(yyin);
+}
 ```
+
+O arquivo `makefile` automatiza o processo de **geração e compilação do compilador da linguagem Simples**, evitando a necessidade de executar manualmente cada comando. O alvo `simples` estabelece como dependências os arquivos `lexico.l` e `sintatico.y` e executa, inicialmente, o **Flex** para transformar as regras léxicas de `lexico.l` no código-fonte C `lexico.c`. Em seguida, o **Bison** processa `sintatico.y`, gerando o analisador sintático `sintatico.c`, o arquivo de cabeçalho `sintatico.h`, que contém as definições dos tokens utilizados pelo analisador léxico, e o arquivo `sintatico.output`, que apresenta informações sobre a gramática e as tabelas do analisador gerado. Por fim, o compilador `gcc` combina `lexico.c` e `sintatico.c` e gera o executável `simples`. O alvo `limpa` remove os arquivos gerados durante o processo de compilação, permitindo realizar uma nova geração dos arquivos a partir dos fontes originais.
+
+Código do `makefile` para automatizar a construção do compilador:
+
+```text 
+simples: lexico.l sintatico.y ;\
+	flex -o lexico.c lexico.l
+	bison -o sintatico.c sintatico.y -v -d
+	gcc lexico.c sintatico.c -o simples
+
+limpa: ;\ 
+	rm simples lexico.c sintatico.c sintatico.h sintatico.output simples
+
+```
+

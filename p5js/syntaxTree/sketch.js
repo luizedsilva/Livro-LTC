@@ -486,9 +486,10 @@ function loadExample() {
   inteiro a b c
   logico x
   inicio
-     a <- b + c * 2
      leia a
-     se a > b
+     leia b
+     x <- a > b
+     se x
         entao escreva a
         senao escreva b
      fimse
