@@ -413,7 +413,8 @@ Após o preenchimento da tabela de transição, o simulador gera automaticamente
 
 Por fim, o usuário pode fornecer uma palavra de entrada para realizar a simulação da computação. A execução pode ser acompanhada passo a passo, permitindo observar a transição realizada em cada etapa e a respectiva **configuração instantânea** da máquina. Dessa forma, o simulador relaciona a representação formal da máquina — por meio da tabela de transição — com sua representação gráfica e com o processo efetivo de computação sobre uma palavra de entrada.
 
-::: {.simulacao url="/p5js/mt/" height="400" image="/printscreen/mi.png" qrcode="/qrcode/mi.png"}
+
+::: {.simulacao url="/p5js/mt/" height="400" image="/printscreen/mt.png" qrcode="/qrcode/mt.png"}
 :::
 
 ## Decidibilidade
