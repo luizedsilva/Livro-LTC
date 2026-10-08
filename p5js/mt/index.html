@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Máquina de Turing</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+  <script src="https://unpkg.com/viz.js@2.1.2/viz.js"></script>
+  <script src="https://unpkg.com/viz.js@2.1.2/full.render.js"></script>
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <h1>Simulador de Máquina de Turing</h1>
+      <p class="subtitle">
+        Defina a máquina pela tabela de transição e acompanhe a computação
+        por configurações instantâneas.
+      </p>
+    </header>
+
+    <section class="card">
+      <h2>1. Definição da máquina</h2>
+
+      <div class="grid-4">
+        <div>
+          <label for="states">Estados</label>
+          <input id="states" type="text" value="q0,q1,q2,qf">
+          <small>Separe os estados por vírgulas.</small>
+        </div>
+
+        <div>
+          <label for="inputAlphabet">Alfabeto de entrada</label>
+          <input id="inputAlphabet" type="text" value="0,1">
+          <small>Não inclua o símbolo branco.</small>
+        </div>
+
+        <div>
+          <label for="tapeAlphabet">Alfabeto da fita</label>
+          <input id="tapeAlphabet" type="text" value="0,1,X,_">
+          <small>Use <code>_</code> para branco.</small>
+        </div>
+
+        <div>
+          <label for="initialState">Estado inicial</label>
+          <input id="initialState" type="text" value="q0">
+        </div>
+
+        <div>
+          <label for="acceptState">Estado de aceitação</label>
+          <input id="acceptState" type="text" value="qf">
+        </div>
+
+        <div>
+          <label for="rejectState">Estado de rejeição</label>
+          <input id="rejectState" type="text" value="qr">
+          <small>Opcional. Pode ser um estado implícito.</small>
+        </div>
+
+        <div class="wide">
+          <label for="inputWord">Palavra de entrada</label>
+          <input id="inputWord" type="text" value="0011">
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="buildTable" class="primary">Criar tabela</button>
+        <button id="example1">Exemplo On1n</button>
+        <button id="example2">Exemplo Palíndromo</button>
+        <button id="example3">Exemplo w.w</button>
+        <button id="example4">Exemplo 001011011101111</button>
+      </div>
+
+      <div class="help">
+        <strong>Formato de cada transição:</strong>
+        <code>estado-destino, símbolo-escrito, movimento</code>.
+        Exemplo: <code>q1, X, D</code>.
+        Use <code>E</code> para esquerda, <code>D</code> para direita e
+        <code>P</code> para permanecer na mesma célula.
+        Uma célula vazia significa que não existe transição.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2. Tabela de transição</h2>
+      <div id="transitionTableContainer" class="table-wrapper"></div>
+    </section>
+
+    <section class="card">
+      <h2>3. Diagrama da Máquina de Turing</h2>
+      <p class="diagram-help">
+        O diagrama é gerado automaticamente a partir da tabela de transição.
+        O estado inicial é indicado por uma seta de entrada e o estado de
+        aceitação por um círculo duplo. A transição utilizada no passo atual
+        é destacada durante a execução.
+      </p>
+      <div class="button-row">
+        <button id="generateDiagram" class="primary">Gerar diagrama</button>
+        <button id="showDot">Mostrar DOT</button>
+      </div>
+      <div id="diagramContainer" class="diagram-container">
+        <div class="diagram-placeholder">Defina a máquina e clique em <strong>Gerar diagrama</strong>.</div>
+      </div>
+      <pre id="dotOutput" class="dot-output hidden"></pre>
+    </section>
+
+    <section class="card">
+      <h2>4. Computação</h2>
+
+      <div class="button-row">
+        <button id="initialize" class="primary">Inicializar</button>
+        <button id="step">Próximo passo</button>
+        <button id="run">Executar</button>
+        <button id="pause">Pausar</button>
+        <button id="reset">Reiniciar</button>
+        <label class="speed-label">
+          Velocidade
+          <input id="speed" type="range" min="1" max="10" value="5">
+        </label>
+      </div>
+
+      <div id="status" class="status">Máquina não inicializada.</div>
+
+      <div id="canvas-container" class="canvas-container"></div>
+
+      <div class="configuration-box">
+        <h3>Configuração instantânea atual</h3>
+        <div id="currentConfiguration" class="configuration">
+          —
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>5. Sequência de configurações instantâneas</h2>
+      <div id="computation" class="computation">
+        Inicialize a máquina para começar.
+      </div>
+    </section>
+
+    <section class="card explanation">
+      <h2>Configuração instantânea</h2>
+      <p>
+        Uma configuração instantânea de uma Máquina de Turing pode ser
+        representada por:
+      </p>
+
+      <div class="formula">
+        ⟨u, q, av⟩
+      </div>
+
+      <p>
+        onde <strong>u</strong> representa o conteúdo da fita à esquerda
+        do cabeçote, <strong>q</strong> é o estado atual, <strong>a</strong>
+        é o símbolo que está sob o cabeçote e <strong>v</strong> representa
+        o restante da fita à direita.
+      </p>
+
+      <p>
+        Se a transição
+        <code>δ(q, a) = (p, b, R)</code> for aplicada, então a máquina
+        escreve <strong>b</strong>, move o cabeçote para a direita e muda
+        para o estado <strong>p</strong>.
+      </p>
+
+      <div class="formula">
+        ⟨u, q, av⟩ ⊢ ⟨ub, p, v⟩
+      </div>
+    </section>
+  </main>
+
+  <script src="sketch.js"></script>
+</body>
+</html>

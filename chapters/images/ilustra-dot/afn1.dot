@@ -5,7 +5,7 @@ digraph automato_naodeterministico {
 	node [shape = doublecircle, color=black, fontcolor=black]; q0;
 	node [shape = circle]; q1; q2;
 	start -> q0 
-	q0 -> q2 [ label = "&#955;" ];
+	q0 -> q2 [ label="ε" ];
 	q0 -> q1 [ label = "b" ];
 	q2 -> q0 [ label = "a" ];
 	q1 -> q1 [ label = "a" ];

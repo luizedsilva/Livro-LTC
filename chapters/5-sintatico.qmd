@@ -3001,7 +3001,8 @@ Usando a notação apresentada neste livro, a gramática da linguagem Simples é
 $$
 \begin{aligned}
 programa
-  &\rightarrow cabecalho \quad variaveis \quad T\_INICIO
+  &\rightarrow cabecalho \quad variaveis \\
+  &\quad T\_INICIO
      \quad lista\_comandos \quad T\_FIM \\
 cabecalho
   &\rightarrow T\_PROGRAMA \quad T\_IDENTIF \\
@@ -3048,11 +3049,11 @@ $$
 \begin{aligned}
 repeticao
   &\rightarrow T\_ENQTO \quad expressao \quad T\_FACA \\
-  &\quad lista\_comandos \quad T\_FIMENQTO \\[3pt]
+  &\quad lista\_comandos \quad T\_FIMENQTO \\[-1pt]
 selecao
   &\rightarrow T\_SE \quad expressao \quad T\_ENTAO \\
   &\quad lista\_comandos \\
-  &\quad T\_SENAO \quad lista\_comandos \quad T\_FIMSE \\[3pt]
+  &\quad T\_SENAO \quad lista\_comandos \quad T\_FIMSE \\[-1pt]
 atribuicao
   &\rightarrow T\_IDENTIF \quad T\_ATRIB \quad expressao
 \end{aligned}
@@ -3483,7 +3484,7 @@ O arquivo `makefile` automatiza o processo de **geração e compilação do comp
 
 Código do `makefile` para automatizar a construção do compilador:
 
-```text 
+```c 
 simples: lexico.l sintatico.y ;\
 	flex -o lexico.c lexico.l
 	bison -o sintatico.c sintatico.y -v -d

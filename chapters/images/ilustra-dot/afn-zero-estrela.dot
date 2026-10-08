@@ -4,11 +4,11 @@ digraph automato_zeroestrela {
    node [shape = doublecircle]; q7;
    node [shape = circle];
     inicio->q6;
-    q6 -> q7 [ label = "&#955;" ]
-    q6 -> q10 [ label = "&#955;" ] 
+    q6 -> q7 [ label = "ε" ]
+    q6 -> q10 [ label = "ε" ] 
     subgraph cluster_0 {
       q10 -> q11 [ label = "0" ];
     }
-    q11 -> q7 [ label = "&#955;" ];
-    q7 -> q6 [ label = "&#955;" ];
+    q11 -> q7 [ label = "ε" ];
+    q7 -> q6 [ label = "ε" ];
 }

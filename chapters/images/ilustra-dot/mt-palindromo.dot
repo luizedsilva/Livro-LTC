@@ -1,0 +1,33 @@
+digraph MT {
+  rankdir=LR;
+  graph [bgcolor="white", nodesep=0.55, ranksep=0.8, pad=0.25];
+  node [shape=circle, fontname="Arial", fontsize=12, style="filled", fillcolor="white"];
+  edge [fontname="Arial", fontsize=10, arrowsize=0.8];
+
+  start [shape=point, width=0.12, label=""];
+  start -> s0;
+  s0 [label="q0"];
+  s1 [label="q1"];
+  s2 [label="q2"];
+  s3 [label="q3"];
+  s4 [label="q4"];
+  s5 [label="q5"];
+  s6 [label="q6"];
+  s7 [label="qf", shape=doublecircle];
+  s8 [label="qr", fillcolor="#fdecec"];
+  s0 -> s1 [id="e_s0_s1_3416452", label="a / _,D"];
+  s0 -> s4 [id="e_s0_s4_3416453", label="b / _,D"];
+  s0 -> s7 [id="e_s0_s7_3416450", label="_ / _,D"];
+  s1 -> s1 [id="e_s1_s1_1664291364", label="a / a,D\nb / b,D"];
+  s1 -> s2 [id="e_s1_s2_3417411", label="_ / _,E"];
+  s2 -> s3 [id="e_s2_s3_3418374", label="a / _,E"];
+  s2 -> s8 [id="e_s2_s8_107149080", label="b / _,D\n_ / _,D"];
+  s3 -> s3 [id="e_s3_s3_1821331228", label="a / a,E\nb / b,E"];
+  s3 -> s0 [id="e_s3_s0_3419333", label="_ / _,D"];
+  s4 -> s4 [id="e_s4_s4_730824772", label="a / a,D\nb / b,D"];
+  s4 -> s5 [id="e_s4_s5_3420294", label="_ / _,E"];
+  s5 -> s8 [id="e_s5_s8_1011986521", label="a / _,D\n_ / _,D"];
+  s5 -> s6 [id="e_s5_s6_3421258", label="b / _,E"];
+  s6 -> s6 [id="e_s6_s6_1540169476", label="a / a,E\nb / b,E"];
+  s6 -> s0 [id="e_s6_s0_3422216", label="_ / _,D"];
+}

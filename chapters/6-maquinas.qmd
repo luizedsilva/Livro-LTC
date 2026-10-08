@@ -2,6 +2,453 @@
 
 ![](/chapters/images/maquinas.png){fig-align="center" width=70%}
 
+Até este ponto, foram apresentados os principais conceitos relacionados às linguagens formais, aos autômatos e aos mecanismos utilizados no reconhecimento e na análise de programas. Neste capítulo, o foco desloca-se do reconhecimento de linguagens para a **execução de computações**. Para isso, serão estudados diferentes modelos de máquina, estabelecendo uma relação entre os modelos teóricos da computação e os mecanismos utilizados na implementação de linguagens de programação.
+
+A ideia de uma máquina é fundamental para a Ciência da Computação. Uma máquina pode ser entendida, de maneira abstrata, como um dispositivo capaz de receber uma entrada, executar uma sequência de operações de acordo com regras bem definidas e produzir um resultado. Dependendo do modelo adotado, a máquina pode possuir diferentes formas de memória, mecanismos de controle e operações. Essa abstração permite estudar a computação independentemente dos detalhes de uma implementação específica.
+
+Inicialmente, será apresentada a **Máquina de Turing**, um dos modelos matemáticos mais importantes para o estudo da computabilidade. A Máquina de Turing possui uma estrutura bastante simples, constituída essencialmente por uma fita que funciona como memória, um cabeçote de leitura e escrita e um conjunto finito de estados. Apesar de sua simplicidade, esse modelo é suficientemente poderoso para representar uma ampla classe de processos computacionais. Além de permitir a definição formal de computação, a Máquina de Turing fornece uma base para a compreensão dos limites do que pode ou não ser computado por um algoritmo.
+
+A apresentação da Máquina de Turing também permitirá retomar conceitos importantes estudados anteriormente, como **estado, configuração, função de transição e computação**, agora sob a perspectiva de um modelo de máquina capaz de modificar sua memória durante a execução. A noção de **configuração instantânea** será particularmente importante, pois permite descrever passo a passo a evolução de uma computação.
+
+Embora a Máquina de Turing seja extremamente útil como modelo teórico, ela não corresponde diretamente ao ambiente no qual programas reais são executados. Para aproximar os conceitos estudados de uma implementação de compiladores, será introduzido, na sequência, um segundo modelo: uma **máquina virtual**.
+
+A máquina virtual será definida como uma máquina abstrata projetada para executar o código intermediário produzido pelo compilador. Em vez de executar diretamente as instruções da arquitetura física de um computador, o programa será executado sobre um conjunto de instruções, uma memória e mecanismos de controle definidos pelo próprio modelo virtual. Dessa forma, a máquina virtual estabelece uma camada intermediária entre o código gerado pelo compilador e o hardware responsável pela execução.
+
+Essa abordagem permite separar duas questões que, em uma máquina física, estão fortemente relacionadas: **o que deve ser executado** e **como essa execução é realizada pelo hardware**. O compilador pode, assim, gerar código para uma arquitetura virtual bem definida, enquanto o ambiente de execução se encarrega de interpretar ou executar essas instruções.
+
+Será apresentado também o **ambiente virtual de execução**, responsável por manter o estado da máquina durante a execução de um programa. Nesse ambiente serão definidos os elementos necessários para a execução do código intermediário, como memória, pilha de execução, registradores ou estruturas equivalentes, instruções e mecanismos de controle do fluxo de execução. A execução será descrita por meio de configurações da máquina, permitindo acompanhar a evolução do programa instrução por instrução.
+
+A escolha de uma máquina virtual como destino da geração de código estabelece uma ligação direta com os conteúdos de compilação apresentados nos capítulos anteriores. O compilador deixa de ter como objetivo imediato a geração de instruções para um processador específico e passa a produzir um **código intermediário**, definido em termos das operações da máquina virtual. Posteriormente, esse código pode ser interpretado pelo ambiente virtual ou traduzido para uma arquitetura física.
+
+Assim, o capítulo estabelece uma ponte entre três níveis de abstração. No primeiro nível está o **modelo teórico de computação**, representado pela Máquina de Turing; no segundo, a **máquina virtual**, que fornece um modelo abstrato de execução adequado à implementação de compiladores; e, no terceiro, o **hardware real**, responsável pela execução efetiva das instruções.
+
+Essa perspectiva é importante para compreender que um compilador não apenas traduz uma linguagem para outra. Ele também realiza uma transformação entre diferentes **modelos de execução**. Ao gerar código intermediário, o compilador transforma a representação do programa obtida nas fases anteriores em uma sequência de operações que pode ser executada por uma máquina abstrata. A partir dessa representação, torna-se possível estudar de maneira concreta a relação entre a análise do programa, a geração de código e sua execução.
+
+Ao longo do capítulo, os exemplos e simuladores serão utilizados para tornar esse processo observável. A execução poderá ser acompanhada por meio das configurações instantâneas da máquina, permitindo visualizar as alterações de estado e memória produzidas por cada instrução. Dessa maneira, conceitos que frequentemente são apresentados de forma abstrata — como estado, memória, pilha, instrução, chamada de procedimento e fluxo de execução — poderão ser explorados de maneira interativa.
+
+O objetivo, portanto, é construir gradualmente uma visão unificada da computação: partindo de um modelo matemático extremamente simples, a Máquina de Turing, e avançando até um modelo de máquina virtual suficientemente estruturado para servir como destino da geração de código de um compilador. Essa transição permitirá conectar os fundamentos teóricos da computação aos mecanismos práticos envolvidos na execução de programas.
+
 ## Máquina de Turing
 
-## Máquinas Virtuais e Ambiente de Execução
+Nos capítulos anteriores foram apresentados diferentes modelos de computação. Os autômatos finitos constituem modelos adequados para o reconhecimento de linguagens regulares e para problemas nos quais a quantidade de memória disponível é limitada. Os autômatos com pilha ampliam essa capacidade ao incorporar uma memória potencialmente ilimitada organizada segundo o princípio de que o último elemento armazenado é o primeiro a ser recuperado. Apesar dessas extensões, existem problemas que não podem ser resolvidos por esses modelos. Torna-se necessário, portanto, considerar um modelo de computação mais geral, capaz de representar uma classe muito mais ampla de processos computacionais.
+
+A **Máquina de Turing** foi proposta por Alan Turing em 1936 como um modelo matemático para a realização de computações. Sua importância não está apenas em sua capacidade de reconhecer linguagens mais complexas, mas também no fato de fornecer uma definição formal para o conceito de computação. Embora seja constituída por elementos extremamente simples, a Máquina de Turing possui recursos suficientes para representar os procedimentos realizados por um computador de propósito geral.
+
+Uma Máquina de Turing pode ser vista como uma extensão dos modelos de autômatos estudados anteriormente. Assim como um autômato finito, ela possui um conjunto finito de estados e um mecanismo de controle baseado em uma função de transição. A diferença fundamental está na forma como a memória é utilizada. Enquanto um autômato finito dispõe apenas de sua memória interna, e um autômato com pilha possui uma memória estruturada, a Máquina de Turing utiliza uma **fita potencialmente ilimitada** que pode ser utilizada tanto para leitura quanto para escrita. Essa característica permite que a máquina armazene informações durante a computação e posteriormente retorne a essas informações para utilizá-las em novas etapas do processamento.
+
+A fita desempenha, portanto, o papel de memória da máquina. Inicialmente, a entrada é armazenada nas primeiras posições da fita, enquanto as demais posições contêm o símbolo branco, representado por $\sqcup$. Sobre a fita atua um **cabeçote de leitura e escrita**, que pode ler o símbolo da posição corrente, substituí-lo por outro símbolo e deslocar-se para a esquerda ou para a direita. A possibilidade de modificar a fita durante a execução é uma das características fundamentais que diferenciam a Máquina de Turing dos autômatos apresentados anteriormente.
+
+Durante uma computação, a máquina utiliza a fita não apenas para armazenar a entrada, mas também como memória de trabalho. Informações podem ser marcadas, substituídas ou acrescentadas à fita e posteriormente recuperadas pelo deslocamento do cabeçote até a posição correspondente. Dessa forma, uma Máquina de Turing pode executar algoritmos que exigem uma quantidade arbitrária de memória, limitada apenas pelo tamanho da região da fita efetivamente utilizada durante a computação.
+
+A execução da máquina é determinada pelo estado atual e pelo símbolo que se encontra sob o cabeçote. A partir dessas informações, a função de transição determina três ações: o próximo estado da máquina, o símbolo que deve ser escrito na posição corrente e a direção na qual o cabeçote deve se mover. Uma computação pode prosseguir por um número arbitrário de passos até que a máquina entre em um estado de aceitação ou em um estado de rejeição. Caso nenhum desses estados seja alcançado, a computação pode continuar indefinidamente.
+
+Essa possibilidade de uma computação que nunca termina é uma característica importante da Máquina de Turing. Em particular, uma máquina pode reconhecer uma cadeia pertencente a uma determinada linguagem e também rejeitar uma cadeia que não pertence a ela, mas, dependendo do modelo de máquina e da linguagem considerada, pode existir uma entrada para a qual a máquina nunca chega a uma decisão. Essa distinção será fundamental posteriormente para o estudo da **decidibilidade**.
+
+### Definição formal
+
+Formalmente, uma Máquina de Turing $M$ pode ser definida como uma 7-upla
+
+$$
+M=(Q,\Sigma,\Gamma,\delta,q_0,q_{aceita},q_{rejeita}),
+$$
+
+em que $Q$ é um conjunto finito de estados, $\Sigma$ é o alfabeto de entrada, $\Gamma$ é o alfabeto da fita, $\delta$ é a função de transição, $q_0$ é o estado inicial, $q_{aceita}$ é o estado de aceitação e $q_{rejeita}$ é o estado de rejeição.
+
+O conjunto $Q$ contém todos os estados que podem ser assumidos pela máquina durante sua execução. O estado $q_0$ representa o estado no qual a máquina inicia a computação. Os estados $q_{aceita}$ e $q_{rejeita}$ representam, respectivamente, as duas possíveis decisões finais da máquina.
+
+O alfabeto $\Sigma$ corresponde aos símbolos que podem aparecer na entrada. O símbolo branco $\sqcup$ não pertence a esse alfabeto. Já o alfabeto da fita $\Gamma$ contém todos os símbolos que podem ser utilizados durante a computação, incluindo o símbolo branco e os símbolos do alfabeto de entrada. Assim,
+
+$$
+\Sigma \subseteq \Gamma
+\qquad\text{e}\qquad
+\sqcup\in\Gamma.
+$$
+
+A diferença entre os dois alfabetos é importante porque a máquina pode utilizar símbolos que não fazem parte da entrada para armazenar informações auxiliares durante a computação. Por exemplo, pode utilizar um símbolo $x$ para marcar uma posição da fita que já foi processada.
+
+A função de transição é definida por
+
+$$
+\delta:Q\times\Gamma
+\longrightarrow
+Q\times\Gamma\times\{E,D\}.
+$$
+
+Ela especifica o comportamento da máquina em cada passo da computação. Se a máquina estiver no estado $q$ e o cabeçote estiver sobre uma célula contendo o símbolo $a$, uma transição
+
+$$
+\delta(q,a)=(r,b,E)
+$$
+
+determina que a máquina deve mudar para o estado $r$, substituir o símbolo $a$ pelo símbolo $b$ e deslocar o cabeçote uma posição para a esquerda. De maneira análoga, uma transição
+
+$$
+\delta(q,a)=(r,b,D)
+$$
+
+determina a escrita de $b$, a mudança para o estado $r$ e o deslocamento do cabeçote uma posição para a direita.
+
+### Funcionamento de uma Máquina de Turing
+
+Considere uma entrada
+
+$$
+w=w_1w_2\ldots w_n\in\Sigma^*.
+$$
+
+Inicialmente, os símbolos $w_1,\ldots,w_n$ ocupam as primeiras posições da fita, e as posições seguintes contêm o símbolo branco. O cabeçote começa sobre o primeiro símbolo da entrada e a máquina encontra-se no estado inicial $q_0$. A partir dessa configuração, a execução ocorre pela aplicação sucessiva da função de transição.
+
+Diferentemente de um autômato finito, o cabeçote da Máquina de Turing pode deslocar-se tanto para a esquerda quanto para a direita. Além disso, os símbolos encontrados na fita podem ser modificados durante a execução. A máquina pode, portanto, percorrer repetidamente uma mesma região da fita, utilizando-a como memória de trabalho.
+
+A computação termina quando a máquina entra em $q_{aceita}$ ou $q_{rejeita}$. No primeiro caso, a entrada é aceita; no segundo, a entrada é rejeitada. Se nenhum desses estados for alcançado, a máquina continua sua execução indefinidamente. Essa propriedade distingue uma máquina que simplesmente **reconhece** uma linguagem de uma máquina que **decide** uma linguagem.
+
+### Configuração instantânea
+
+Para acompanhar uma computação, é necessário representar não apenas o estado atual da máquina, mas também o conteúdo relevante da fita e a posição do cabeçote. Para isso, utiliza-se o conceito de **configuração instantânea**.
+
+Uma configuração instantânea de uma Máquina de Turing pode ser representada por
+
+$$
+\langle u,q,av\rangle,
+$$
+
+em que:
+
+- $u$ representa o conteúdo da fita à esquerda do cabeçote;
+- $q$ é o estado atual da máquina;
+- $a$ é o símbolo que está sob o cabeçote;
+- $v$ representa o restante da fita à direita do cabeçote.
+
+Assim, o símbolo que aparece imediatamente após o estado $q$ é aquele que está sendo lido pelo cabeçote. Por exemplo,
+
+$$
+\langle 010,q_4,010\rangle
+$$
+
+indica que a máquina está no estado $q_4$, que o cabeçote está sobre o primeiro símbolo $0$ do terceiro componente e que o conteúdo relevante da fita é formado pelas partes $010$ e $010$.
+
+A configuração instantânea permite representar cada passo da computação por meio de uma relação de sucessão, denotada por $\vdash$.
+
+Considere uma configuração
+
+$$
+\langle u,q,av\rangle
+$$
+
+e suponha que a função de transição determine
+
+$$
+\delta(q,a)=(p,b,D).
+$$
+
+Nesse caso, a máquina está no estado $q$, lê o símbolo $a$, escreve $b$, desloca o cabeçote uma posição para a **direita** e muda para o estado $p$. A configuração seguinte será
+
+$$
+\langle ub,p,v\rangle.
+$$
+
+Portanto,
+
+$$
+\langle u,q,av\rangle
+\;\vdash\;
+\langle ub,p,v\rangle.
+$$
+
+De forma análoga, considere a transição
+
+$$
+\delta(q,a)=(p,b,E).
+$$
+
+A máquina escreve $b$, desloca o cabeçote uma posição para a **esquerda** e muda para o estado $p$. Se $u=xc$, isto é, se $c$ é o último símbolo de $u$, então a configuração seguinte será
+
+$$
+\langle x,p,cbv\rangle.
+$$
+
+Assim,
+
+$$
+\langle xc,q,av\rangle
+\;\vdash\;
+\langle x,p,cbv\rangle.
+$$
+
+Quando o movimento do cabeçote for de permanência, isto é,
+
+$$
+\delta(q,a)=(p,b,P),
+$$
+
+a máquina escreve $b$, permanece na mesma posição da fita e muda para o estado $p$. Nesse caso,
+
+$$
+\langle u,q,av\rangle
+\;\vdash\;
+\langle u,p,bv\rangle.
+$$
+
+A configuração inicial de uma Máquina de Turing que recebe uma palavra $w$ como entrada é representada por
+
+$$
+\langle \_,q_0,w\rangle,
+$$
+
+em que $\_$ representa a parte vazia da fita à esquerda do cabeçote. A partir dessa configuração, cada aplicação da função de transição produz uma nova configuração.
+
+A computação da máquina pode, portanto, ser representada por uma sequência
+
+$$
+C_0\vdash C_1\vdash C_2\vdash\cdots\vdash C_k,
+$$
+
+em que $C_0$ é a configuração inicial e cada configuração subsequente é obtida pela aplicação de uma transição.
+
+No simulador, essa sequência é apresentada passo a passo. A cada etapa, são exibidos o estado atual, o conteúdo da fita e a posição do cabeçote, permitindo acompanhar visualmente a configuração instantânea correspondente. A transição executada também é destacada no diagrama da máquina, relacionando a representação formal da computação com sua representação gráfica.
+
+### Exemplo de Máquina de Turing
+
+Para ilustrar o funcionamento de uma Máquina de Turing, considere a linguagem
+
+$$
+L=\{w.w\mid w\in\{a,b\}^*\}.
+$$
+
+A linguagem contém as cadeias formadas por duas cópias idênticas de uma mesma palavra $w$, separadas pelo símbolo `.`. Por exemplo,
+
+$$
+ab.ab
+$$
+
+pertence à linguagem, enquanto
+
+$$
+ab.ba
+$$
+
+não pertence.
+
+Uma Máquina de Turing pode reconhecer essa linguagem utilizando a fita como memória de trabalho. A estratégia consiste em comparar, da esquerda para a direita, os símbolos da primeira ocorrência de $w$ com os símbolos correspondentes da segunda ocorrência. Para controlar os símbolos que já foram comparados, a máquina pode substituí-los por símbolos auxiliares. Neste exemplo, utilizaremos $x$ para marcar símbolos $a$ já processados e $y$ para marcar símbolos $b$ já processados.
+
+Inicialmente, a palavra de entrada encontra-se na fita:
+
+$$
+ab.ab
+$$
+
+A máquina procura o primeiro símbolo ainda não marcado antes do separador `.`. Ao encontrar um $a$, substitui-o por $x$ e entra em um estado que indica que deverá procurar um $a$ correspondente na segunda parte da palavra. De maneira análoga, quando encontra um $b$, substitui-o por $x$ e procura um $b$ correspondente.
+
+Depois de marcar o símbolo escolhido na primeira parte, a máquina percorre a fita até ultrapassar o separador `.` e procura o primeiro símbolo ainda não marcado na segunda parte. Se esse símbolo for o esperado, ele também é marcado. Caso contrário, a máquina entra no estado de rejeição. Após realizar a comparação, a máquina retorna ao início da primeira parte da fita e repete o procedimento.
+
+A máquina de Turing para essa linguagem pode ser formalmente definida por:
+
+$M=(Q,\Sigma,\Gamma,\delta,q_0,q_{aceita},q_{rejeita})$,
+
+Onde:
+
+ - $Q = \{q_0, q_a, q_b, q_{a2}, q_{b2}, q_{ret}, q_{check}, q_f, q_r\}$
+ - $\Sigma = \{a,b,.\}$
+ - $\Gamma = \{a,b,.,x,\_\}$
+ - $q_0 = q_0$
+ - $q_{aceita} = q_f$
+ - $q_{rejeita} = q_r$
+ - E a função de transição $\delta$ é:
+
+| Estado | $a$ | $b$ | $x$ | $\text{.}$ | $\_$ |
+|:------:|:---:|:---:|:---:|:----------:|:----:|
+| **$q_0$** | $(q_a,x,D)$ | $(q_b,y,D)$ | $(q_0,x,D)$ | $(q_{check},.,D)$ | $(q_{f},\_,D)$ |
+| **$q_a$** | $(q_a,a,D)$ | $(q_a,b,D)$ | $(q_a,x,D)$ | $(q_{a2},.,D)$ | — |
+| **$q_b$** | $(q_b,a,D)$ | $(q_b,b,D)$ | $(q_b,x,D)$ | $(q_{b2},.,D)$ | — |
+| **$q_{a2}$** | $(q_{a2},a,D)$ | $(q_{a2},b,D)$ | $(q_{a2},x,D)$ | $(q_{a2},.,D)$ | — |
+| **$q_{b2}$** | $(q_{b2},a,D)$ | $(q_{b2},b,D)$ | $(q_{b2},x,D)$ | $(q_{b2},.,D)$ | — |
+| **$q_{ret}$** | $(q_{ret},a,E)$ | $(q_{ret},b,E)$ | $(q_{ret},x,E)$ | $(q_{ret},.,E)$ | — |
+| **$q_{check}$** | $(q_{r},a,D)$ | $(q_{r},b,D)$ | $(q_{check},x,D)$ | $(q_{check},.,D)$ | $(q_{f},\_,D)$ |
+
+Um diagrama desta Máquina de Turing está representado na @fig-mt-wptow.
+
+![Máquina de Turing para L=\{w.w\mid w\in\{a,b\}^*\}.](/chapters/images/mt-w.w.png){#fig-mt-wptow width="80%"}
+
+Considere a entrada
+
+$$
+ab.ab
+$$
+
+A configuração inicial é
+
+$$
+C_0=\langle\_,q_0,ab.ab\rangle,
+$$
+
+em que $\_$ representa o símbolo branco da fita. A máquina está no estado inicial $q_0$ e o cabeçote encontra-se sobre o primeiro símbolo $a$.
+
+A máquina encontra um $a$, marca esse símbolo com $x$ e passa para um estado que representa a busca pelo $a$ correspondente na segunda parte:
+
+$$
+C_0
+=
+\langle\_,q_0,ab.ab\rangle
+$$
+
+$$
+\vdash
+\langle \_x,q_a,b.ab\rangle
+$$
+
+A partir desse ponto, a máquina percorre a primeira parte da palavra até encontrar o separador `.` e, em seguida, procura o primeiro símbolo ainda não marcado na segunda parte. Ao encontrar o $a$ correspondente, marca-o com $x$:
+
+$$
+\langle\_x,q_a,b.ab\rangle
+\vdash^*
+\langle \_xb.,q_{a2},ab\rangle
+$$
+
+$$
+\vdash
+\langle \_xb,q_{ret},.xb\rangle.
+$$
+
+O símbolo $a$ da segunda parte foi, portanto, marcado. A máquina retorna ao início da fita para procurar o próximo símbolo ainda não processado na primeira parte:
+
+$$
+\langle\_xb,q_{ret},.xb\rangle
+\vdash^*
+\langle\_,q_0,xb.xb\rangle.
+$$
+
+Agora o primeiro símbolo ainda não marcado da primeira parte é $b$. A máquina o substitui por $x$:
+
+$$
+\langle\_,q_0,xb.xb\rangle
+\vdash^*
+\langle\_xx,q_b,.xb\rangle
+$$
+
+Ela percorre novamente a fita até a segunda parte e procura o primeiro símbolo ainda não marcado. Nesse caso, encontra $b$, que corresponde ao símbolo armazenado implicitamente no estado:
+
+$$
+\vdash^*
+\langle\_xx,q_b,.xb\rangle
+\vdash^*
+\langle\_xx.x,q_{b2},b\rangle
+$$
+
+$$
+\vdash
+\langle\_xx.,q_{ret},xx\rangle
+$$
+
+A máquina retorna novamente ao início da fita. Nesse momento, todos os símbolos da primeira parte e todos os símbolos correspondentes da segunda parte estão marcados:
+
+$$
+\langle\_xx.,q_{ret},xx\rangle
+\vdash^*
+\langle\_,q_0,xx.xx\rangle
+$$
+
+Ao percorrer a primeira parte, a máquina não encontra mais símbolos $a$ ou $b$ não marcados e encontra o separador `.`. 
+$$
+\langle\_,q_0,xx.xx\rangle
+\vdash^*
+\langle\_xx.,q_{check},xx\rangle
+$$
+
+Ela então verifica a segunda parte. Como também não existem símbolos não marcados após o separador, a máquina entra no estado de aceitação:
+$$
+\langle\_xx.,q_{check},xx\rangle
+\vdash^*
+\langle\_xx.xx\_,q_{f},\_\rangle
+$$
+
+Assim, a computação termina em um estado de aceitação e, portanto,
+
+$$
+ab.ab\in L.
+$$
+
+A sequência pode ser resumida por
+
+$$
+\begin{aligned}
+\langle\_,q_0,ab.ab\rangle
+&\vdash^*
+\langle\_,q_0,xb.xb\rangle
+&\vdash^*
+\langle\_,q_0,xx.xx\rangle
+&\vdash^*
+\langle\_xx.xx\_,q_{f},\_\rangle
+\end{aligned}
+$$
+
+O símbolo $\vdash^*$ representa uma ou mais aplicações da relação de sucessão entre configurações. Dessa forma, é possível omitir os passos intermediários em que a máquina simplesmente percorre a fita, concentrando a representação nos momentos relevantes da computação.
+
+No simulador, esses passos podem ser acompanhados individualmente. A cada execução de uma transição, a configuração instantânea é atualizada, mostrando o estado corrente, o conteúdo da fita e a posição do cabeçote. Simultaneamente, a transição correspondente pode ser destacada no diagrama da máquina.
+
+Esse exemplo evidencia uma característica fundamental da Máquina de Turing: a fita funciona não apenas como meio de armazenamento da entrada, mas também como **memória de trabalho**. O símbolo auxiliar $x$ permite registrar quais posições já foram processadas, enquanto os estados da máquina permitem controlar qual símbolo deve ser procurado na segunda parte da entrada.
+
+A mesma estratégia permite identificar palavras que não pertencem à linguagem. Por exemplo, para a entrada
+
+$$
+ab.ba,
+$$
+
+a máquina marca inicialmente o $a$ da primeira parte e procura um $a$ na segunda parte. Como o primeiro símbolo não marcado encontrado após o separador é $b$, ocorre uma incompatibilidade e a máquina entra no estado de rejeição.
+
+### Reconhecimento e decisão
+
+A possibilidade de uma Máquina de Turing permanecer executando indefinidamente leva a uma distinção importante. Uma linguagem é denominada **Turing-reconhecível** quando existe uma Máquina de Turing capaz de reconhecê-la. Isso significa que, para uma cadeia pertencente à linguagem, a máquina eventualmente entra no estado de aceitação. Para cadeias que não pertencem à linguagem, entretanto, a máquina pode rejeitar ou pode continuar executando indefinidamente.
+
+Uma linguagem é denominada **Turing-decidível** quando existe uma Máquina de Turing que sempre termina sua computação, aceitando ou rejeitando a entrada. Portanto, toda linguagem decidível é também Turing-reconhecível, mas uma linguagem Turing-reconhecível não precisa ser decidível.
+
+Essa distinção será retomada na seção dedicada à **decidibilidade**, na qual será estudado o problema de determinar quais problemas podem ser resolvidos por um algoritmo que sempre termina. O problema da parada, em particular, mostrará que existem problemas para os quais não existe uma Máquina de Turing capaz de produzir uma decisão correta para todas as entradas e sempre terminar sua computação.
+
+### Simulador de Máquina de Turing
+
+O simulador apresentado a seguir permite visualizar, de forma interativa, o funcionamento de uma Máquina de Turing. Inicialmente, o usuário pode definir os principais elementos da máquina: o conjunto de estados, o alfabeto de entrada, o alfabeto da fita, o estado inicial, o estado de aceitação e o estado de rejeição.
+
+A partir dessas informações, o simulador permite construir a **tabela de transição**, que representa a função de transição da máquina. Para cada combinação de estado atual e símbolo lido na fita, a tabela especifica o estado para o qual a máquina deve transitar, o símbolo que deve ser escrito na posição corrente da fita e o movimento realizado pelo cabeçote. O cabeçote pode se deslocar uma posição para a **direita**, uma posição para a **esquerda** ou **permanecer na mesma posição**.
+
+Após o preenchimento da tabela de transição, o simulador gera automaticamente o **diagrama da Máquina de Turing**, permitindo visualizar graficamente seus estados e transições.
+
+Por fim, o usuário pode fornecer uma palavra de entrada para realizar a simulação da computação. A execução pode ser acompanhada passo a passo, permitindo observar a transição realizada em cada etapa e a respectiva **configuração instantânea** da máquina. Dessa forma, o simulador relaciona a representação formal da máquina — por meio da tabela de transição — com sua representação gráfica e com o processo efetivo de computação sobre uma palavra de entrada.
+
+::: {.simulacao url="/p5js/mi/" height="400" image="/printscreen/mi.png" qrcode="/qrcode/mi.png"}
+:::
+
+## Decidibilidade
+### Linguagens decidíveis
+### Máquinas de Turing que decidem linguagens
+### Linguagens reconhecíveis
+### Decidibilidade versus reconhecimento
+### Problemas decidíveis e indecidíveis
+### O problema da parada
+### Consequências do problema da parada
+### Relação entre decidibilidade e programas
+
+## Da Máquina de Turing à máquina virtual
+- Modelos de computação e modelos de execução
+- Por que utilizar uma máquina virtual?
+- Conceito de máquina virtual
+- Máquina virtual como máquina abstrata
+- Comparação entre Máquina de Turing e máquina virtual
+
+A máquina virtual
+- Arquitetura da máquina
+- Conjunto de instruções
+- Estados da máquina
+- Memória
+- Registradores, se houver
+- Pilha de execução
+- Entrada e saída
+
+Ambiente virtual de execução
+- Estado da máquina
+- Configuração instantânea
+- Execução de uma instrução
+- Alteração da memória
+- Controle de fluxo
+- Chamadas e retorno de procedimentos
+- Exemplos de execução passo a passo
+
+

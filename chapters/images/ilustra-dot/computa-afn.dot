@@ -1,0 +1,37 @@
+digraph ComputacaoAFN {
+
+    rankdir=LR;
+    graph [bgcolor="white"];
+
+    node [
+        shape=box,
+        fontname="Arial",
+        fontsize=11
+    ];
+
+    edge [
+        fontname="Arial",
+        fontsize=10
+    ];
+
+    // Configuração inicial
+    c0 [label="(q0, bba)"];
+
+    // Escolha não determinística
+    c1 [label="(q2, bba)"];
+    c2 [label="(q1, ba)"];
+
+    c0 -> c1 [label="ε"];
+    c0 -> c2 [label="b"];
+
+    // Ramo que falha
+    c1f [label="REJEITA", shape=box];
+    c1 -> c1f [label="b"];
+
+    // Ramo que continua
+    c3 [label="(q2, a)"];
+    c2 -> c3 [label="b"];
+
+    c4 [label="(q0, ε)", shape=doublecircle];
+    c3 -> c4 [label="a"];
+}

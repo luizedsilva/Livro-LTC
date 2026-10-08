@@ -2,3 +2,58 @@
 
 ![](/chapters/images/semantico.png){fig-align="center" width=70%}
 
+1. Introdução
+- Da análise sintática à análise semântica
+- O papel da análise semântica
+- Da estrutura sintática à execução
+- A necessidade de uma representação intermediária
+2. Análise semântica
+- Conceito de semântica
+- Verificação de tipos
+- Declarações e identificadores
+- Escopo
+- Compatibilidade de tipos
+- Tabela de símbolos
+- Verificação semântica
+- Exemplos
+3. Representação intermediária
+- Objetivos da representação intermediária
+- Vantagens de uma representação intermediária
+- Relação entre código-fonte, representação intermediária e código-alvo
+- Formato da representação intermediária
+- Instruções da máquina virtual
+4. Geração de código intermediário
+- Atribuições
+- Operações aritméticas
+- Operações relacionais e lógicas
+- Acesso às variáveis
+- Expressões
+- Comandos condicionais
+- Comandos de repetição
+- Desvios
+- Funções e procedimentos
+5. Geração de código para a máquina virtual
+- Tradução da representação intermediária
+- Mapeamento das operações para instruções
+- Uso da pilha
+- Manipulação da memória
+- Controle do fluxo
+- Chamadas de funções
+- Retorno de funções
+6. Exemplos completos
+
+
+7. Execução do código gerado
+- Carregamento do programa
+- Configuração inicial
+- Execução instrução por instrução
+- Alteração da pilha
+- Alteração da memória
+- Configurações intermediárias
+- Resultado da execução
+
+8. Considerações finais
+- Da análise semântica à execução
+- O papel da representação intermediária
+- Relação entre compilador e máquina virtual
+- Preparação para otimização e/ou geração de código final
