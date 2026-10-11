@@ -1249,7 +1249,7 @@ A tradução para a MVS é:
 ```{.mvs}
     CRCT  1
     ARZG  0
-L1: NADA
+L1  NADA
     CRVG  0
     CRCT  10
     CMME
@@ -1259,7 +1259,7 @@ L1: NADA
     MULT
     ARZG  0
     DSVS  L1
-L2: NADA
+L2  NADA
 ```
 
 As primeiras instruções atribuem `1` a `x`. Em seguida, o programa testa a condição `x < 10`. A instrução `CMME` produz `1` se o valor de `x` for menor que `10` e `0` caso contrário.
@@ -1338,14 +1338,14 @@ A tradução apresentada nos slides é:
     AMEM  2
     CRCT  1
     ARZG  0
-L1: NADA
+L1  NADA
     CRVG  0
     CRCT  10
     CMME
     DSVF  L2
     CRCT  1
     ARZG  1
-L3: NADA
+L3  NADA
     CRVG  1
     CRCT  10
     CMME
@@ -1359,13 +1359,13 @@ L3: NADA
     SOMA
     ARZG  1
     DSVS  L3
-L4: NADA
+L4  NADA
     CRVG  0
     CRCT  1
     SOMA
     ARZG  0
     DSVS  L1
-L2: NADA
+L2  NADA
     FIMP
 ```
 
