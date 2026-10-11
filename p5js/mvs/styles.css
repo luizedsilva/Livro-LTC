@@ -1,0 +1,254 @@
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  color: #20242b;
+  background: #f4f6f8;
+}
+* {
+  box-sizing: border-box;
+}
+header {
+  background: #17202a;
+  color: white;
+  padding: 18px 24px;
+}
+
+header h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+
+header p {
+  margin: 0;
+  color: #d0d5dd;
+}
+body {
+  margin: 0;
+  padding: 18px;
+  max-width: 1500px;
+  margin-inline: auto;
+}
+h1 {
+  font-size: 1.55rem;
+  margin: 0 0 6px;
+}
+.intro {
+  margin: 0 0 16px;
+  color: #515b67;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.25fr);
+  gap: 16px;
+  align-items: start;
+}
+.panel {
+  background: #fff;
+  border: 1px solid #d9dee5;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 2px #00000008;
+  min-width: 0;
+}
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 10px;
+}
+label {
+  display: block;
+  font-weight: 650;
+  font-size: 0.9rem;
+  margin: 10px 0 5px;
+}
+textarea,
+input,
+select {
+  font:
+    14px ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  border: 1px solid #bbc4cf;
+  border-radius: 6px;
+  padding: 9px;
+  width: 100%;
+  background: #fff;
+  color: #20242b;
+}
+#editorWrap {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr);
+  border: 1px solid #bbc4cf;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+#lineNumbers {
+  height: 430px;
+  overflow: hidden;
+  background: #f0f3f7;
+  color: #788392;
+  text-align: right;
+  padding: 9px 8px 9px 4px;
+  font:
+    14px/1.45 ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  white-space: pre;
+  user-select: none;
+  border-right: 1px solid #d7dde5;
+}
+#code {
+  height: 430px;
+  resize: vertical;
+  line-height: 1.45;
+  tab-size: 4;
+  -moz-tab-size: 4;
+  white-space: pre;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  min-width: 0;
+  padding-left: 12px;
+}
+#editorWrap:focus-within {
+  border-color: #6c9cf5;
+  box-shadow: 0 0 0 2px #155eef18;
+}
+#stdin {
+  height: 100px;
+  resize: vertical;
+}
+button {
+  border: 1px solid #aeb8c4;
+  border-radius: 7px;
+  background: #f7f9fb;
+  padding: 9px 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+button:hover {
+  background: #eaf0f6;
+}
+button.primary {
+  background: #155eef;
+  color: #fff;
+  border-color: #155eef;
+}
+button.primary:hover {
+  background: #104dcc;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0;
+}
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row > * {
+  flex: 1;
+}
+.small {
+  font-size: 0.82rem;
+  color: #5c6672;
+}
+.status {
+  padding: 9px 10px;
+  background: #f0f4f8;
+  border-radius: 6px;
+  margin-top: 10px;
+  min-height: 40px;
+  font-size: 0.9rem;
+}
+.status.error {
+  background: #fff0f0;
+  color: #a21b1b;
+}
+.terminal {
+  background: #151b23;
+  color: #e5edf5;
+  border-radius: 7px;
+  padding: 10px;
+  min-height: 115px;
+  max-height: 240px;
+  overflow: auto;
+  font:
+    13px/1.5 ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.terminal .out {
+  color: #a7f3d0;
+}
+.terminal .in {
+  color: #93c5fd;
+}
+.terminal .sys {
+  color: #cbd5e1;
+}
+.terminal .err {
+  color: #fca5a5;
+}
+#viz {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #fbfcfe;
+  border: 1px solid #e0e5eb;
+}
+canvas {
+  display: block;
+  max-width: 100%;
+}
+.legend {
+  font-size: 0.8rem;
+  color: #66717e;
+  margin-top: 7px;
+}
+details {
+  margin-top: 10px;
+}
+summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 6px;
+  border-bottom: 1px solid #e6eaf0;
+}
+code {
+  background: #edf1f5;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  #code {
+    height: 320px;
+  }
+}

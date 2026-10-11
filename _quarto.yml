@@ -13,6 +13,11 @@ filters:
 resources:
   - p5js
 
+syntax-highlighting: github
+syntax-definitions:
+  - mvs.xml
+  - simples.xml
+
 book:
   title: "Teoria de Linguagens e Compiladores"
   author: "Luiz Eduardo da Silva"

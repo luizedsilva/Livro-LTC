@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+
+<language name="mvs"
+          version="1"
+          kateversion="5.0"
+          section="Other"
+          extensions="*.mvs">
+
+  <highlighting>
+
+    <list name="instructions">
+      <item>INPP</item>
+      <item>FIMP</item>
+      <item>AMEM</item>
+      <item>CRCT</item>
+      <item>CRVG</item>
+      <item>ARZG</item>
+      <item>SOMA</item>
+      <item>SUBT</item>
+      <item>MULT</item>
+      <item>DIVI</item>
+      <item>CMMA</item>
+      <item>CMME</item>
+      <item>CMIG</item>
+      <item>DISJ</item>
+      <item>CONJ</item>
+      <item>NEGA</item>
+      <item>DSVS</item>
+      <item>DSVF</item>
+      <item>LEIA</item>
+      <item>ESCR</item>
+      <item>NADA</item>
+    </list>
+
+    <contexts>
+      <context name="Normal" attribute="Normal Text"
+               lineEndContext="#stay">
+
+        <DetectChar char="#"
+                    attribute="Comment"
+                    context="Comment"/>
+
+        <RegExpr String="\bL[0-9]+\b"
+                 attribute="Label"
+                 context="#stay"/>
+
+        <keyword String="instructions"
+                 attribute="Instruction"
+                 context="#stay"/>
+
+        <RegExpr String="\b[0-9]+\b"
+                 attribute="Number"
+                 context="#stay"/>
+
+        <RegExpr String="\b[A-Za-z_][A-Za-z0-9_]*\b"
+                 attribute="Operand"
+                 context="#stay"/>
+
+      </context>
+
+      <context name="Comment"
+               attribute="Comment"
+               lineEndContext="#pop">
+      </context>
+
+    </contexts>
+
+    <itemDatas>
+      <itemData name="Normal Text"
+                defStyleNum="dsNormal"/>
+
+      <itemData name="Instruction"
+                defStyleNum="dsKeyword"
+                bold="1"/>
+
+      <itemData name="Label"
+                defStyleNum="dsFunction"
+                bold="1"/>
+
+      <itemData name="Number"
+                defStyleNum="dsDecVal"/>
+
+      <itemData name="Operand"
+                defStyleNum="dsVariable"/>
+
+      <itemData name="Comment"
+                defStyleNum="dsComment"
+                italic="1"/>
+
+    </itemDatas>
+
+  </highlighting>
+
+</language>

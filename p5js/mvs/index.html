@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simulador da Máquina Virtual Simples (MVS)</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+      <header>
+      <h1>Simulador de Máquina Virtual Simples</h1>
+      <p class="subtitle">
+        Defina as intruções MVS e acompanhe a execução do programa e alteração da memória
+      </p>
+    </header>
+    <div class="layout">
+      <section class="panel">
+        <h2>Programa P</h2>
+        <p class="intro">
+          Edite o programa usando TAB antes de cada instrução sem rótulo. Para
+          declarar um rótulo, digite-o na coluna 0, pressione TAB e escreva
+          <code>NADA</code> (por exemplo, <code>L1[TAB]NADA</code>).
+        </p>
+        <label for="code">Código MVS</label>
+        <div id="editorWrap">
+          <div id="lineNumbers" aria-hidden="true">1</div>
+          <textarea id="code" spellcheck="false" wrap="off">
+	INPP
+	AMEM 2
+	CRCT 5
+	ARZG 0
+L1	NADA
+	CRVG 0
+	CRCT 1
+	CMMA
+	DSVF L2
+	CRVG 0
+	ESCR
+	CRVG 0
+	CRCT 1
+	SUBT
+	ARZG 0
+	DSVS L1
+L2	NADA
+	FIMP</textarea
+          >
+        </div>
+        <div class="controls">
+          <button id="assemble" class="primary">Carregar programa</button>
+          <button id="step">Executar passo</button>
+          <button id="run">Executar tudo</button>
+          <button id="pause" disabled>Pausar</button>
+          <button id="reset">Reiniciar</button>
+        </div>
+        <div class="row">
+          <button id="example">Restaurar exemplo</button>
+          <span class="small"
+            >Sintaxe: instruções sem rótulo começam com TAB; rótulos usam
+            <code>R1[TAB]NADA</code>, sem dois-pontos. Comentários:
+            <code>//</code> ou <code>#</code>.</span
+          >
+        </div>
+        <div id="status" class="status">Carregue o programa para iniciar.</div>
+        <details>
+          <summary>Instruções reconhecidas</summary>
+          <table>
+            <tr>
+              <th>Instrução</th>
+              <th>Operação</th>
+            </tr>
+            <tr>
+              <td><code>INPP</code></td>
+              <td>Inicializa a máquina.</td>
+            </tr>
+            <tr>
+              <td><code>AMEM n</code>, <code>DMEM n</code></td>
+              <td>Aloca ou libera n posições de memória.</td>
+            </tr>
+            <tr>
+              <td><code>CRCT k</code></td>
+              <td>Empilha a constante k.</td>
+            </tr>
+            <tr>
+              <td><code>CRVG n</code>, <code>ARZG n</code></td>
+              <td>Carrega M[n] ou armazena o topo em M[n].</td>
+            </tr>
+            <tr>
+              <td><code>SOMA SUBT MULT DIVI INVE</code></td>
+              <td>Operações aritméticas.</td>
+            </tr>
+            <tr>
+              <td><code>CMIG CMDG CMME CMEG CMMA CMAG</code></td>
+              <td>Comparações: =, ≠, &lt;, ≤, &gt;, ≥.</td>
+            </tr>
+            <tr>
+              <td><code>CONJ DISJ NEGA</code></td>
+              <td>Operações lógicas.</td>
+            </tr>
+            <tr>
+              <td>
+                <code>DSVS L</code>, <code>DSVF L</code>, <code>NADA</code>
+              </td>
+              <td>Desvio incondicional, desvio se falso e rótulo/no-op.</td>
+            </tr>
+            <tr>
+              <td><code>LEIA</code>, <code>ESCR</code></td>
+              <td>Lê um valor do terminal ou escreve o topo da pilha.</td>
+            </tr>
+            <tr>
+              <td><code>FIMP</code></td>
+              <td>Encerra a execução.</td>
+            </tr>
+          </table>
+        </details>
+      </section>
+
+      <section class="panel">
+        <h2>Estado da máquina</h2>
+        <div class="row">
+          <div>
+            <label>Registrador i (instrução atual)</label
+            ><input id="regI" readonly value="—" />
+          </div>
+          <div>
+            <label>Registrador s (topo da pilha)</label
+            ><input id="regS" readonly value="0" />
+          </div>
+        </div>
+        <div id="viz"><div id="p5-holder"></div></div>
+        <p class="legend">
+          Em P, a linha destacada é a próxima instrução a executar. Em M, os
+          endereços são índices de memória; s indica a próxima posição livre da
+          pilha.
+        </p>
+        <h2 style="margin-top: 15px">Terminal — entrada e saída</h2>
+        <label for="stdin"
+          >Dados de entrada (um valor por linha, consumidos por
+          <code>LEIA</code>)</label
+        >
+        <textarea
+          id="stdin"
+          spellcheck="false"
+          placeholder="Exemplo:&#10;12&#10;3">
+12
+3</textarea
+        >
+        <div class="controls">
+          <button id="clearTerminal">Limpar saída</button>
+        </div>
+        <div id="terminal" class="terminal" aria-live="polite">
+          <span class="sys"
+            >Terminal pronto. A saída de ESCR aparecerá aqui.</span
+          >
+        </div>
+      </section>
+    </div>
+
+    <script src="sketch.js"></script>
+  </body>
+</html>

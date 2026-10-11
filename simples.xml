@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+
+<language name="simples"
+          version="1"
+          kateversion="5.0"
+          section="Other"
+          extensions="*.simples">
+
+  <highlighting>
+    <list name="keywords">
+      <item>programa</item>
+      <item>fimprograma</item>
+      <item>inicio</item>
+      <item>fim</item>
+      <item>inteiro</item>
+      <item>real</item>
+      <item>logico</item>
+      <item>caractere</item>
+      <item>booleano</item>
+      <item>se</item>
+      <item>entao</item>
+      <item>senao</item>
+      <item>fimse</item>
+      <item>enquanto</item>
+      <item>faca</item>
+      <item>fimenquanto</item>
+      <item>para</item>
+      <item>de</item>
+      <item>ate</item>
+      <item>passo</item>
+      <item>fimpara</item>
+      <item>repita</item>
+      <item>fimrepita</item>
+      <item>leia</item>
+      <item>escreva</item>
+      <item>verdadeiro</item>
+      <item>falso</item>
+      <item>e</item>
+      <item>ou</item>
+      <item>nao</item>
+      <item>div</item>
+      <item>mod</item>
+    </list>
+
+    <contexts>
+      <context name="Normal" attribute="Normal Text" lineEndContext="#stay">
+        <Detect2Chars char="/" char1="/" attribute="Comment" context="LineComment"/>
+        <DetectChar char="#" attribute="Comment" context="LineComment"/>
+        <RegExpr String="&quot;([^&quot;\\]|\\.)*&quot;|&apos;([^&apos;\\]|\\.)*&apos;"
+                 attribute="String" context="#stay"/>
+        <RegExpr String="^[ \t]*[A-Za-z_][A-Za-z0-9_]*(?=[ \t]*:)"
+                 attribute="Label" context="#stay"/>
+        <keyword String="keywords" attribute="Keyword" context="#stay"/>
+        <RegExpr String="\b[0-9]+(\.[0-9]+)?\b"
+                 attribute="Number" context="#stay"/>
+        <RegExpr String="&lt;=|&gt;=|&lt;&gt;|:=|&lt;|&gt;|=|[+\-*/]"
+                 attribute="Operator" context="#stay"/>
+        <RegExpr String="[A-Za-z_][A-Za-z0-9_]*"
+                 attribute="Identifier" context="#stay"/>
+      </context>
+      <context name="LineComment" attribute="Comment" lineEndContext="#pop">
+      </context>
+    </contexts>
+
+    <itemDatas>
+      <itemData name="Normal Text" defStyleNum="dsNormal"/>
+      <itemData name="Keyword" defStyleNum="dsKeyword" bold="1"/>
+      <itemData name="Label" defStyleNum="dsFunction" bold="1"/>
+      <itemData name="Number" defStyleNum="dsDecVal"/>
+      <itemData name="Identifier" defStyleNum="dsVariable"/>
+      <itemData name="Operator" defStyleNum="dsOperator" bold="1"/>
+      <itemData name="String" defStyleNum="dsString"/>
+      <itemData name="Comment" defStyleNum="dsComment" italic="1"/>
+    </itemDatas>
+  </highlighting>
+</language>
