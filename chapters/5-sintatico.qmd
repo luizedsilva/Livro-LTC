@@ -3495,3 +3495,9 @@ limpa: ;\
 
 ```
 
+### Simulador do Analisador Sintático para Linguagem Simples
+
+O exemplo interativo a seguir, demonstra o processo de construção da árvore sintática para um programa. Para o programa fonte digitado, após clicar no botão 'Construir Árvore', são gerados e calculados os tokens e os nós da árvore sintática. As folhas da árvore estão relacionadas as informações do código.
+
+::: {.simulacao url="/p5js/syntaxTree/" height="400" image="/printscreen/syntaxTree.png" qrcode="/qrcode/syntaxTree.png"}
+:::
