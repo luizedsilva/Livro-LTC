@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>8&nbsp; Projetos de Compiladores – Teoria de Linguagens e Compiladores</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/9-sumario.html" rel="next">
+<link href="../chapters/7-semantico-geracao.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5de800ff0d570d78397ee07e50104809.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Nenhum resultado",
+    "search-matching-documents-text": "documentos correspondentes",
+    "search-copy-link-title": "Copiar link para a busca",
+    "search-hide-matches-text": "Esconder correspondências adicionais",
+    "search-more-match-text": "mais correspondência neste documento",
+    "search-more-matches-text": "mais correspondências neste documento",
+    "search-clear-button-title": "Limpar",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar",
+    "search-label": "Procurar"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/8-projetos.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Projetos de Compiladores</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Procurar" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Teoria de Linguagens e Compiladores</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Procurar"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prefácio</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/1-introducao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução à Teoria de Linguagens</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/2-fundamentos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/3-compilador.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/4-lexico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/5-sintatico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">As Linguagens Livres de Contexto e a Análise Sintática</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/6-maquinas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">A Máquina de Turing e as Máquinas Virtuais</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/7-semantico-geracao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">A Análise Semântica e a Geração de Código</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/8-projetos.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Projetos de Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/9-sumario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Sumário</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/10-referencias.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Referências</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Índice</h2>
+   
+  <ul>
+  <li><a href="#ambientes-de-execução" id="toc-ambientes-de-execução" class="nav-link active" data-scroll-target="#ambientes-de-execução"><span class="header-section-number">8.1</span> Ambientes de execução</a>
+  <ul class="collapse">
+  <li><a href="#organização-da-memória" id="toc-organização-da-memória" class="nav-link" data-scroll-target="#organização-da-memória">Organização da memória</a></li>
+  <li><a href="#memória-estática-e-dinâmica" id="toc-memória-estática-e-dinâmica" class="nav-link" data-scroll-target="#memória-estática-e-dinâmica">Memória estática e dinâmica</a></li>
+  </ul></li>
+  <li><a href="#pilha-de-execução" id="toc-pilha-de-execução" class="nav-link" data-scroll-target="#pilha-de-execução"><span class="header-section-number">8.2</span> Pilha de execução</a>
+  <ul class="collapse">
+  <li><a href="#por-que-a-pilha-funciona" id="toc-por-que-a-pilha-funciona" class="nav-link" data-scroll-target="#por-que-a-pilha-funciona">Por que a pilha funciona?</a></li>
+  </ul></li>
+  <li><a href="#árvore-de-ativação" id="toc-árvore-de-ativação" class="nav-link" data-scroll-target="#árvore-de-ativação"><span class="header-section-number">8.3</span> Árvore de ativação</a>
+  <ul class="collapse">
+  <li><a href="#exemplo-ordenação-por-quicksort" id="toc-exemplo-ordenação-por-quicksort" class="nav-link" data-scroll-target="#exemplo-ordenação-por-quicksort">Exemplo: ordenação por quicksort</a></li>
+  <li><a href="#relação-entre-a-árvore-de-ativação-e-a-pilha" id="toc-relação-entre-a-árvore-de-ativação-e-a-pilha" class="nav-link" data-scroll-target="#relação-entre-a-árvore-de-ativação-e-a-pilha">Relação entre a árvore de ativação e a pilha</a></li>
+  </ul></li>
+  <li><a href="#registro-de-ativação" id="toc-registro-de-ativação" class="nav-link" data-scroll-target="#registro-de-ativação"><span class="header-section-number">8.4</span> Registro de ativação</a>
+  <ul class="collapse">
+  <li><a href="#organização-de-um-registro-de-ativação" id="toc-organização-de-um-registro-de-ativação" class="nav-link" data-scroll-target="#organização-de-um-registro-de-ativação">Organização de um registro de ativação</a></li>
+  <li><a href="#exemplo-de-registros-de-ativação" id="toc-exemplo-de-registros-de-ativação" class="nav-link" data-scroll-target="#exemplo-de-registros-de-ativação">Exemplo de registros de ativação</a></li>
+  <li><a href="#elo-de-controle-e-elo-de-acesso" id="toc-elo-de-controle-e-elo-de-acesso" class="nav-link" data-scroll-target="#elo-de-controle-e-elo-de-acesso">Elo de controle e elo de acesso</a></li>
+  </ul></li>
+  <li><a href="#relação-com-o-projeto-de-compilador-para-a-mvs" id="toc-relação-com-o-projeto-de-compilador-para-a-mvs" class="nav-link" data-scroll-target="#relação-com-o-projeto-de-compilador-para-a-mvs"><span class="header-section-number">8.5</span> Relação com o projeto de compilador para a MVS</a>
+  <ul class="collapse">
+  <li><a href="#projeto-de-compilador-com-funções-procedimentos-e-passagem-de-parâmetros" id="toc-projeto-de-compilador-com-funções-procedimentos-e-passagem-de-parâmetros" class="nav-link" data-scroll-target="#projeto-de-compilador-com-funções-procedimentos-e-passagem-de-parâmetros">Projeto de compilador com funções, procedimentos e passagem de parâmetros</a></li>
+  <li><a href="#declaração-de-funções-e-procedimentos" id="toc-declaração-de-funções-e-procedimentos" class="nav-link" data-scroll-target="#declaração-de-funções-e-procedimentos">Declaração de funções e procedimentos</a></li>
+  <li><a href="#parâmetros-formais-e-argumentos-efetivos" id="toc-parâmetros-formais-e-argumentos-efetivos" class="nav-link" data-scroll-target="#parâmetros-formais-e-argumentos-efetivos">Parâmetros formais e argumentos efetivos</a></li>
+  <li><a href="#passagem-de-parâmetros" id="toc-passagem-de-parâmetros" class="nav-link" data-scroll-target="#passagem-de-parâmetros">Passagem de parâmetros</a></li>
+  <li><a href="#escopo-e-tabela-de-símbolos" id="toc-escopo-e-tabela-de-símbolos" class="nav-link" data-scroll-target="#escopo-e-tabela-de-símbolos">Escopo e tabela de símbolos</a></li>
+  <li><a href="#ativação-de-funções-e-procedimentos" id="toc-ativação-de-funções-e-procedimentos" class="nav-link" data-scroll-target="#ativação-de-funções-e-procedimentos">Ativação de funções e procedimentos</a></li>
+  <li><a href="#geração-de-código-para-chamadas" id="toc-geração-de-código-para-chamadas" class="nav-link" data-scroll-target="#geração-de-código-para-chamadas">Geração de código para chamadas</a></li>
+  <li><a href="#modificações-no-projeto-de-compilador" id="toc-modificações-no-projeto-de-compilador" class="nav-link" data-scroll-target="#modificações-no-projeto-de-compilador">Modificações no projeto de compilador</a></li>
+  <li><a href="#atividades-propostas" id="toc-atividades-propostas" class="nav-link" data-scroll-target="#atividades-propostas">Atividades propostas</a></li>
+  <li><a href="#considerações-finais" id="toc-considerações-finais" class="nav-link" data-scroll-target="#considerações-finais">Considerações finais</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Projetos de Compiladores</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../chapters/images/projetos.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<p>A seguir está uma versão desenvolvida para o livro Teoria de Linguagens e Compiladores, mantendo a organização conceitual dos slides e aprofundando as explicações sobre a relação entre compilador, memória, pilha de execução, árvore de ativação e registros de ativação. O texto também estabelece a ligação com o projeto de compilador para a MVS, especialmente com a implementação de funções, procedimentos e passagem de parâmetros.</p>
+<section id="ambientes-de-execução" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="ambientes-de-execução"><span class="header-section-number">8.1</span> Ambientes de execução</h2>
+<p>A geração de código não encerra o processo de implementação de uma linguagem de programação. Para que um programa compilado possa ser executado corretamente, é necessário estabelecer como suas instruções e seus dados serão organizados na memória e como ocorrerão as chamadas de funções e procedimentos.</p>
+<p>Essas decisões envolvem um compromisso entre o compilador, o sistema operacional, a arquitetura da máquina de destino e, quando existente, o ambiente de execução da linguagem. O compilador precisa produzir código que respeite as convenções adotadas por esses componentes, de modo que as instruções geradas possam ser executadas corretamente.</p>
+<p>Para isso, considera-se um modelo denominado ambiente de execução (runtime environment). Esse modelo define as estruturas e os mecanismos utilizados durante a execução do programa, incluindo:</p>
+<ul>
+<li>a localização e a alocação do código e dos dados;</li>
+<li>o acesso a variáveis globais, locais e parâmetros;</li>
+<li>o gerenciamento da memória utilizada pelas funções e pelos procedimentos;</li>
+<li>os mecanismos de chamada e retorno de rotinas;</li>
+<li>as convenções de passagem de parâmetros e de retorno de valores;</li>
+<li>a comunicação com o sistema operacional, incluindo operações de entrada e saída.</li>
+</ul>
+<p>O ambiente de execução estabelece, portanto, as condições necessárias para que as abstrações da linguagem de programação sejam implementadas sobre uma máquina concreta ou virtual.</p>
+<p>Considere uma função que recebe dois parâmetros, realiza uma operação aritmética e retorna o resultado. Para executá-la, não basta que o compilador gere a instrução de adição. Também é necessário determinar onde os parâmetros serão armazenados, como as variáveis locais serão acessadas, onde o resultado será colocado e como o controle retornará ao ponto da chamada.</p>
+<p>Essas decisões fazem parte da organização do ambiente de execução. Uma vez estabelecidas, o compilador pode traduzir funções e procedimentos utilizando uma convenção consistente de armazenamento de dados, chamada e retorno.</p>
+<p>No caso de uma máquina virtual didática, como a MVS utilizada neste livro, esse ambiente pode ser simplificado para fins pedagógicos. Ainda assim, os mesmos princípios precisam ser considerados quando a linguagem passa a oferecer subprogramas, parâmetros e chamadas recursivas.</p>
+<section id="organização-da-memória" class="level3">
+<h3 class="anchored" data-anchor-id="organização-da-memória">Organização da memória</h3>
+<p>Durante a execução, um programa utiliza diferentes regiões de memória, cada uma destinada a finalidades específicas. Uma organização conceitual comum distingue a área de código, a área de dados globais ou estáticos, a pilha de execução e a área de alocação dinâmica, denominada heap.</p>
+<p>Área de código</p>
+<p>Instruções do programa compilado</p>
+<p>Área global e estática</p>
+<p>Variáveis globais, constantes e dados com duração estática</p>
+<p>Pilha</p>
+<p>Parâmetros, variáveis locais e informações das chamadas</p>
+<p>Heap</p>
+<p>Objetos e dados alocados dinamicamente</p>
+<p>Representação conceitual das regiões de memória. A disposição física e o sentido de crescimento das regiões dependem da plataforma.</p>
+<p>A área de código contém as instruções executáveis do programa. Seu conteúdo é produzido pelo compilador ou pelo sistema de ligação e, normalmente, permanece estável durante a execução. Em programas convencionais, o tamanho do código pode ser determinado a partir do executável produzido, embora existam mecanismos que permitem carregar código adicional durante a execução.</p>
+<p>A área global ou estática armazena dados cuja duração não depende de uma chamada individual de função. Entre os exemplos estão variáveis globais e variáveis estáticas. O espaço necessário para esses dados pode ser determinado durante a compilação ou a ligação do programa.</p>
+<p>A pilha de execução armazena informações relacionadas às chamadas de funções e procedimentos. Cada chamada pode exigir espaço para os parâmetros, as variáveis locais, os valores temporários e o endereço de retorno. Esse espaço é organizado em registros de ativação, que serão estudados adiante.</p>
+<p>A heap é utilizada para dados cuja alocação e duração são controladas durante a execução. Por exemplo, um programa pode solicitar memória dinamicamente para armazenar uma estrutura de dados cujo tamanho só é conhecido em tempo de execução. A liberação desse espaço pode ser explícita, como em <code>free</code> e <code>delete</code>, ou automática, por meio de mecanismos de gerenciamento e coleta de lixo.</p>
+<p>É importante distinguir a heap da pilha de execução. A pilha organiza principalmente as informações associadas às chamadas de rotinas, enquanto a heap permite manter objetos e estruturas de dados que precisam existir independentemente do término de uma chamada específica.</p>
+<p>Essa divisão é conceitual: sistemas operacionais e arquiteturas reais podem utilizar outras regiões, como áreas de memória mapeadas, bibliotecas compartilhadas e pilhas específicas para diferentes threads.</p>
+</section>
+<section id="memória-estática-e-dinâmica" class="level3">
+<h3 class="anchored" data-anchor-id="memória-estática-e-dinâmica">Memória estática e dinâmica</h3>
+<p>A localização dos dados e sua duração são aspectos fundamentais para o gerenciamento da memória.</p>
+<p>A alocação estática ocorre quando o espaço necessário para determinados dados é estabelecido antes da execução, geralmente durante a compilação ou a ligação. Variáveis globais e variáveis estáticas são exemplos comuns. Como sua localização é conhecida pelo ambiente de execução, o acesso a esses dados pode ser realizado por endereços previamente determinados.</p>
+<p>A alocação dinâmica ocorre durante a execução. O espaço necessário é obtido conforme as operações realizadas pelo programa. A pilha de execução é utilizada para gerenciar as ativações de funções e procedimentos, enquanto a heap é utilizada para objetos e estruturas cuja duração não precisa acompanhar a sequência de chamadas.</p>
+<p>Considere o seguinte programa:</p>
+<pre><code>int total;
+
+void calcula(int n) {
+    int parcial;
+    parcial = n * 2;
+}</code></pre>
+<p>A variável global <code>total</code> possui duração estática. Já o parâmetro <code>n</code> e a variável local <code>parcial</code> estão associados à execução de <code>calcula</code>. Em uma implementação que utiliza pilha de execução, o espaço para esses dados pode ser reservado em um registro de ativação criado quando a função é chamada e liberado quando ela retorna.</p>
+<p>Se a função for chamada várias vezes, cada ativação poderá possuir seus próprios valores para <code>n</code> e <code>parcial</code>. Essa característica é indispensável para que chamadas sucessivas ou recursivas não compartilhem indevidamente as variáveis locais.</p>
+<p>A distinção entre alocação estática e dinâmica não deve ser confundida com a distinção entre pilha e heap. A primeira diz respeito ao momento e à duração da alocação; a segunda identifica regiões e mecanismos de gerenciamento de memória. A pilha, por exemplo, realiza alocação dinâmica em tempo de execução, mesmo que o tamanho de cada registro de ativação possa ser calculado pelo compilador.</p>
+</section>
+</section>
+<section id="pilha-de-execução" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="pilha-de-execução"><span class="header-section-number">8.2</span> Pilha de execução</h2>
+<p>A pilha de execução é uma estrutura de dados utilizada para gerenciar as chamadas e os retornos das funções e dos procedimentos. Sua organização segue a disciplina LIFO (Last In, First Out): o último elemento inserido é o primeiro a ser removido.</p>
+<p>Quando uma rotina é chamada, o ambiente de execução reserva espaço para as informações necessárias à sua execução. Esse espaço constitui seu registro de ativação. Quando a rotina termina, o registro correspondente é removido, liberando o espaço utilizado e permitindo que a execução continue no ponto de chamada.</p>
+<p>Considere o seguinte programa:</p>
+<pre><code>void C() {
+    /* comandos de C */
+}
+
+void B() {
+    C();
+}
+
+int main() {
+    B();
+    return 0;
+}</code></pre>
+<p>A execução começa em <code>main</code>, que chama <code>B</code>. Durante a execução de <code>B</code>, ocorre uma chamada a <code>C</code>. Nesse momento, as três rotinas possuem ativações vivas: <code>main</code>, <code>B</code> e <code>C</code>.</p>
+<p>Estado da pilha durante a execução de C</p>
+<p>Ativação de C</p>
+<p>Rotina em execução — topo da pilha</p>
+<p>Ativação de B</p>
+<p>Chamadora de C</p>
+<p>Ativação de main</p>
+<p>Origem da sequência de chamadas</p>
+<p>A representação mostra a ordem lógica dos registros, do topo para a base. A disposição física da memória pode variar.</p>
+<p>Quando <code>C</code> termina, seu registro de ativação é removido e o controle retorna a <code>B</code>. Depois que <code>B</code> termina, seu registro é removido, e a execução retorna a <code>main</code>. Por fim, a ativação de <code>main</code> termina.</p>
+<p>A pilha permite que o ambiente de execução preserve o contexto de cada chamada sem precisar reservar antecipadamente um espaço exclusivo para todas as chamadas possíveis de uma rotina. O mesmo código de uma função pode ser executado repetidas vezes, utilizando registros de ativação diferentes.</p>
+<p>Essa organização é especialmente importante na recursão. Uma função recursiva chama a si própria, direta ou indiretamente, antes que uma ativação anterior tenha terminado. Cada chamada precisa preservar seus parâmetros, suas variáveis locais e seu endereço de retorno. A pilha oferece um mecanismo natural para organizar essas informações.</p>
+<section id="por-que-a-pilha-funciona" class="level3">
+<h3 class="anchored" data-anchor-id="por-que-a-pilha-funciona">Por que a pilha funciona?</h3>
+<p>O uso de uma pilha de execução é possível porque as chamadas de funções e procedimentos apresentam uma propriedade de aninhamento. Uma rotina chamada durante a execução de outra precisa terminar antes que a execução da rotina chamadora possa continuar após a chamada, no modelo convencional de chamadas síncronas.</p>
+<p>Isso significa que a ordem das ativações e dos retornos é compatível com a disciplina LIFO:</p>
+<ul>
+<li>as ativações são iniciadas na ordem em que as chamadas ocorrem;</li>
+<li>a ativação mais recente precisa terminar antes que a ativação imediatamente anterior possa continuar após a chamada;</li>
+<li>os registros são removidos na ordem inversa àquela em que foram criados.</li>
+</ul>
+<p>Essa propriedade explica por que não é necessário procurar arbitrariamente qual ativação deve ser encerrada: em uma execução convencional, o registro no topo da pilha corresponde à rotina atualmente ativa.</p>
+<p>A afirmação pressupõe chamadas síncronas convencionais. Corrotinas, continuations, execução assíncrona e outros mecanismos podem exigir estruturas de controle adicionais ou gerenciamento de contexto diferente.</p>
+</section>
+</section>
+<section id="árvore-de-ativação" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="árvore-de-ativação"><span class="header-section-number">8.3</span> Árvore de ativação</h2>
+<p>A árvore de ativação é uma representação conceitual da sequência de chamadas de funções e procedimentos durante a execução de um programa. Ela permite visualizar a relação entre uma ativação e as ativações que ocorrem durante sua execução.</p>
+<p>Cada nó da árvore representa uma ativação específica de uma rotina. Se, durante a ativação de uma rotina \(A\), ocorre uma chamada que cria a ativação \(B\), então \(B\) é representada como filha de \(A\).</p>
+<p>É importante observar que os nós representam chamadas, e não apenas nomes de funções. Se uma função recursiva for chamada várias vezes, cada chamada será representada por um nó distinto, mesmo que todos os nós correspondam ao mesmo código-fonte.</p>
+<section id="exemplo-ordenação-por-quicksort" class="level3">
+<h3 class="anchored" data-anchor-id="exemplo-ordenação-por-quicksort">Exemplo: ordenação por quicksort</h3>
+<p>Considere o seguinte programa simplificado, que utiliza o algoritmo de ordenação quicksort:</p>
+<pre><code>int a[11];
+
+void readArray() {
+    int i;
+    /* leitura dos elementos */
+}
+
+int partition(int m, int n) {
+    /* particionamento do vetor */
+}
+
+void quicksort(int m, int n) {
+    int i;
+
+    if (n &gt; m) {
+        i = partition(m, n);
+        quicksort(m, i - 1);
+        quicksort(i + 1, n);
+    }
+}
+
+int main() {
+    readArray();
+    quicksort(0, 10);
+    return 0;
+}</code></pre>
+<p>O programa principal chama <code>readArray</code> para ler os elementos do vetor e, em seguida, chama <code>quicksort</code>. Durante a execução de <code>quicksort</code>, ocorre uma chamada a <code>partition</code> e, posteriormente, duas chamadas recursivas a <code>quicksort</code>.</p>
+<p>Uma possível sequência simplificada de execução é:</p>
+<pre><code>entra em main()
+    entra em readArray()
+    sai de readArray()
+
+    entra em quicksort(0, 10)
+        entra em partition(0, 10)
+        sai de partition(0, 10)
+
+        entra em quicksort(0, 3)
+            ...
+        sai de quicksort(0, 3)
+
+        entra em quicksort(5, 10)
+            ...
+        sai de quicksort(5, 10)
+
+    sai de quicksort(0, 10)
+sai de main()</code></pre>
+<p>Os limites <code>0, 3</code> e <code>5, 10</code> são ilustrativos, supondo que a primeira partição tenha separado o vetor nesses intervalos. Os valores concretos dependem dos dados e da implementação de <code>partition</code>.</p>
+<p>A árvore de ativação correspondente a esse trecho pode ser representada da seguinte maneira:</p>
+<p>main</p>
+<p>readArray()</p>
+<p>quicksort(0,10)</p>
+<p>partition(0,10)</p>
+<p>quicksort(0,3)</p>
+<p>quicksort(5,10)</p>
+<p>Chamadas recursivas sucessivas</p>
+<p>Esquema parcial da árvore de ativação. Cada nó representa uma chamada específica, e os filhos são as ativações iniciadas durante a execução do nó pai.</p>
+<p>Na árvore completa, as chamadas recursivas de <code>quicksort</code> também podem originar outras chamadas a <code>partition</code> e novas ativações de <code>quicksort</code>, até que os subvetores tenham tamanho suficiente para encerrar a recursão.</p>
+<p>A árvore de ativação permite distinguir duas representações importantes: a árvore descreve todas as relações de chamada ocorridas durante a execução considerada, enquanto a pilha representa apenas as ativações que permanecem vivas em um determinado instante.</p>
+</section>
+<section id="relação-entre-a-árvore-de-ativação-e-a-pilha" class="level3">
+<h3 class="anchored" data-anchor-id="relação-entre-a-árvore-de-ativação-e-a-pilha">Relação entre a árvore de ativação e a pilha</h3>
+<p>A sequência de chamadas de um programa corresponde a um percurso em pré-ordem na árvore de ativação, considerando que cada nó é visitado quando sua ativação começa e que as chamadas filhas são visitadas na ordem em que ocorrem.</p>
+<p>De maneira análoga, a sequência de retornos corresponde a um percurso em pós-ordem, considerando que um nó termina depois de concluídas as ativações filhas.</p>
+<p>Em qualquer instante, as ativações vivas formam o caminho entre a raiz da árvore e o nó correspondente à rotina que está em execução. A pilha contém os registros dessas ativações, com o registro da rotina atual no topo.</p>
+<p>Por exemplo, enquanto <code>partition(0,10)</code> está sendo executada, o caminho de ativações é:</p>
+<pre><code>main
+  └── quicksort(0,10)
+        └── partition(0,10)</code></pre>
+<p>A pilha contém os registros correspondentes a essas três ativações. Quando <code>partition</code> termina, seu registro é removido, e a execução retorna a <code>quicksort(0,10)</code>. O caminho ativo passa então a conter apenas <code>main</code> e <code>quicksort(0,10)</code>.</p>
+<p>A árvore de ativação oferece, portanto, uma visão global da estrutura de chamadas, enquanto a pilha de execução representa o estado ativo dessa estrutura em um momento específico. Essa relação é fundamental para compreender o gerenciamento de funções, procedimentos e recursão.</p>
+</section>
+</section>
+<section id="registro-de-ativação" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="registro-de-ativação"><span class="header-section-number">8.4</span> Registro de ativação</h2>
+<p>Quando uma função ou procedimento é chamado, o ambiente de execução precisa preservar as informações necessárias para que a rotina seja executada corretamente e, ao terminar, retorne ao ponto de chamada. O conjunto dessas informações constitui o registro de ativação, também denominado frame.</p>
+<p>Cada ativação possui seu próprio registro. Assim, duas chamadas da mesma função podem compartilhar o código executável, mas manter parâmetros, variáveis locais e endereços de retorno diferentes.</p>
+<p>Um registro de ativação pode conter as seguintes informações:</p>
+<ul>
+<li>Parâmetros: valores ou referências recebidos na chamada.</li>
+<li>Variáveis locais: dados declarados no corpo da rotina.</li>
+<li>Valores temporários: resultados intermediários utilizados na avaliação de expressões.</li>
+<li>Estado da máquina: informações que precisam ser preservadas durante a chamada, como registradores utilizados pelo chamador.</li>
+<li>Endereço de retorno: endereço da instrução que deverá ser executada depois que a rotina terminar.</li>
+<li>Elo de controle: referência ao registro de ativação da rotina chamadora.</li>
+<li>Elo de acesso: referência utilizada para localizar dados de escopos lexicais externos, quando a linguagem e sua implementação exigem esse mecanismo.</li>
+<li>Espaço para o resultado: local utilizado para devolver o valor de uma função, conforme a convenção de chamada.</li>
+</ul>
+<p>Nem todos os registros de ativação contêm necessariamente todos esses campos. A organização depende da linguagem, da arquitetura e da convenção de chamada. Por exemplo, alguns parâmetros podem ser transmitidos por registradores, e o valor retornado pode ser colocado em um registrador específico, em vez de ocupar uma posição no registro de ativação.</p>
+<section id="organização-de-um-registro-de-ativação" class="level3">
+<h3 class="anchored" data-anchor-id="organização-de-um-registro-de-ativação">Organização de um registro de ativação</h3>
+<p>A figura a seguir apresenta uma organização conceitual possível.</p>
+<p>Registro de ativação de uma rotina</p>
+<p>Parâmetros</p>
+<p>Argumentos recebidos na chamada</p>
+<p>Valor de retorno</p>
+<p>Resultado da função, se necessário</p>
+<p>Endereço de retorno</p>
+<p>Ponto de continuação do chamador</p>
+<p>Elo de controle</p>
+<p>Registro da rotina chamadora</p>
+<p>Elo de acesso</p>
+<p>Acesso a um escopo externo, quando necessário</p>
+<p>Variáveis locais</p>
+<p>Dados privados da ativação</p>
+<p>Temporários</p>
+<p>Resultados intermediários das expressões</p>
+<p>Os campos são ilustrativos. Sua ordem, presença e forma de armazenamento variam conforme a implementação.</p>
+<p>O registro é criado quando uma ativação começa e permanece disponível enquanto a rotina está em execução. Quando a rotina termina, o ambiente de execução utiliza as informações necessárias para restaurar o contexto do chamador e liberar o espaço correspondente.</p>
+<p>Essa organização permite que o compilador utilize deslocamentos relativos para acessar os dados locais. Por exemplo, uma variável pode ser localizada a partir de um registrador que aponta para uma posição de referência do registro de ativação. O deslocamento da variável pode permanecer constante em diferentes chamadas, mesmo que cada registro esteja localizado em uma posição diferente da memória.</p>
+</section>
+<section id="exemplo-de-registros-de-ativação" class="level3">
+<h3 class="anchored" data-anchor-id="exemplo-de-registros-de-ativação">Exemplo de registros de ativação</h3>
+<p>Considere o seguinte programa:</p>
+<pre><code>int soma(int a, int b) {
+    int resultado;
+    resultado = a + b;
+    return resultado;
+}
+
+int main() {
+    int x;
+    x = soma(10, 20);
+    return 0;
+}</code></pre>
+<p>Quando <code>main</code> chama <code>soma(10,20)</code>, o ambiente de execução precisa disponibilizar os valores <code>10</code> e <code>20</code> para os parâmetros <code>a</code> e <code>b</code>. A função utiliza esses valores para calcular <code>resultado</code>, cujo valor final é <code>30</code>.</p>
+<p>Durante a execução de <code>soma</code>, a pilha contém, conceitualmente, os registros de ativação de <code>main</code> e <code>soma</code>:</p>
+<p>Estado da pilha durante a execução de soma</p>
+<p>Registro de soma — topo</p>
+<p>a = 10</p>
+<p>b = 20</p>
+<p>resultado = 30</p>
+<p>Endereço de retorno e informações de controle</p>
+<p>Registro de main</p>
+<p>x e informações de controle de main</p>
+<p>Quando <code>soma</code> termina, o resultado é disponibilizado ao chamador de acordo com a convenção de retorno. O registro de ativação de <code>soma</code> é removido, e a execução continua em <code>main</code>, que atribui o valor retornado à variável <code>x</code>.</p>
+<p>Se <code>soma</code> fosse chamada novamente, seria criado outro registro de ativação, com novos valores para <code>a</code>, <code>b</code> e <code>resultado</code>. Essa independência entre ativações permite que a mesma função seja executada repetidas vezes sem misturar seus dados locais.</p>
+</section>
+<section id="elo-de-controle-e-elo-de-acesso" class="level3">
+<h3 class="anchored" data-anchor-id="elo-de-controle-e-elo-de-acesso">Elo de controle e elo de acesso</h3>
+<p>Embora possam ser representados por referências entre registros, o elo de controle e o elo de acesso têm finalidades distintas.</p>
+<p>O elo de controle identifica a relação dinâmica entre a rotina chamada e a rotina que a chamou. Ele permite recuperar o contexto anterior quando a execução retorna. Em uma implementação baseada em pilha, essa relação acompanha a sequência efetiva de chamadas.</p>
+<p>O elo de acesso permite localizar dados pertencentes a um escopo lexical externo. Ele é relevante em linguagens que permitem declarar rotinas dentro de outras rotinas e acessar variáveis de escopos envolventes. Sua utilização depende das regras de escopo da linguagem e da estratégia de implementação.</p>
+<p>Em programas nos quais todas as rotinas são declaradas em um único nível e não existe acesso a variáveis de escopos externos, o elo de acesso pode ser desnecessário.</p>
+<p>Essa distinção é importante porque a relação entre rotinas na estrutura lexical do programa não é necessariamente a mesma relação estabelecida pela sequência de chamadas durante a execução.</p>
+</section>
+</section>
+<section id="relação-com-o-projeto-de-compilador-para-a-mvs" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="relação-com-o-projeto-de-compilador-para-a-mvs"><span class="header-section-number">8.5</span> Relação com o projeto de compilador para a MVS</h2>
+<p>Os conceitos apresentados fornecem a base para ampliar o compilador desenvolvido nos capítulos anteriores, permitindo a implementação de funções, procedimentos, passagem de parâmetros e recursão.</p>
+<p>No projeto atual, a tabela de símbolos armazena informações sobre os identificadores, incluindo seu nome, endereço e tipo. Para incorporar subprogramas, será necessário acrescentar informações sobre parâmetros formais, tipo de retorno e localização do código correspondente. Também será preciso estabelecer como os parâmetros e as variáveis locais serão armazenados durante cada ativação.</p>
+<p>A implementação pode seguir uma sequência incremental:</p>
+<ol type="1">
+<li>Definir a convenção de chamada e retorno da MVS.</li>
+<li>Implementar chamadas de procedimentos sem parâmetros.</li>
+<li>Introduzir parâmetros por valor e verificar quantidade e tipos dos argumentos.</li>
+<li>Implementar o retorno de valores das funções.</li>
+<li>Organizar variáveis locais e registros de ativação para permitir chamadas recursivas.</li>
+<li>Incorporar passagem por referência e, se necessário, mecanismos de acesso a escopos externos.</li>
+</ol>
+<p>A MVS precisará oferecer instruções ou mecanismos equivalentes para preservar o endereço de retorno, transferir o controle para o subprograma e restaurar a execução do chamador. Se o conjunto de instruções atual não oferecer esses recursos, será necessário ampliá-lo ou implementar uma convenção de chamada usando as instruções existentes.</p>
+<p>A pilha de execução, a árvore de ativação e o registro de ativação descrevem aspectos complementares desse processo. A árvore representa a relação entre as chamadas; a pilha mantém as ativações vivas; e cada registro reúne os dados e o contexto necessários à execução de uma rotina.</p>
+<p>Esses conceitos completam o estudo da geração de código ao mostrar que traduzir uma função não significa apenas produzir suas instruções. É necessário também definir como ela recebe argumentos, mantém seu estado durante a execução e devolve o controle ao programa que a chamou.</p>
+<p>Segue uma proposta de texto para o último capítulo do livro, dedicado à ampliação do projeto de compilador. A seção parte do compilador já desenvolvido para a MVS e apresenta, de forma progressiva, os conceitos e as modificações necessárias para incorporar funções, procedimentos, parâmetros e chamadas de subprogramas.</p>
+<section id="projeto-de-compilador-com-funções-procedimentos-e-passagem-de-parâmetros" class="level3">
+<h3 class="anchored" data-anchor-id="projeto-de-compilador-com-funções-procedimentos-e-passagem-de-parâmetros">Projeto de compilador com funções, procedimentos e passagem de parâmetros</h3>
+<p>Nos capítulos anteriores, desenvolvemos os principais componentes de um compilador para uma linguagem de programação simples: análise léxica, análise sintática, análise semântica e geração de código para a Máquina Virtual Simples (MVS). A linguagem implementada permite declarar variáveis, realizar operações aritméticas e lógicas, executar comandos de atribuição e utilizar estruturas de controle, como seleção e repetição.</p>
+<p>Embora esses recursos sejam suficientes para implementar algoritmos de pequena complexidade, programas maiores exigem mecanismos que favoreçam a modularização e o reaproveitamento de código. As funções e os procedimentos atendem a essa necessidade ao permitir que um programa seja dividido em unidades menores, cada uma responsável por realizar uma tarefa específica.</p>
+<p>Uma função executa um conjunto de comandos e devolve um resultado ao programa que a chamou. Um procedimento também executa um conjunto de comandos, mas não precisa retornar um valor como resultado de uma expressão. Essa distinção permite organizar o programa em operações que produzem valores e operações destinadas à realização de ações.</p>
+<p>A utilização dessas construções introduz novos desafios para o compilador. Além de reconhecer as declarações e as chamadas, é necessário verificar a quantidade e os tipos dos parâmetros, controlar o escopo dos identificadores e gerar instruções que permitam transferir a execução entre o programa principal e os subprogramas.</p>
+<p>Também é necessário estabelecer como os argumentos são transmitidos, como as variáveis locais são armazenadas e como a execução retorna ao ponto em que ocorreu a chamada. Essas responsabilidades envolvem tanto a análise semântica quanto a geração de código e a organização da memória durante a execução.</p>
+<p>Neste capítulo, ampliaremos o projeto de compilador para contemplar declarações de funções e procedimentos, chamadas de subprogramas e diferentes formas de passagem de parâmetros. O objetivo é compreender como os conceitos estudados anteriormente podem ser estendidos para construir uma linguagem de programação com recursos de abstração e modularização mais expressivos.</p>
+</section>
+<section id="declaração-de-funções-e-procedimentos" class="level3">
+<h3 class="anchored" data-anchor-id="declaração-de-funções-e-procedimentos">Declaração de funções e procedimentos</h3>
+<p>Uma função ou um procedimento é uma unidade de programa identificada por um nome e constituída, em geral, por uma lista de parâmetros, declarações locais e um corpo de comandos.</p>
+<p>Uma declaração de função especifica o tipo do valor que será devolvido. Por exemplo:</p>
+<pre><code>funcao soma(inteiro a, inteiro b): inteiro
+inicio
+    retorne a + b;
+fim</code></pre>
+<p>A função <code>soma</code> recebe dois parâmetros inteiros, <code>a</code> e <code>b</code>, e retorna a soma de seus valores. O tipo declarado após os parâmetros indica que o resultado da função é inteiro.</p>
+<p>Um procedimento pode ser declarado da seguinte forma:</p>
+<pre><code>procedimento imprime(inteiro valor)
+inicio
+    escreva valor;
+fim</code></pre>
+<p>Nesse exemplo, o procedimento <code>imprime</code> recebe um parâmetro inteiro e apresenta seu valor. Não há um resultado a ser utilizado em uma expressão, embora a execução do procedimento possa produzir efeitos, como a escrita de dados.</p>
+<p>Os exemplos utilizam uma notação ilustrativa para as declarações. A sintaxe efetivamente adotada pelo compilador deverá ser definida pela gramática da linguagem.</p>
+<p>A inclusão dessas construções exige que o compilador reconheça novos elementos sintáticos, entre eles:</p>
+<ul>
+<li>declarações de funções e procedimentos;</li>
+<li>listas de parâmetros formais;</li>
+<li>tipos de parâmetros e de retorno;</li>
+<li>comandos de retorno;</li>
+<li>chamadas de funções e procedimentos;</li>
+<li>listas de argumentos efetivos.</li>
+</ul>
+<p>Esses elementos precisam ser incorporados à gramática e associados a regras semânticas que garantam a consistência das declarações e das chamadas.</p>
+</section>
+<section id="parâmetros-formais-e-argumentos-efetivos" class="level3">
+<h3 class="anchored" data-anchor-id="parâmetros-formais-e-argumentos-efetivos">Parâmetros formais e argumentos efetivos</h3>
+<p>Os parâmetros permitem que um subprograma receba informações do ambiente que o invoca. Para compreender seu funcionamento, é importante distinguir parâmetros formais de argumentos efetivos.</p>
+<p>Os <strong>parâmetros formais</strong> são os identificadores declarados na definição da função ou do procedimento. No exemplo anterior, <code>a</code> e <code>b</code> são os parâmetros formais da função <code>soma</code>.</p>
+<p>Os <strong>argumentos efetivos</strong> são os valores ou as expressões fornecidos no momento da chamada. Por exemplo:</p>
+<pre><code>resultado = soma(10, 20);</code></pre>
+<p>Nessa chamada, <code>10</code> e <code>20</code> são os argumentos efetivos correspondentes aos parâmetros formais <code>a</code> e <code>b</code>.</p>
+<p>Durante a compilação, o compilador precisa verificar se a chamada respeita a declaração do subprograma. No exemplo, a função espera dois argumentos inteiros. Uma chamada com apenas um argumento ou com tipos incompatíveis deve ser rejeitada, de acordo com as regras da linguagem.</p>
+<p>A verificação envolve pelo menos três propriedades:</p>
+<ol type="1">
+<li><strong>Quantidade de argumentos:</strong> o número de argumentos deve ser compatível com o número de parâmetros declarados.</li>
+<li><strong>Compatibilidade de tipos:</strong> cada argumento deve ser compatível com o tipo do parâmetro correspondente.</li>
+<li><strong>Ordem dos argumentos:</strong> cada argumento deve ser associado ao parâmetro correto, conforme a posição ou as regras de associação definidas pela linguagem.</li>
+</ol>
+<p>Considere a seguinte chamada:</p>
+<pre><code>resultado = soma(10);</code></pre>
+<p>Se a função exigir dois parâmetros, a chamada apresenta um erro semântico, pois a quantidade de argumentos é insuficiente. Da mesma forma, uma chamada como <code>soma(10, verdadeiro)</code> será inválida se o segundo parâmetro exigir um valor inteiro e a linguagem não permitir a conversão do valor lógico.</p>
+<p>Essas verificações dependem das informações armazenadas na tabela de símbolos. Portanto, a representação dos identificadores deverá ser ampliada para registrar não apenas as variáveis, mas também as funções e os procedimentos, incluindo suas listas de parâmetros e, no caso das funções, o tipo de retorno.</p>
+</section>
+<section id="passagem-de-parâmetros" class="level3">
+<h3 class="anchored" data-anchor-id="passagem-de-parâmetros">Passagem de parâmetros</h3>
+<p>A passagem de parâmetros determina como os argumentos fornecidos na chamada são disponibilizados ao subprograma. Existem diferentes mecanismos, e a escolha influencia tanto o comportamento do programa quanto a implementação do compilador e da máquina virtual.</p>
+<section id="passagem-por-valor" class="level4">
+<h4 class="anchored" data-anchor-id="passagem-por-valor">Passagem por valor</h4>
+<p>Na passagem por valor, o subprograma recebe uma cópia do valor do argumento. Alterações realizadas no parâmetro formal não modificam diretamente a variável utilizada na chamada.</p>
+<p>Considere o procedimento:</p>
+<pre><code>procedimento incrementa(inteiro x)
+inicio
+    x = x + 1;
+fim</code></pre>
+<p>Suponha que o programa principal execute:</p>
+<pre><code>inteiro a;
+a = 5;
+incrementa(a);</code></pre>
+<p>Com passagem por valor, o procedimento recebe uma cópia do valor <code>5</code>. Ao executar <code>x = x + 1</code>, o parâmetro local passa a valer <code>6</code>, mas a variável <code>a</code> permanece com o valor <code>5</code>.</p>
+<p>Esse mecanismo exige que o compilador transmita o valor do argumento e que o ambiente de execução disponibilize um espaço de armazenamento para o parâmetro formal.</p>
+<p>Na MVS, uma implementação possível consiste em avaliar o argumento, colocar seu valor na pilha de execução e copiá-lo para a posição de memória associada ao parâmetro formal durante a ativação do subprograma.</p>
+</section>
+<section id="passagem-por-referência" class="level4">
+<h4 class="anchored" data-anchor-id="passagem-por-referência">Passagem por referência</h4>
+<p>Na passagem por referência, o parâmetro formal permite acessar a própria variável associada ao argumento, em vez de receber apenas uma cópia de seu valor. Dessa forma, as modificações realizadas no subprograma podem ser observadas pelo programa que o chamou.</p>
+<p>Considere o mesmo procedimento <code>incrementa</code>, agora com o parâmetro declarado por referência:</p>
+<pre><code>procedimento incrementa(referencia inteiro x)
+inicio
+    x = x + 1;
+fim</code></pre>
+<p>Ao executar:</p>
+<pre><code>inteiro a;
+a = 5;
+incrementa(a);</code></pre>
+<p>o procedimento acessa a variável original. Ao final da chamada, <code>a</code> passa a valer <code>6</code>.</p>
+<p>Para implementar esse mecanismo, o compilador precisa transmitir uma referência à variável, normalmente representada por seu endereço. O acesso ao parâmetro formal deve utilizar essa referência para ler ou modificar o conteúdo da posição de memória correspondente.</p>
+<p>Nem toda expressão pode ser utilizada como argumento de um parâmetro por referência. Em uma implementação convencional, o argumento deve designar uma posição de armazenamento válida, como uma variável. Uma constante ou uma expressão aritmética, por exemplo, não pode ser tratada diretamente como uma variável modificável sem regras adicionais.</p>
+</section>
+<section id="comparação-entre-os-mecanismos" class="level4">
+<h4 class="anchored" data-anchor-id="comparação-entre-os-mecanismos">Comparação entre os mecanismos</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 36%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Característica</th>
+<th>Passagem por valor</th>
+<th>Passagem por referência</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Informação transmitida</td>
+<td>Valor do argumento</td>
+<td>Referência à variável</td>
+</tr>
+<tr class="even">
+<td>Alteração do parâmetro formal</td>
+<td>Não altera diretamente a variável original</td>
+<td>Pode alterar a variável original</td>
+</tr>
+<tr class="odd">
+<td>Armazenamento</td>
+<td>Cópia do valor</td>
+<td>Referência ou endereço</td>
+</tr>
+<tr class="even">
+<td>Uso frequente</td>
+<td>Fornecimento de dados</td>
+<td>Consulta e modificação de dados do chamador</td>
+</tr>
+</tbody>
+</table>
+<p>A linguagem implementada no projeto poderá adotar apenas passagem por valor inicialmente e, posteriormente, incorporar passagem por referência. Essa evolução permite compreender o mecanismo básico de chamada antes de introduzir o tratamento de endereços e os efeitos das alterações sobre as variáveis do programa principal.</p>
+</section>
+</section>
+<section id="escopo-e-tabela-de-símbolos" class="level3">
+<h3 class="anchored" data-anchor-id="escopo-e-tabela-de-símbolos">Escopo e tabela de símbolos</h3>
+<p>A introdução de funções e procedimentos exige ampliar a tabela de símbolos utilizada nos projetos anteriores. Até aqui, cada identificador armazenava informações como nome, endereço e tipo. Com os novos recursos, o compilador deverá distinguir variáveis, funções e procedimentos.</p>
+<p>Para uma função, por exemplo, a tabela poderá armazenar:</p>
+<ul>
+<li>nome da função;</li>
+<li>categoria do identificador;</li>
+<li>tipo do valor retornado;</li>
+<li>quantidade de parâmetros;</li>
+<li>tipos dos parâmetros;</li>
+<li>mecanismos de passagem dos parâmetros;</li>
+<li>informações necessárias à geração do código da chamada.</li>
+</ul>
+<p>Para um procedimento, as informações serão semelhantes, exceto pelo tipo de retorno, que não representa um valor utilizado em expressões.</p>
+<p>Também será necessário tratar o escopo dos identificadores. Uma variável declarada dentro de uma função pode ter existência e visibilidade restritas ao corpo dessa função. Outra função poderá declarar uma variável com o mesmo nome, sem que isso implique necessariamente um conflito.</p>
+<p>Para representar esses contextos, uma solução consiste em manter uma tabela de símbolos associada a cada escopo ou utilizar uma tabela organizada em níveis. Quando o compilador entra em uma função ou procedimento, cria ou ativa o escopo correspondente. Ao terminar o processamento da declaração, encerra esse escopo, preservando as informações globais que continuam válidas.</p>
+<p>Essa organização evita que parâmetros e variáveis locais sejam confundidos com identificadores de outras unidades do programa. Além disso, permite detectar usos de variáveis fora de seu escopo e chamadas a funções ou procedimentos não declarados, conforme as regras da linguagem.</p>
+</section>
+<section id="ativação-de-funções-e-procedimentos" class="level3">
+<h3 class="anchored" data-anchor-id="ativação-de-funções-e-procedimentos">Ativação de funções e procedimentos</h3>
+<p>Durante a execução, cada chamada de função ou procedimento cria uma nova ativação do subprograma. Essa ativação reúne as informações necessárias para executar o corpo do subprograma e retornar ao ponto de chamada.</p>
+<p>Uma implementação convencional utiliza um registro de ativação, também conhecido como quadro de ativação (<em>activation record</em>). Ele pode conter:</p>
+<ul>
+<li>parâmetros recebidos;</li>
+<li>variáveis locais;</li>
+<li>endereço de retorno;</li>
+<li>informações de controle da chamada;</li>
+<li>espaço para o resultado da função, quando necessário.</li>
+</ul>
+<p>A organização exata depende da máquina virtual e da convenção de chamada adotada. Em uma máquina baseada em pilha, os registros de ativação podem ser organizados em uma pilha de chamadas, permitindo que uma função invoque outra e que chamadas recursivas mantenham dados independentes para cada ativação.</p>
+<p>Considere:</p>
+<pre><code>funcao quadrado(inteiro x): inteiro
+inicio
+    retorne x * x;
+fim</code></pre>
+<p>Quando o programa executa <code>quadrado(5)</code>, o ambiente de execução disponibiliza o parâmetro <code>x</code>, executa a multiplicação e devolve o resultado <code>25</code> ao ponto da chamada.</p>
+<p>Se a função <code>quadrado</code> for chamada novamente antes de a execução anterior terminar, cada ativação deverá preservar seu próprio valor de <code>x</code> e seu próprio endereço de retorno. Esse requisito é fundamental para permitir recursão.</p>
+<p>No compilador para a MVS, será necessário definir como os parâmetros e as variáveis locais serão organizados na memória e como o endereço de retorno será preservado. Caso a máquina virtual não ofereça diretamente essas operações, será necessário implementar uma convenção de chamada por meio das instruções disponíveis ou ampliar o conjunto de instruções da máquina.</p>
+</section>
+<section id="geração-de-código-para-chamadas" class="level3">
+<h3 class="anchored" data-anchor-id="geração-de-código-para-chamadas">Geração de código para chamadas</h3>
+<p>A geração de código deve traduzir a chamada de uma função ou procedimento em uma sequência de operações que prepare os argumentos, transfira a execução ao subprograma e permita o retorno ao chamador.</p>
+<p>Para uma chamada como:</p>
+<pre><code>resultado = soma(10, 20);</code></pre>
+<p>o compilador deverá gerar código que, conceitualmente, realize as seguintes operações:</p>
+<ol type="1">
+<li>Avalie os argumentos na ordem definida pela linguagem.</li>
+<li>Disponibilize os valores ou referências aos parâmetros formais.</li>
+<li>Preserve as informações necessárias para retornar ao ponto da chamada.</li>
+<li>Transfira o controle para o código da função.</li>
+<li>Execute o corpo da função e obtenha o resultado.</li>
+<li>Retorne ao chamador e disponibilize o valor retornado para completar a atribuição.</li>
+</ol>
+<p>O código concreto dependerá das instruções oferecidas pela MVS. Se a máquina virtual possuir instruções específicas para chamada e retorno, elas poderão ser utilizadas diretamente. Caso contrário, será necessário construir uma sequência equivalente usando desvios, pilha e posições de memória reservadas para o controle das chamadas.</p>
+<p>É importante distinguir a chamada do subprograma de sua declaração. A declaração define o corpo da função ou do procedimento, enquanto a chamada transfere a execução para esse corpo em um ponto específico do programa.</p>
+<p>Para evitar que o programa execute o corpo de uma função apenas por ele aparecer no arquivo gerado, o compilador deverá organizar os rótulos e desvios de maneira que a execução normal passe pelo programa principal e alcance cada subprograma somente quando houver uma chamada correspondente.</p>
+<section id="retorno-de-funções" class="level4">
+<h4 class="anchored" data-anchor-id="retorno-de-funções">Retorno de funções</h4>
+<p>Uma função precisa devolver um valor compatível com o tipo declarado. O comando <code>retorne</code> pode ser utilizado para indicar o resultado:</p>
+<pre><code>funcao soma(inteiro a, inteiro b): inteiro
+inicio
+    retorne a + b;
+fim</code></pre>
+<p>O compilador deverá verificar se a expressão retornada é compatível com o tipo da função. Também deverá definir as regras para funções que terminam sem executar um comando de retorno, incluindo a possibilidade de rejeitar essas situações durante a análise semântica.</p>
+<p>Na geração de código, o resultado poderá ser colocado em uma posição da pilha, em um espaço reservado no registro de ativação ou em outro local definido pela convenção de chamada. A instrução de retorno deverá restaurar o fluxo de execução e disponibilizar o valor ao chamador.</p>
+</section>
+<section id="retorno-de-procedimentos" class="level4">
+<h4 class="anchored" data-anchor-id="retorno-de-procedimentos">Retorno de procedimentos</h4>
+<p>Um procedimento não precisa devolver um valor para ser utilizado em uma expressão. Seu término deve apenas permitir que a execução retorne ao ponto da chamada.</p>
+<p>Por exemplo:</p>
+<pre><code>procedimento mensagem()
+inicio
+    escreva 1;
+fim</code></pre>
+<p>Uma chamada a <code>mensagem()</code> executa o corpo do procedimento e, ao final, retorna ao comando seguinte. O compilador deverá garantir que o retorno não deixe valores indevidos na pilha e que a memória temporária utilizada durante a ativação seja liberada de acordo com a convenção adotada.</p>
+</section>
+</section>
+<section id="modificações-no-projeto-de-compilador" class="level3">
+<h3 class="anchored" data-anchor-id="modificações-no-projeto-de-compilador">Modificações no projeto de compilador</h3>
+<p>A ampliação do compilador existente exige alterações coordenadas na gramática, na análise semântica, na tabela de símbolos e na geração de código.</p>
+<p>No arquivo de especificação do Bison, será necessário incluir produções para declarações de funções e procedimentos, parâmetros formais, listas de argumentos, chamadas e comandos de retorno. As ações semânticas deverão registrar as informações das declarações, verificar as chamadas e emitir as instruções correspondentes.</p>
+<p>A tabela de símbolos deverá armazenar as informações adicionais dos subprogramas e dos seus parâmetros. A organização por escopos permitirá distinguir variáveis globais, parâmetros e variáveis locais. Para verificar uma chamada, o compilador deverá comparar os argumentos efetivos com a assinatura registrada para a função ou o procedimento.</p>
+<p>A geração de código precisará definir uma convenção de chamada. Essa convenção deverá especificar como os argumentos são transmitidos, como o endereço de retorno é armazenado, onde ficam as variáveis locais e como o resultado de uma função é devolvido.</p>
+<p>As mudanças podem ser implementadas progressivamente:</p>
+<ol type="1">
+<li><strong>Declaração de procedimentos sem parâmetros:</strong> introduzir a estrutura de declaração, o corpo e a chamada, além das instruções de transferência de controle e retorno.</li>
+<li><strong>Declaração de funções:</strong> permitir o retorno de valores e a utilização de chamadas em expressões.</li>
+<li><strong>Parâmetros por valor:</strong> incluir parâmetros formais e argumentos efetivos, com verificação de quantidade e tipos.</li>
+<li><strong>Parâmetros por referência:</strong> implementar a transmissão de endereços e o acesso às variáveis do chamador.</li>
+<li><strong>Escopos e recursão:</strong> organizar as tabelas de símbolos e os registros de ativação para permitir chamadas aninhadas e recursivas.</li>
+</ol>
+<p>Essa sequência permite validar cada recurso isoladamente antes de combinar todos eles em programas mais complexos.</p>
+</section>
+<section id="atividades-propostas" class="level3">
+<h3 class="anchored" data-anchor-id="atividades-propostas">Atividades propostas</h3>
+<p>Para consolidar os conceitos, propõe-se ampliar o compilador desenvolvido nos capítulos anteriores, implementando as funcionalidades na ordem apresentada.</p>
+<p><strong>Atividade 1 — Procedimentos sem parâmetros.</strong> Estenda a gramática para declarar um procedimento sem parâmetros e permitir sua chamada a partir do programa principal. Gere o código necessário para transferir a execução ao procedimento e retornar ao comando seguinte.</p>
+<p><strong>Atividade 2 — Funções com retorno inteiro.</strong> Implemente funções que recebam parâmetros e retornem valores inteiros. Permita que uma chamada seja utilizada em expressões aritméticas e verifique o tipo do resultado durante a análise semântica.</p>
+<p><strong>Atividade 3 — Verificação de argumentos.</strong> Amplie a tabela de símbolos para armazenar a quantidade e os tipos dos parâmetros de cada subprograma. Detecte chamadas com quantidade incorreta de argumentos ou com tipos incompatíveis.</p>
+<p><strong>Atividade 4 — Passagem por valor.</strong> Implemente a transmissão dos valores dos argumentos para os parâmetros formais. Verifique, por meio de um programa de teste, que a alteração de um parâmetro local não modifica a variável original do chamador.</p>
+<p><strong>Atividade 5 — Passagem por referência.</strong> Amplie a linguagem para permitir parâmetros por referência. Implemente a transmissão de endereços e verifique que as modificações realizadas no subprograma são observadas pelo chamador.</p>
+<p><strong>Atividade 6 — Variáveis locais e escopos.</strong> Permita declarações locais em funções e procedimentos. Garanta que identificadores locais sejam tratados separadamente dos identificadores de outros escopos.</p>
+<p><strong>Atividade 7 — Recursão.</strong> Implemente uma função recursiva, como o cálculo do fatorial. Verifique se cada ativação mantém seus parâmetros e endereço de retorno, sem interferir nas ativações anteriores.</p>
+</section>
+<section id="considerações-finais" class="level3">
+<h3 class="anchored" data-anchor-id="considerações-finais">Considerações finais</h3>
+<p>A inclusão de funções, procedimentos e passagem de parâmetros representa uma evolução importante do projeto de compilador. Esses recursos ampliam a expressividade da linguagem e exigem que o compilador controle não apenas as construções sintáticas e os tipos, mas também a organização dos dados e o fluxo de execução durante as chamadas.</p>
+<p>O projeto permite integrar diversos conceitos estudados ao longo do livro: gramáticas livres de contexto, tradução dirigida por sintaxe, análise semântica, tabela de símbolos, geração de código e organização da memória. Ao implementar esses recursos, o estudante passa a compreender como abstrações presentes nas linguagens de alto nível são traduzidas para operações executáveis por uma máquina virtual.</p>
+<p>A implementação deve ser realizada de maneira incremental, definindo primeiro a sintaxe e a semântica das novas construções e, em seguida, estabelecendo a convenção de chamada e o código correspondente. Como as instruções específicas para chamadas e retornos dependem da arquitetura da MVS, essa etapa também pode exigir a extensão da máquina virtual utilizada nos projetos anteriores.</p>
+<p>Ao final, o compilador deverá ser capaz de traduzir programas estruturados em subprogramas, verificar a consistência das declarações e chamadas e gerar código que preserve o comportamento esperado durante a execução. Esse resultado constitui uma base para futuras extensões, como parâmetros opcionais, sobrecarga de funções, tipos estruturados e mecanismos mais sofisticados de gerenciamento de memória.</p>
+<p>Observação para a implementação: como os arquivos do projeto apresentados anteriormente não especificam instruções da MVS para chamada e retorno de subprogramas, o texto trata essa parte de forma conceitual, sem atribuir à máquina instruções que ainda não foram definidas. Antes de apresentar o código definitivo do compilador, será necessário estabelecer a convenção de chamada e verificar se a MVS atual oferece os mecanismos necessários ou precisa ser ampliada.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiada");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiada");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/7-semantico-geracao.html" class="pagination-link" aria-label="A Análise Semântica e a Geração de Código">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">A Análise Semântica e a Geração de Código</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/9-sumario.html" class="pagination-link" aria-label="Sumário">
+        <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Sumário</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

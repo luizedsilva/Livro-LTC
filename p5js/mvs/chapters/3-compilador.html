@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>3&nbsp; Introdução aos Compiladores – Teoria de Linguagens e Compiladores</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/4-lexico.html" rel="next">
+<link href="../chapters/2-fundamentos.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5de800ff0d570d78397ee07e50104809.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Nenhum resultado",
+    "search-matching-documents-text": "documentos correspondentes",
+    "search-copy-link-title": "Copiar link para a busca",
+    "search-hide-matches-text": "Esconder correspondências adicionais",
+    "search-more-match-text": "mais correspondência neste documento",
+    "search-more-matches-text": "mais correspondências neste documento",
+    "search-clear-button-title": "Limpar",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar",
+    "search-label": "Procurar"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/3-compilador.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Procurar" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Teoria de Linguagens e Compiladores</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Procurar"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prefácio</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/1-introducao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução à Teoria de Linguagens</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/2-fundamentos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/3-compilador.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/4-lexico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/5-sintatico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">As Linguagens Livres de Contexto e a Análise Sintática</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/6-maquinas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">As Máquinas</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/7-semantico-geracao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">A Análise Semântica e a Geração de Código</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/8-projetos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Projetos de Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/9-sumario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Sumário</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/10-referencias.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Referências</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Índice</h2>
+   
+  <ul>
+  <li><a href="#introdução" id="toc-introdução" class="nav-link active" data-scroll-target="#introdução"><span class="header-section-number">3.1</span> Introdução</a>
+  <ul class="collapse">
+  <li><a href="#compiladores" id="toc-compiladores" class="nav-link" data-scroll-target="#compiladores">Compiladores</a></li>
+  <li><a href="#interpretadores" id="toc-interpretadores" class="nav-link" data-scroll-target="#interpretadores">Interpretadores</a></li>
+  <li><a href="#compilação-e-interpretação" id="toc-compilação-e-interpretação" class="nav-link" data-scroll-target="#compilação-e-interpretação">Compilação e interpretação</a></li>
+  <li><a href="#o-programa-fonte" id="toc-o-programa-fonte" class="nav-link" data-scroll-target="#o-programa-fonte">O programa-fonte</a></li>
+  </ul></li>
+  <li><a href="#aspectos-básicos-da-compilação" id="toc-aspectos-básicos-da-compilação" class="nav-link" data-scroll-target="#aspectos-básicos-da-compilação"><span class="header-section-number">3.2</span> Aspectos básicos da compilação</a></li>
+  <li><a href="#fases-da-compilação" id="toc-fases-da-compilação" class="nav-link" data-scroll-target="#fases-da-compilação"><span class="header-section-number">3.3</span> Fases da compilação</a>
+  <ul class="collapse">
+  <li><a href="#construção-do-analisador-léxico" id="toc-construção-do-analisador-léxico" class="nav-link" data-scroll-target="#construção-do-analisador-léxico">Construção do analisador léxico</a></li>
+  <li><a href="#tabela-de-símbolos" id="toc-tabela-de-símbolos" class="nav-link" data-scroll-target="#tabela-de-símbolos">Tabela de símbolos</a></li>
+  <li><a href="#análise-sintática" id="toc-análise-sintática" class="nav-link" data-scroll-target="#análise-sintática">Análise sintática</a></li>
+  <li><a href="#análise-semântica" id="toc-análise-semântica" class="nav-link" data-scroll-target="#análise-semântica">Análise semântica</a></li>
+  <li><a href="#tratamento-de-erros" id="toc-tratamento-de-erros" class="nav-link" data-scroll-target="#tratamento-de-erros">Tratamento de erros</a></li>
+  <li><a href="#geração-de-código-intermediário" id="toc-geração-de-código-intermediário" class="nav-link" data-scroll-target="#geração-de-código-intermediário">Geração de código intermediário</a></li>
+  <li><a href="#otimização-de-código" id="toc-otimização-de-código" class="nav-link" data-scroll-target="#otimização-de-código">Otimização de código</a></li>
+  <li><a href="#geração-de-código-objeto" id="toc-geração-de-código-objeto" class="nav-link" data-scroll-target="#geração-de-código-objeto">Geração de código objeto</a></li>
+  </ul></li>
+  <li><a href="#ferramentas-para-construção-do-compilador" id="toc-ferramentas-para-construção-do-compilador" class="nav-link" data-scroll-target="#ferramentas-para-construção-do-compilador"><span class="header-section-number">3.4</span> Ferramentas para construção do compilador</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../chapters/images/compilador.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<section id="introdução" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="introdução"><span class="header-section-number">3.1</span> Introdução</h2>
+<p>Desde o surgimento dos computadores digitais, existe uma preocupação fundamental: como permitir que seres humanos expressem instruções de maneira conveniente e, ao mesmo tempo, como transformar essas instruções em uma forma que possa ser processada por uma máquina? Os computadores são capazes de executar operações em grande velocidade, mas precisam receber instruções em uma representação que possa ser interpretada pelos seus componentes de processamento. A necessidade de estabelecer uma ponte entre a forma de expressão utilizada pelas pessoas e a representação utilizada pelos computadores levou ao desenvolvimento das <strong>linguagens de programação</strong> e dos sistemas responsáveis por processá-las.</p>
+<p>Os primeiros programas eram escritos utilizando diretamente as instruções disponíveis no processador. Essas instruções são representadas por códigos binários ou, em uma forma mais legível, por <strong>linguagens de montagem</strong>, conhecidas como <em>assembly languages</em>. Em uma linguagem de montagem, as instruções são representadas por mnemônicos que correspondem, de maneira relativamente direta, às instruções da arquitetura do processador. Embora representem uma evolução em relação à programação diretamente em código de máquina, as linguagens de montagem ainda mantêm uma forte dependência da arquitetura do computador. </p>
+<p>A necessidade de aumentar a produtividade dos programadores e reduzir a dependência em relação ao hardware levou ao desenvolvimento das <strong>linguagens de programação de alto nível</strong>. Na década de 1950 surgiram linguagens como FORTRAN e, posteriormente, ALGOL 60. Essas linguagens permitiram que algoritmos fossem descritos de maneira mais próxima da forma utilizada para expressar problemas matemáticos e procedimentos, reduzindo a quantidade de detalhes relacionados diretamente ao funcionamento do processador.</p>
+<p>Desde então, centenas de linguagens de programação foram desenvolvidas. Algumas foram projetadas para aplicações científicas e numéricas; outras, para sistemas operacionais, inteligência artificial, processamento de dados, desenvolvimento Web, sistemas embarcados ou computação de alto desempenho. Apesar das diferenças entre elas, todas precisam, de alguma maneira, ter suas instruções transformadas em uma representação que possa ser executada ou processada por um computador.</p>
+<p>Essa necessidade deu origem aos <strong>programas tradutores</strong>. Um tradutor é um programa capaz de receber uma representação de um programa e produzir outra representação equivalente, normalmente preservando o significado computacional do programa original.</p>
+<p>De maneira geral, podemos representar esse processo na <a href="#fig-compiler-process" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-compiler-process</span></a>.</p>
+<div id="fig-compiler-process" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-compiler-process-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/compiler-process.png" class="img-fluid figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-compiler-process-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3.1: Processo de compilação/interpretação
+</figcaption>
+</figure>
+</div>
+<p>O programa recebido pelo tradutor é denominado <strong>programa-fonte</strong> (<em>source program</em>) e a representação produzida é denominada <strong>programa-alvo</strong> (<em>target program</em>) ou, em determinados contextos, <strong>programa-objeto</strong> (<em>object program</em>).</p>
+<p>O programa-fonte é escrito em uma linguagem de programação, como C, C++, Java, Rust ou outra linguagem de alto nível. O programa-alvo pode ser código de máquina, código objeto, código intermediário, <em>bytecode</em> ou alguma outra representação adequada ao sistema que realizará a execução.</p>
+<p>O desenvolvimento de um programa, portanto, envolve mais do que simplesmente escrever uma sequência de instruções. É necessário que exista um mecanismo capaz de analisar o programa escrito pelo programador, verificar se sua estrutura está de acordo com as regras da linguagem e produzir uma representação que possa ser utilizada posteriormente para execução.</p>
+<section id="compiladores" class="level3">
+<h3 class="anchored" data-anchor-id="compiladores">Compiladores</h3>
+<p>Um <strong>compilador</strong> é um programa tradutor que recebe um programa escrito em uma linguagem-fonte e produz uma representação em uma linguagem-alvo.</p>
+<p>Um exemplo tradicional é um compilador que recebe um programa escrito em C e produz código objeto ou código de máquina para uma determinada arquitetura.</p>
+<p>O compilador não precisa necessariamente produzir diretamente código de máquina. Em muitos sistemas, o resultado da compilação é uma representação intermediária que será posteriormente transformada em código de máquina ou executada por uma máquina virtual.</p>
+<p>O processo de compilação normalmente envolve diversas etapas. Entre elas estão a análise dos caracteres que formam o programa, a identificação dos elementos da linguagem, a análise da estrutura sintática, a verificação de propriedades semânticas, a geração de uma representação intermediária e a geração ou otimização do código-alvo.</p>
+<p>Essas etapas não são necessariamente implementadas como programas independentes. Um compilador pode organizá-las de diferentes maneiras e várias etapas podem ser combinadas em uma mesma passagem pelo programa.</p>
+</section>
+<section id="interpretadores" class="level3">
+<h3 class="anchored" data-anchor-id="interpretadores">Interpretadores</h3>
+<p>Outra forma de executar programas escritos em linguagens de alto nível é utilizar um <strong>interpretador</strong>.</p>
+<p>Um interpretador recebe um programa-fonte e executa suas instruções por meio de um processo de análise e execução.</p>
+<p>Enquanto em uma compilação tradicional o programa-fonte é traduzido para uma representação-alvo antes de sua execução, em uma interpretação o processamento do programa está diretamente associado à sua execução.</p>
+<p>É comum utilizar os termos <strong>tradução offline</strong> e <strong>tradução online</strong> para estabelecer uma distinção didática entre essas abordagens. Na tradução offline, o programa é processado antes da execução, e o resultado da tradução pode ser armazenado para ser executado posteriormente. Na interpretação, o processamento necessário para executar o programa ocorre durante a execução.</p>
+<p>Essa distinção, entretanto, deve ser entendida como uma simplificação. Sistemas modernos frequentemente combinam técnicas de compilação e interpretação. Uma linguagem pode, por exemplo, ser inicialmente traduzida para um código intermediário e posteriormente interpretada ou compilada dinamicamente para código de máquina.</p>
+</section>
+<section id="compilação-e-interpretação" class="level3">
+<h3 class="anchored" data-anchor-id="compilação-e-interpretação">Compilação e interpretação</h3>
+<p>As diferenças entre compilação e interpretação podem ser observadas a partir do momento em que ocorre a transformação do programa.</p>
+<p>Em uma compilação tradicional, temos uma sequência semelhante a</p>
+<p><span class="math display">\[
+\text{Fonte}
+\xrightarrow{\text{compilação}}
+\text{Alvo}
+\xrightarrow{\text{execução}}
+\text{Resultado}.
+\]</span></p>
+<p>O programa-alvo pode ser armazenado e executado posteriormente sem que seja necessário repetir todo o processo de compilação.</p>
+<p>Em uma interpretação, podemos representar o processo como</p>
+<p><span class="math display">\[
+\text{Fonte}
+\xrightarrow{\text{interpretação}}
+\text{Execução}.
+\]</span></p>
+<p>O interpretador participa diretamente do processo de execução.</p>
+<p>Na prática, essas duas estratégias não são mutuamente exclusivas. Máquinas virtuais, linguagens com código intermediário e compiladores <em>Just-In-Time</em> (JIT) utilizam combinações dessas técnicas. Dessa forma, a fronteira entre compilação e interpretação em sistemas modernos é menos rígida do que a representação tradicional pode sugerir.</p>
+<p>O ponto fundamental é que programas escritos em linguagens de alto nível precisam ser processados por algum mecanismo capaz de transformar suas construções em operações que possam ser efetivamente executadas.</p>
+</section>
+<section id="o-programa-fonte" class="level3">
+<h3 class="anchored" data-anchor-id="o-programa-fonte">O programa-fonte</h3>
+<p>Um programa-fonte é uma sequência de caracteres que segue as regras de uma determinada linguagem de programação. Por exemplo, considere o seguinte programa em uma linguagem semelhante a C:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> soma<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">+</span> b<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Para um programador, esse código apresenta uma estrutura relativamente fácil de compreender. Entretanto, antes que possa ser executado por um processador, é necessário determinar o significado dos elementos que aparecem no programa e transformá-los em uma representação adequada.</p>
+<p>O compilador precisa identificar, entre outras coisas, os identificadores <code>soma</code>, <code>a</code> e <code>b</code>, as palavras reservadas <code>int</code> e <code>return</code>, os símbolos <code>(</code>, <code>)</code>, <code>{</code>, <code>}</code>, <code>,</code> e <code>;</code>, além do operador <code>+</code>.</p>
+<p>Também é necessário verificar se esses elementos estão organizados de acordo com a sintaxe da linguagem e se o programa satisfaz determinadas regras semânticas. Somente depois dessas análises será possível produzir uma representação adequada para as etapas seguintes da compilação.</p>
+<p>Esse exemplo simples já evidencia uma característica fundamental dos compiladores: <strong>o programa-fonte precisa ser analisado em diferentes níveis</strong>.</p>
+</section>
+</section>
+<section id="aspectos-básicos-da-compilação" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="aspectos-básicos-da-compilação"><span class="header-section-number">3.2</span> Aspectos básicos da compilação</h2>
+<p>A implementação de uma linguagem de programação envolve diferentes questões relacionadas à forma como os programas são escritos, analisados e transformados para que possam ser executados por um computador. De maneira geral, podem ser identificados três aspectos fundamentais: o aspecto sintático, o aspecto semântico e o aspecto pragmático.</p>
+<p>O <strong>aspecto sintático</strong> está relacionado à forma das construções da linguagem. Seu objetivo é determinar se uma determinada sequência de símbolos constitui uma construção válida segundo as regras da linguagem. Assim, a análise sintática permite verificar, por exemplo, se uma expressão, uma atribuição, uma declaração ou um comando de repetição foi escrito de acordo com a gramática da linguagem.</p>
+<p>O <strong>aspecto semântico</strong> está relacionado ao significado das construções sintaticamente válidas. Uma construção pode estar corretamente formada de acordo com a gramática e, ainda assim, não possuir um significado válido no contexto do programa. São exemplos de problemas semânticos a utilização de uma variável que não foi declarada, a incompatibilidade entre tipos em uma atribuição e a utilização inadequada de uma operação em função dos tipos de seus operandos.</p>
+<p>O <strong>aspecto pragmático</strong> está relacionado à integração do processo de tradução com o sistema computacional no qual o programa será executado. Esse aspecto envolve características da máquina hospedeira e da máquina-alvo, do sistema operacional, do formato dos arquivos executáveis, das convenções de chamada de procedimentos e funções, da organização da memória e do conjunto de instruções do processador.</p>
+<p>Os aspectos sintático e semântico podem ser estudados de maneira relativamente independente da arquitetura específica do computador. Já os aspectos relacionados à geração e à execução do código apresentam maior dependência da plataforma-alvo. Uma mesma linguagem de programação pode, por exemplo, ser implementada para diferentes arquiteturas, exigindo estratégias distintas para a geração do código executável.</p>
+<p>Por essa razão, o estudo dos compiladores pode ser realizado com o auxílio de uma linguagem de programação simplificada. Neste livro, os exemplos serão desenvolvidos com base em uma linguagem denominada <strong>Linguagem Simples</strong>, cuja tradução será direcionada para uma máquina virtual também simplificada, denominada <strong>Máquina Virtual Simples (MVS)</strong>. Nessa abordagem, os aspectos pragmáticos da linguagem e os detalhes da arquitetura da máquina são deliberadamente reduzidos. Essa simplificação permite concentrar a atenção nos princípios e nas técnicas fundamentais envolvidos na construção de compiladores, sem introduzir, inicialmente, a complexidade característica das linguagens de programação de grande porte e os diversos detalhes presentes em arquiteturas reais de computadores.</p>
+</section>
+<section id="fases-da-compilação" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="fases-da-compilação"><span class="header-section-number">3.3</span> Fases da compilação</h2>
+<p>O processo de compilação pode ser organizado em um conjunto de fases, cada uma responsável por uma parte específica da transformação do programa fonte. Uma organização tradicional compreende as fases de análise léxica, análise sintática, análise semântica, geração de código intermediário, otimização e geração de código para a máquina-alvo.</p>
+<p>A <strong>análise léxica</strong> é responsável por percorrer o programa fonte e identificar as unidades básicas que o constituem, denominadas <em>tokens</em>. Nessa fase são reconhecidos, por exemplo, identificadores, palavras reservadas, operadores, delimitadores e constantes.</p>
+<p>A <strong>análise sintática</strong> recebe os <em>tokens</em> produzidos pelo analisador léxico e verifica se eles podem ser organizados de acordo com as regras gramaticais da linguagem. Como resultado dessa análise, pode ser construída uma representação da estrutura sintática do programa, frequentemente na forma de uma árvore sintática ou de uma árvore sintática abstrata.</p>
+<p>A <strong>análise semântica</strong> utiliza a estrutura produzida pela análise sintática para verificar propriedades que não podem ser determinadas apenas pela gramática. Entre essas propriedades encontram-se a compatibilidade de tipos, a declaração e o uso de identificadores, as regras de escopo e a consistência das operações realizadas pelo programa.</p>
+<p>Após as fases de análise, o compilador pode produzir uma <strong>representação intermediária</strong> do programa. Essa representação funciona como uma forma de código independente, ou relativamente independente, da arquitetura da máquina-alvo. A utilização de uma representação intermediária facilita a implementação de compiladores para diferentes arquiteturas, pois permite separar as etapas de análise das etapas específicas de geração de código.</p>
+<p>A <strong>otimização</strong> procura transformar a representação do programa de modo a obter uma implementação mais eficiente, preservando seu comportamento. Dependendo da estratégia utilizada, a otimização pode buscar reduzir o espaço ocupado pelo programa ou diminuir seu tempo de execução.</p>
+<p>Finalmente, a <strong>geração de código</strong> transforma a representação intermediária em uma representação adequada à máquina ou plataforma-alvo. O resultado pode ser código de máquina, código objeto, código para uma máquina virtual ou outra representação apropriada ao ambiente de execução.</p>
+<p>A <a href="#fig-fases" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-fases</span></a> apresenta uma visão geral dessas fases.</p>
+<div id="fig-fases" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-fases-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/fases.png" class="img-fluid figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fases-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3.2: As fases da compilação
+</figcaption>
+</figure>
+</div>
+<p>O processo apresentado na <a href="#fig-fases" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-fases</span></a> deve ser entendido como uma organização conceitual. Em um compilador real, algumas dessas fases podem ser combinadas, executadas mais de uma vez ou implementadas de maneira integrada. Além disso, informações produzidas em uma determinada fase podem ser utilizadas por diversas outras fases.</p>
+<p>Durante o processo de análise, o compilador pode identificar diferentes categorias de erros. Os <strong>erros léxicos</strong> estão relacionados a símbolos ou sequências de caracteres que não pertencem ao vocabulário da linguagem. Os <strong>erros sintáticos</strong> ocorrem quando os <em>tokens</em> não podem ser organizados segundo as regras da gramática. Já os <strong>erros semânticos</strong> ocorrem quando uma construção sintaticamente válida viola alguma regra de significado da linguagem.</p>
+<p>As fases de compilação podem ser organizadas de diferentes maneiras. Em uma <strong>compilação em múltiplos passos</strong>, cada fase pode produzir uma representação intermediária que será utilizada pela fase seguinte. Essa organização favorece a separação das responsabilidades e pode facilitar a construção e a manutenção do compilador.</p>
+<p>Em uma <strong>compilação em uma única passagem</strong>, por outro lado, as diferentes atividades podem ser combinadas de modo que o programa seja processado e traduzido de maneira mais integrada. Historicamente, essa estratégia foi importante em ambientes nos quais os recursos computacionais eram limitados. Atualmente, a distinção entre compiladores de uma e de várias passagens é menos rígida, pois compiladores modernos utilizam diferentes formas de organização interna e múltiplas representações intermediárias.</p>
+<p>Uma estratégia particularmente importante para a implementação de compiladores é a <strong>tradução dirigida pela sintaxe</strong>. Nesse modelo, as ações responsáveis pelo processamento semântico e pela geração de código são associadas às regras da gramática utilizada pelo analisador sintático. Assim, à medida que uma construção sintática é reconhecida, podem ser executadas ações associadas àquela construção.</p>
+<p>As ações semânticas podem, por exemplo, atualizar a tabela de símbolos, realizar verificações de tipos, calcular atributos de uma construção ou produzir instruções para uma representação intermediária. Dessa maneira, a análise sintática passa a desempenhar um papel central na coordenação das demais atividades de tradução.</p>
+<p>No projeto de compilador desenvolvido neste curso, será utilizada essa abordagem, com o auxílio das ferramentas <em>flex</em> e <em>bison</em>. Essas ferramentas permitem automatizar parte significativa da construção dos analisadores léxico e sintático, possibilitando concentrar o estudo nos princípios envolvidos na implementação de um compilador.</p>
+<section id="construção-do-analisador-léxico" class="level3">
+<h3 class="anchored" data-anchor-id="construção-do-analisador-léxico">Construção do analisador léxico</h3>
+<p>O analisador léxico, também denominado <em>scanner</em>, é responsável pela primeira etapa de análise do programa fonte. Sua função principal é percorrer a sequência de caracteres que constitui o programa e agrupá-los em unidades léxicas significativas para as etapas posteriores da compilação.</p>
+<p>Durante a análise, o <em>scanner</em> percorre normalmente o texto da esquerda para a direita, identificando os símbolos que pertencem ao vocabulário da linguagem. Caracteres consecutivos que formam uma unidade léxica são agrupados e classificados de acordo com sua categoria.</p>
+<p>Entre as unidades reconhecidas pelo analisador léxico estão as palavras reservadas, os identificadores, os números, os literais, os operadores e os delimitadores. Por exemplo, em uma linguagem semelhante ao Pascal, a sequência</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode pascal code-with-copy"><code class="sourceCode pascal"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>A := B + <span class="dv">10</span>;</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>pode ser dividida em identificadores, operador de atribuição, operador aritmético, constante numérica e delimitador de comando.</p>
+<p>Para cada unidade léxica reconhecida, o analisador léxico produz um <em>token</em>. Um <em>token</em> pode ser entendido como uma representação interna da categoria sintática à qual pertence o símbolo reconhecido. Em implementações reais, além do código do <em>token</em>, pode ser necessário armazenar informações adicionais, como o lexema correspondente, seu valor e sua posição no programa fonte.</p>
+<p>Durante a análise léxica também são normalmente eliminados elementos que não participam diretamente da estrutura sintática do programa, como espaços em branco, tabulações e comentários. Esses elementos são importantes para a escrita e documentação do programa, mas, em geral, não precisam ser encaminhados ao analisador sintático.</p>
+<p>Outra responsabilidade importante do analisador léxico é a identificação de erros. Um erro léxico ocorre quando uma sequência de caracteres não pode ser reconhecida como uma unidade válida da linguagem. Também podem ser verificadas restrições relacionadas ao tamanho de identificadores ou à representação de constantes e literais.</p>
+<p>A ferramenta <em>flex</em> automatiza a construção dessa etapa. O programador especifica padrões que descrevem as unidades léxicas, normalmente utilizando expressões regulares, e o <em>flex</em> gera código responsável por reconhecer esses padrões. Dessa forma, o reconhecimento léxico pode ser relacionado diretamente aos conceitos de linguagens regulares e autômatos finitos.</p>
+<section id="exemplo-de-análise-léxica" class="level4">
+<h4 class="anchored" data-anchor-id="exemplo-de-análise-léxica">Exemplo de análise léxica</h4>
+<p>Considere o seguinte programa escrito no subconjunto de Pascal utilizado como exemplo:</p>
+<div id="lst-cod-pascal" class="pascal listing quarto-float quarto-figure quarto-figure-left anchored">
+<figure class="quarto-float quarto-float-lst figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-lst" id="lst-cod-pascal-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Listagem&nbsp;3.1: Exemplo de programa em Pascal
+</figcaption>
+<div aria-describedby="lst-cod-pascal-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode pascal code-with-copy"><code class="sourceCode pascal"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">program</span> exemplo;</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> A, B: <span class="dt">byte</span>;</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">begin</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    A := B + <span class="dv">0.5</span>;</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span>.</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</figure>
+</div>
+<p>O analisador léxico percorre o programa caractere por caractere e identifica as unidades léxicas que o constituem. O resultado dessa análise pode ser representado por uma sequência de <em>tokens</em>, conforme apresentado na Tabela <a href="#tbl-simboloslexicos" class="quarto-xref">Tabela&nbsp;<span class="quarto-unresolved-ref">tbl-simboloslexicos</span></a>.</p>
+<div id="tbl-simboloslexicos" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-simboloslexicos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabela&nbsp;3.1: Resultado da análise léxica do Código <a href="#lst-cod-pascal" class="quarto-xref">Listagem&nbsp;<span class="quarto-unresolved-ref">lst-cod-pascal</span></a>
+</figcaption>
+<div aria-describedby="tbl-simboloslexicos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Item</th>
+<th style="text-align: center;">Lexema</th>
+<th style="text-align: left;">Token</th>
+<th style="text-align: left;">Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: center;"><code>program</code></td>
+<td style="text-align: left;">T_PROGRAM</td>
+<td style="text-align: left;">palavra reservada</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: center;"><code>exemplo</code></td>
+<td style="text-align: left;">T_IDENTIF</td>
+<td style="text-align: left;">identificador</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: center;"><code>;</code></td>
+<td style="text-align: left;">T_PTOVIRG</td>
+<td style="text-align: left;">símbolo ponto e vírgula</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: center;"><code>var</code></td>
+<td style="text-align: left;">T_VAR</td>
+<td style="text-align: left;">palavra reservada</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: center;"><code>A</code></td>
+<td style="text-align: left;">T_IDENTIF</td>
+<td style="text-align: left;">identificador</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: center;"><code>,</code></td>
+<td style="text-align: left;">T_VIRGULA</td>
+<td style="text-align: left;">símbolo vírgula</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: center;"><code>B</code></td>
+<td style="text-align: left;">T_IDENTIF</td>
+<td style="text-align: left;">identificador</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: center;"><code>:</code></td>
+<td style="text-align: left;">T_DOISPTO</td>
+<td style="text-align: left;">símbolo dois pontos</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: center;"><code>byte</code></td>
+<td style="text-align: left;">T_IDENTIF</td>
+<td style="text-align: left;">identificador</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: center;"><code>;</code></td>
+<td style="text-align: left;">T_PTOVIRG</td>
+<td style="text-align: left;">símbolo ponto e vírgula</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">11</td>
+<td style="text-align: center;"><code>begin</code></td>
+<td style="text-align: left;">T_BEGIN</td>
+<td style="text-align: left;">palavra reservada</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: center;"><code>A</code></td>
+<td style="text-align: left;">T_IDENTIF</td>
+<td style="text-align: left;">identificador</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13</td>
+<td style="text-align: center;"><code>:=</code></td>
+<td style="text-align: left;">T_ATRIB</td>
+<td style="text-align: left;">símbolo de atribuição</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">14</td>
+<td style="text-align: center;"><code>B</code></td>
+<td style="text-align: left;">T_IDENTIF</td>
+<td style="text-align: left;">identificador</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: center;"><code>+</code></td>
+<td style="text-align: left;">T_MAIS</td>
+<td style="text-align: left;">símbolo mais</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">16</td>
+<td style="text-align: center;"><code>0.5</code></td>
+<td style="text-align: left;">T_NUMERO</td>
+<td style="text-align: left;">número</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17</td>
+<td style="text-align: center;"><code>;</code></td>
+<td style="text-align: left;">T_PTOVIRG</td>
+<td style="text-align: left;">símbolo ponto e vírgula</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">18</td>
+<td style="text-align: center;"><code>end</code></td>
+<td style="text-align: left;">T_END</td>
+<td style="text-align: left;">palavra reservada</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">19</td>
+<td style="text-align: center;"><code>.</code></td>
+<td style="text-align: left;">T_PTO</td>
+<td style="text-align: left;">símbolo ponto final</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Neste exemplo, os nomes dos <em>tokens</em> escritos em letras maiúsculas e iniciados por <code>T_</code> representam constantes numéricas que identificam as diferentes categorias de unidades léxicas. Por exemplo, <code>T_PROGRAM = 256</code> identifica a palavra reservada <code>program</code>, enquanto <code>T_IDENTIF = 257</code> identifica um identificador. Esses valores são utilizados internamente pelo compilador para distinguir os diferentes tipos de <em>tokens</em> produzidos pelo analisador léxico.</p>
+<p>É importante observar que uma unidade léxica pode ser constituída por um único caractere, como uma vírgula (<code>,</code>) ou um ponto (<code>.</code>), ou por uma sequência de caracteres, como ocorre com palavras reservadas, identificadores e operadores, a exemplo do operador de atribuição <code>:=</code>. O analisador léxico é responsável por percorrer o programa-fonte, reconhecer essas unidades léxicas e produzir, para cada uma delas, o <em>token</em> correspondente. Dessa forma, a sequência de <em>tokens</em> gerada pelo analisador léxico constitui a entrada utilizada pelas etapas seguintes do compilador.</p>
+<p>É importante distinguir também o <em>lexema</em> do <em>token</em>. O lexema é a sequência concreta de caracteres encontrada no programa fonte, como <code>A</code>, <code>0.5</code> ou <code>:=</code>. O <em>token</em>, por sua vez, representa a categoria à qual essa sequência pertence. Assim, os diferentes identificadores encontrados no programa podem produzir o mesmo tipo de <em>token</em> (T_IDENTIF), embora seus lexemas sejam diferentes.</p>
+</section>
+</section>
+<section id="tabela-de-símbolos" class="level3">
+<h3 class="anchored" data-anchor-id="tabela-de-símbolos">Tabela de símbolos</h3>
+<p>A <strong>tabela de símbolos</strong> é uma estrutura de dados fundamental para a implementação de um compilador. Ela armazena informações sobre as entidades nomeadas que aparecem no programa, tais como variáveis, constantes, tipos, procedimentos, funções, parâmetros e outros identificadores.</p>
+<p>Quando uma declaração é encontrada, o compilador pode inserir uma nova entrada na tabela de símbolos. Posteriormente, quando o identificador é utilizado, essa estrutura pode ser consultada para recuperar as informações associadas à entidade.</p>
+<p>Uma entrada da tabela pode conter diferentes informações, dependendo da linguagem e da fase de compilação. Entre elas podem estar o nome do identificador, seu tipo, escopo, categoria, endereço ou deslocamento na memória, número de parâmetros e outras propriedades relevantes.</p>
+<p>Um exemplo simplificado de tabela de símbolos é apresentado na Tabela <a href="#tbl-simbolos" class="quarto-xref">Tabela&nbsp;<span class="quarto-unresolved-ref">tbl-simbolos</span></a>.</p>
+<div id="tbl-simbolos" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-simbolos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabela&nbsp;3.2: Exemplo de tabela de símbolos
+</figcaption>
+<div aria-describedby="tbl-simbolos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Nome</th>
+<th style="text-align: center;">Tipo</th>
+<th style="text-align: right;">Endereço</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><code>A</code></td>
+<td style="text-align: center;"><code>int</code></td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><code>B</code></td>
+<td style="text-align: center;"><code>int</code></td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>A eficiência da tabela de símbolos é importante porque ela pode ser consultada diversas vezes durante a compilação. Uma estrutura frequentemente utilizada para esse propósito é a <strong>tabela hash</strong>, que permite, em condições adequadas, realizar operações de inserção e consulta de maneira eficiente.</p>
+<p>A tabela de símbolos também precisa considerar as regras de escopo da linguagem. Em linguagens que permitem blocos aninhados, por exemplo, diferentes identificadores com o mesmo nome podem existir em escopos distintos. Nesse caso, a tabela deve permitir determinar qual declaração é válida em cada ponto do programa.</p>
+</section>
+<section id="análise-sintática" class="level3">
+<h3 class="anchored" data-anchor-id="análise-sintática">Análise sintática</h3>
+<p>A <strong>análise sintática</strong> é realizada pelo analisador sintático, também denominado <em>parser</em>. Sua função é receber a sequência de <em>tokens</em> produzida pelo analisador léxico e verificar se essa sequência está de acordo com a gramática da linguagem.</p>
+<p>Enquanto o analisador léxico trabalha principalmente com sequências de caracteres e unidades léxicas, o analisador sintático trabalha com a organização dessas unidades. Seu objetivo é determinar como os <em>tokens</em> podem ser agrupados para formar construções como expressões, comandos, declarações, blocos e programas completos.</p>
+<p>A estrutura sintática reconhecida pelo <em>parser</em> pode ser representada por uma árvore. A <strong>árvore sintática</strong> representa a aplicação das regras da gramática e explicita a organização hierárquica da construção reconhecida.</p>
+<p>De forma simplificada, um programa está sintaticamente correto quando a sequência de <em>tokens</em> pode ser derivada a partir do símbolo inicial da gramática. Em uma gramática não ambígua, espera-se que a construção possua uma única estrutura sintática válida.</p>
+<p>Considere, por exemplo, o programa em linguagem Simples (que será descrita formalmente no capítulo <a href="#sec-analise-sintatica" class="quarto-xref"><span class="quarto-unresolved-ref">sec-analise-sintatica</span></a>), representado na <a href="#fig-program" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-program</span></a>.</p>
+<div id="fig-program" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-program-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/program.png" class="img-fluid figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-program-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3.3: Programa exemplo em linguagens simples
+</figcaption>
+</figure>
+</div>
+<p>A estrutura hierárquica correspondente pode ser representada por uma árvore sintática, como ilustrado na <a href="#fig-syntaxtree" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-syntaxtree</span></a>.</p>
+<div id="fig-syntaxtree" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-syntaxtree-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/syntaxtree.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-syntaxtree-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3.4: Árvore sintática do programa que calcula o maior valor
+</figcaption>
+</figure>
+</div>
+<p>A árvore permite visualizar a relação entre as diferentes construções do programa. A raiz representa o programa como um todo, enquanto os nós internos representam construções sintáticas e as folhas correspondem, em uma representação concreta, aos elementos terminais da linguagem.</p>
+<p>Em implementações modernas, é comum utilizar uma <strong>árvore sintática abstrata</strong> (<em>Abstract Syntax Tree</em> – AST), que elimina detalhes sintáticos que não são necessários às etapas posteriores. A AST fornece uma representação mais compacta e adequada para a análise semântica, otimização e geração de código.</p>
+<p>O exemplo interativo a seguir, demonstra o processo de construção da árvore sintática para um programa. Para o programa fonte digitado, após clicar no botão ‘Construir Árvore’, são gerados e calculados os tokens e os nós da árvore sintática. As folhas da árvore estão relacionadas as informações do código.</p>
+<div class="simulacao-container"><iframe src="https://luizedsilva.github.io/Livro-LTC/p5js/syntaxTree/" width="100%" height="400" style="border:none;"></iframe></div>
+<p>A ferramenta <em>bison</em> será utilizada neste curso para auxiliar na construção do analisador sintático. A partir da especificação de uma gramática livre de contexto e das ações associadas às suas produções, o <em>bison</em> gera o código necessário para realizar o processo de análise sintática.</p>
+</section>
+<section id="análise-semântica" class="level3">
+<h3 class="anchored" data-anchor-id="análise-semântica">Análise semântica</h3>
+<p>A <strong>análise semântica</strong> é a fase na qual o compilador verifica propriedades relacionadas ao significado das construções sintáticas reconhecidas. Uma construção pode estar sintaticamente correta e, mesmo assim, apresentar um erro semântico.</p>
+<p>Considere, por exemplo, uma atribuição:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode pascal code-with-copy"><code class="sourceCode pascal"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>A := B + C;</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A construção pode estar corretamente formada segundo a gramática da linguagem. Entretanto, para determinar se ela é válida, é necessário conhecer os tipos de <code>A</code>, <code>B</code> e <code>C</code>, bem como as regras de compatibilidade de tipos da linguagem.</p>
+<p>Entre as verificações realizadas durante a análise semântica encontram-se:</p>
+<ol type="1">
+<li><p><strong>Compatibilidade de tipos.</strong> Verifica se os tipos envolvidos em operações e atribuições são compatíveis com as regras da linguagem.</p></li>
+<li><p><strong>Declaração e uso de identificadores.</strong> Verifica se variáveis, constantes, funções, procedimentos e outros identificadores utilizados no programa foram devidamente declarados.</p></li>
+<li><p><strong>Regras de escopo e visibilidade.</strong> Determina qual declaração de um identificador deve ser utilizada em cada ponto do programa, respeitando as regras de escopo da linguagem.</p></li>
+<li><p><strong>Compatibilidade entre declarações e usos.</strong> Verifica se uma entidade está sendo utilizada de acordo com sua categoria e declaração. Por exemplo, uma variável declarada como vetor não deve ser utilizada como se fosse um registro.</p></li>
+<li><p><strong>Referências a entidades.</strong> Verifica se referências presentes no programa correspondem a entidades válidas. Por exemplo, um identificador utilizado em uma expressão deve corresponder a uma declaração acessível naquele contexto.</p></li>
+</ol>
+<p>A análise semântica normalmente utiliza informações armazenadas na tabela de símbolos. Dessa forma, as fases léxica, sintática e semântica não são completamente independentes. O analisador léxico identifica os nomes, o analisador sintático determina a estrutura na qual esses nomes aparecem e o analisador semântico verifica se seu uso é consistente com as regras da linguagem.</p>
+</section>
+<section id="tratamento-de-erros" class="level3">
+<h3 class="anchored" data-anchor-id="tratamento-de-erros">Tratamento de erros</h3>
+<p>Um compilador deve ser capaz não apenas de reconhecer programas válidos, mas também de detectar e comunicar adequadamente os erros encontrados durante a compilação. Essa característica é especialmente importante em ambientes de desenvolvimento, nos quais o usuário espera receber informações que auxiliem na correção do programa.</p>
+<p>Os erros podem ser classificados de acordo com a fase em que são identificados. Um caractere inválido pode produzir um erro léxico; uma sequência incorreta de <em>tokens</em> pode produzir um erro sintático; e uma operação envolvendo tipos incompatíveis pode produzir um erro semântico.</p>
+<p>Quando um erro é identificado, o módulo de tratamento de erros deve produzir uma mensagem que permita compreender sua causa e, quando possível, sua localização no programa fonte. Informações como número da linha, posição aproximada e descrição do problema são particularmente úteis.</p>
+<p>Após identificar um erro, existem duas estratégias gerais. A primeira é interromper o processo de compilação, estratégia conhecida como <strong>modo de pânico</strong>. É uma abordagem simples e adequada quando a continuação da análise não é segura ou quando não se deseja realizar recuperação de erros.</p>
+<p>A segunda estratégia consiste em tentar <strong>recuperar-se do erro</strong>, permitindo que a análise continue. Nesse caso, o compilador procura determinar um ponto a partir do qual possa continuar o processamento sem comprometer completamente a análise das construções seguintes.</p>
+<p>A recuperação de erros é importante porque permite identificar vários problemas em uma única execução do compilador. Em vez de corrigir um erro, recompilar o programa e somente então descobrir o próximo, o programador pode receber um conjunto de mensagens referentes a diferentes problemas encontrados no código.</p>
+</section>
+<section id="geração-de-código-intermediário" class="level3">
+<h3 class="anchored" data-anchor-id="geração-de-código-intermediário">Geração de código intermediário</h3>
+<p>Entre a análise do programa fonte e a geração do código para a máquina-alvo, o compilador pode utilizar uma representação intermediária. Essa representação facilita a separação entre as características da linguagem fonte e as características da plataforma de execução.</p>
+<p>Uma representação intermediária deve ser suficientemente expressiva para representar as construções da linguagem, mas, ao mesmo tempo, suficientemente simples para permitir sua análise e transformação. Existem diversas formas de representação intermediária, como árvores, grafos e representações baseadas em instruções de três endereços.</p>
+<p>Uma representação simples para expressões aritméticas é a utilização de <strong>quádruplas</strong>. Considere a atribuição:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode pascal code-with-copy"><code class="sourceCode pascal"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>A := (B + C) * (D + E);</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Uma possível representação por quádruplas é:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Operador</th>
+<th style="text-align: center;">Argumento 1</th>
+<th style="text-align: center;">Argumento 2</th>
+<th style="text-align: center;">Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><code>+</code></td>
+<td style="text-align: center;"><code>B</code></td>
+<td style="text-align: center;"><code>C</code></td>
+<td style="text-align: center;"><code>T1</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><code>+</code></td>
+<td style="text-align: center;"><code>D</code></td>
+<td style="text-align: center;"><code>E</code></td>
+<td style="text-align: center;"><code>T2</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><code>*</code></td>
+<td style="text-align: center;"><code>T1</code></td>
+<td style="text-align: center;"><code>T2</code></td>
+<td style="text-align: center;"><code>A</code></td>
+</tr>
+</tbody>
+</table>
+<p>As variáveis temporárias <code>T1</code> e <code>T2</code> representam resultados intermediários. A primeira quádrupla calcula <code>B + C</code>; a segunda calcula <code>D + E</code>; e a terceira multiplica os dois resultados e armazena o valor em <code>A</code>.</p>
+<p>A representação intermediária facilita a realização de otimizações, pois permite analisar as operações do programa sem depender diretamente das instruções específicas do processador. Posteriormente, essa representação pode ser convertida para o código da máquina-alvo.</p>
+</section>
+<section id="otimização-de-código" class="level3">
+<h3 class="anchored" data-anchor-id="otimização-de-código">Otimização de código</h3>
+<p>A <strong>otimização de código</strong> consiste na aplicação de transformações que procuram melhorar as características do programa gerado, sem alterar seu comportamento observável. Entre os objetivos mais comuns estão a redução do tempo de execução e a redução da quantidade de memória necessária.</p>
+<p>Uma otimização importante é a <strong>eliminação de subexpressões comuns</strong>. Considere, por exemplo:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode pascal code-with-copy"><code class="sourceCode pascal"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>C := (A + B) * (A + B);</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A expressão <code>A + B</code> aparece duas vezes, mas seu valor pode ser calculado uma única vez e reutilizado:</p>
+<pre class="text"><code>T1 := A + B
+C := T1 * T1</code></pre>
+<p>Essa transformação evita a realização de uma operação que produziria novamente um valor já conhecido.</p>
+<p>Outra possibilidade é a <strong>eliminação de saltos desnecessários</strong>. Durante a tradução de estruturas condicionais e de repetição, podem ser produzidas sequências de instruções de desvio que não são necessárias. A otimização pode simplificar essas sequências, reduzindo o número de instruções executadas.</p>
+<p>Também é possível realizar a <strong>movimentação de código invariante de laço</strong>. Uma expressão ou atribuição que produz sempre o mesmo resultado em todas as iterações de uma repetição pode, em determinadas condições, ser executada antes do início do laço.</p>
+<p>Considere:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode pascal code-with-copy"><code class="sourceCode pascal"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>i := <span class="dv">1</span>;</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">repeat</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    J := X;</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    i := i + <span class="dv">1</span>;</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">until</span> i &gt;= <span class="dv">100</span>;</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Se a expressão <code>J := X</code> não depender de valores modificados durante a repetição e não possuir efeitos colaterais que impeçam a transformação, ela poderá ser deslocada para antes do laço:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode pascal code-with-copy"><code class="sourceCode pascal"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>J := X;</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>i := <span class="dv">1</span>;</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">repeat</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    i := i + <span class="dv">1</span>;</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">until</span> i &gt;= <span class="dv">100</span>;</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Essa transformação elimina a repetição desnecessária da atribuição.</p>
+<p>As otimizações podem ser realizadas em diferentes níveis. Algumas dependem apenas da estrutura lógica do programa e podem ser realizadas independentemente do processador. Outras dependem das características da arquitetura da máquina-alvo e, portanto, são realizadas em uma etapa mais próxima da geração do código final.</p>
+<section id="otimização-local" class="level4">
+<h4 class="anchored" data-anchor-id="otimização-local">Otimização local</h4>
+<p>A <strong>otimização local</strong> considera características específicas do código produzido para uma determinada arquitetura. Nesse nível, o compilador pode utilizar informações sobre o conjunto de instruções, os registradores disponíveis, os modos de endereçamento e outras características do processador-alvo.</p>
+<p>Por exemplo, uma sequência de operações da representação intermediária pode ser substituída por uma instrução específica do processador que realize a mesma tarefa com menor número de instruções.</p>
+<p>A otimização local é, portanto, fortemente dependente da arquitetura para a qual o código está sendo gerado. Essa característica estabelece uma separação importante entre as otimizações independentes da máquina e aquelas que exploram características específicas do ambiente de execução.</p>
+</section>
+</section>
+<section id="geração-de-código-objeto" class="level3">
+<h3 class="anchored" data-anchor-id="geração-de-código-objeto">Geração de código objeto</h3>
+<p>A <strong>geração de código</strong> é a etapa responsável por transformar a representação intermediária em uma representação adequada à máquina-alvo. O gerador de código precisa escolher instruções e formas de representação que implementem corretamente as operações identificadas nas fases anteriores.</p>
+<p>Entre suas responsabilidades estão a seleção de instruções, a utilização dos registradores, o cálculo de endereços e a organização das operações de acordo com as características da arquitetura-alvo.</p>
+<p>O resultado dessa etapa pode ser um arquivo contendo código objeto, código de máquina ou outra forma de representação que será posteriormente utilizada pelo sistema de execução. Em muitos ambientes, o código produzido pelo compilador ainda precisa passar por etapas adicionais, como a ligação com bibliotecas e outros módulos, antes que seja obtido um programa executável.</p>
+<p>Essa organização permite separar os problemas relacionados ao reconhecimento e à compreensão do programa daqueles relacionados à sua implementação em uma determinada plataforma. Ao longo deste livro, essas etapas serão estudadas individualmente, com ênfase na construção dos analisadores léxico e sintático e na utilização das ferramentas <em>flex</em> e <em>bison</em>.</p>
+</section>
+</section>
+<section id="ferramentas-para-construção-do-compilador" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="ferramentas-para-construção-do-compilador"><span class="header-section-number">3.4</span> Ferramentas para construção do compilador</h2>
+<p>A construção manual de todas as etapas de um compilador é uma tarefa extensa. Por isso, ferramentas especializadas podem ser utilizadas para automatizar partes do processo.</p>
+<p>Neste curso, o <em>flex</em> será utilizado para a construção do analisador léxico. A especificação fornecida ao <em>flex</em> descreve padrões que correspondem às unidades léxicas da linguagem. Esses padrões são normalmente expressos por meio de expressões regulares. A partir deles, a ferramenta gera código para reconhecer as sequências de caracteres correspondentes.</p>
+<p>O funcionamento do <em>flex</em> pode ser compreendido a partir do conceito de autômatos finitos. Os padrões especificados pelo programador são convertidos em uma estrutura capaz de reconhecer as cadeias pertencentes às linguagens regulares correspondentes. O código gerado realiza, então, a varredura do programa fonte e produz os <em>tokens</em> que serão utilizados pelo analisador sintático.</p>
+<p>Para a construção do analisador sintático será utilizado o <em>bison</em>. Nele, o programador especifica a gramática da linguagem por meio de produções e pode associar ações semânticas às regras. A ferramenta gera o código necessário para realizar o processo de análise sintática.</p>
+<p>O analisador gerado pelo <em>bison</em> utiliza uma estratégia de análise baseada em uma pilha e em uma tabela de decisões. Assim, a construção do analisador pode ser relacionada aos conceitos de gramáticas livres de contexto e autômatos com pilha.</p>
+<p>A combinação dessas duas ferramentas estabelece uma arquitetura na qual o <em>flex</em> é responsável pelo reconhecimento das unidades léxicas e o <em>bison</em> pela análise da organização dessas unidades segundo a gramática da linguagem. O resultado é uma cadeia de processamento na qual o analisador léxico fornece os <em>tokens</em> ao analisador sintático, que, por sua vez, coordena as ações necessárias para a construção e o processamento das estruturas do programa.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiada");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiada");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/2-fundamentos.html" class="pagination-link" aria-label="Fundamentos Matemáticos">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/4-lexico.html" class="pagination-link" aria-label="As Linguagens Regulares e a Analise Léxica">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1470,6 +1470,361 @@ Essa característica explica, em parte, a importância dos autômatos finitos na
 
 Nos exemplos computacionais apresentados neste livro, a função $\delta$ será frequentemente representada por uma tabela ou por uma estrutura de dados equivalente. Dessa forma, a definição matemática do AFD pode ser diretamente transformada em um algoritmo de simulação.
 
+#### Fechamento sob a operação de união {#sec-fechamento-uniao}
+
+Uma propriedade importante das linguagens regulares é o **fechamento sob operações**. Dizer que uma classe de linguagens é fechada sob determinada operação significa que, ao aplicarmos essa operação a linguagens pertencentes à classe, o resultado também pertence à mesma classe.
+
+No caso da união, queremos demonstrar que a união de duas linguagens regulares é sempre uma linguagem regular.
+
+::: {#thm-fechamento-uniao}
+A classe das linguagens regulares é **fechada sob a operação de união**.
+:::
+
+Em outras palavras, se $A_1$ e $A_2$ são linguagens regulares sobre um mesmo alfabeto $\Sigma$, então a linguagem
+
+$$
+A = A_1 \cup A_2
+$$
+
+também é regular.
+
+##### Ideia da demonstração
+
+Como $A_1$ e $A_2$ são regulares, existem autômatos finitos determinísticos que reconhecem essas linguagens. A ideia é construir um novo autômato que simule os dois autômatos simultaneamente, processando a mesma palavra.
+
+A cada símbolo lido, o novo autômato atualiza o estado correspondente de cada um dos autômatos originais. Assim, ele mantém a informação sobre o estado em que cada máquina estaria após processar o prefixo da palavra que já foi lido.
+
+Para reconhecer a união, basta definir que o novo autômato aceita uma palavra quando **pelo menos um dos autômatos originais aceita essa palavra**.
+
+##### Prova por construção
+
+Sejam
+
+$$
+M_1 = (Q_1, \Sigma, \delta_1, q_1, F_1)
+$$
+
+e
+
+$$
+M_2 = (Q_2, \Sigma, \delta_2, q_2, F_2)
+$$
+
+dois autômatos finitos determinísticos que reconhecem, respectivamente, as linguagens $A_1$ e $A_2$.
+
+Construiremos um autômato determinístico
+
+$$
+M = (Q, \Sigma, \delta, q_0, F)
+$$
+
+tal que $L(M) = A_1 \cup A_2$.
+
+A construção é definida da seguinte forma.
+
+##### Conjunto de estados
+
+O conjunto de estados de $M$ é o produto cartesiano dos conjuntos de estados dos autômatos originais:
+
+$$
+Q = Q_1 \times Q_2.
+$$
+
+Portanto, cada estado de $M$ é um par $(r_1, r_2)$, em que $r_1 \in Q_1$ e $r_2 \in Q_2$.
+
+A primeira componente representa o estado atual de $M_1$, enquanto a segunda representa o estado atual de $M_2$. Dessa maneira, cada estado do novo autômato registra simultaneamente as configurações dos dois autômatos durante o processamento da palavra.
+
+Se $M_1$ possui $m$ estados e $M_2$ possui $n$ estados, então $M$ possui $mn$ estados, embora nem todos precisem ser alcançáveis a partir do estado inicial.
+
+##### Alfabeto de entrada
+
+O alfabeto de entrada de $M$ é o mesmo dos autômatos originais, isto é, $\Sigma$.
+
+Essa hipótese simplifica a construção. Caso os autômatos tenham alfabetos diferentes, podemos considerar o alfabeto comum $\Sigma = \Sigma_1 \cup \Sigma_2$ e completar as funções de transição para os símbolos ausentes, utilizando estados não finais de erro, quando necessário.
+
+##### Função de transição
+
+A função de transição de \(M\) é definida por
+
+$$
+\delta((r_1,r_2),a)
+=
+\bigl(\delta_1(r_1,a),\delta_2(r_2,a)\bigr),
+$$
+
+para todo $(r_1,r_2) \in Q$ e todo $a \in \Sigma$.
+
+Isso significa que, ao ler um símbolo $a$, o novo autômato executa simultaneamente as transições que seriam realizadas por $M_1$ e $M_2$. A primeira componente do par é atualizada de acordo com $\delta_1$, e a segunda, de acordo com $\delta_2$.
+
+##### Estado inicial
+
+O estado inicial de $M$ é o par formado pelos estados iniciais dos autômatos originais:
+
+$$
+q_0 = (q_1,q_2).
+$$
+
+Assim, antes da leitura de qualquer símbolo, cada componente do novo estado corresponde ao estado inicial de seu respectivo autômato.
+
+##### Conjunto de estados finais
+
+Para reconhecer a união, definimos o conjunto de estados finais como
+
+$$
+F =
+\{(r_1,r_2) \in Q
+\mid r_1 \in F_1 \text{ ou } r_2 \in F_2\}.
+$$
+
+A palavra *ou* nessa definição representa a disjunção lógica inclusiva: basta que pelo menos uma das componentes do par seja um estado final do respectivo autômato original.
+
+Equivalentemente, podemos escrever
+
+$$
+F = (F_1 \times Q_2) \cup (Q_1 \times F_2).
+$$
+
+Portanto, um estado do autômato produto é final quando a primeira componente pertence a $F_1$, quando a segunda componente pertence a $F_2$, ou quando ambas pertencem aos respectivos conjuntos de estados finais.
+
+##### Verificação da construção
+
+Considere uma palavra $w \in \Sigma^*$. Como a função de transição de $M$ atualiza simultaneamente as duas componentes, após a leitura de $w$, o estado alcançado é
+
+$$
+\hat{\delta}(q_0,w)
+=
+\bigl(\hat{\delta_1}(q_1,w),\hat{\delta_2}(q_2,w)\bigr),
+$$
+
+em que $\hat{\delta}$, $\hat{\delta_1}$ e $\hat{\delta_2}$ são as extensões das respectivas funções de transição para palavras.
+
+Pela definição de $F$, o autômato $M$ aceita $w$ se, e somente se, pelo menos uma das componentes do par ordenado do estado alcançado é final. Logo,
+
+$$
+\begin{aligned}
+w \in L(M)
+&\iff w \in A_1 \text{ ou } w \in A_2\\
+&\iff w \in A_1 \cup A_2.
+\end{aligned}
+$$
+
+Concluímos que
+
+$$
+L(M) = A_1 \cup A_2.
+$$
+
+Como construímos um autômato finito determinístico que reconhece $A_1 \cup A_2$, essa linguagem é regular. Portanto, a classe das linguagens regulares é fechada sob a operação de união.
+
+$$
+\boxed{L(M) = A_1 \cup A_2}
+$$
+
+##### Observação: união e interseção
+
+É importante distinguir a condição de aceitação usada na união daquela utilizada na interseção.
+
+**União:** o estado produto é final se pelo menos uma das componentes é final:
+
+$$
+F_{\cup} = (F_1 \times Q_2) \cup (Q_1 \times F_2).
+$$
+
+**Interseção:** o estado produto é final somente se ambas as componentes são finais:
+
+$$
+F_{\cap} = F_1 \times F_2.
+$$
+
+Portanto, a mesma construção de estados e de transições pode ser utilizada para reconhecer a união ou a interseção de duas linguagens regulares. A diferença está apenas na definição do conjunto de estados finais.
+
+#### Exemplo: construção de um AFD para a união de duas linguagens regulares {#sec-exemplo-uniao-afd}
+
+Para compreender a construção apresentada na prova do fechamento sob a união, considere duas linguagens regulares sobre o alfabeto $\Sigma=\{a,b\}$:
+
+- $A_1$: conjunto das palavras que terminam com o símbolo $a$;
+- $A_2$: conjunto das palavras que terminam com o símbolo $b$.
+
+Nosso objetivo é construir um autômato finito determinístico que reconheça a linguagem $A=A_1\cup A_2$.
+
+##### Primeiro autômato: palavras que terminam em `a`
+
+O primeiro autômato, denominado $M_1$, reconhece as palavras que terminam com o símbolo $a$. Para isso, utiliza dois estados:
+
+- $q_0$: estado inicial e não final, que representa uma palavra vazia ou um prefixo cuja última letra é $b$;
+- $q_1$: estado final, que representa uma palavra cuja última letra é $a$.
+
+A função de transição é definida de modo que a leitura de $a$ conduza ao estado $q_1$, enquanto a leitura de $b$ conduza ao estado $q_0$. Consequentemente, após a leitura completa de uma palavra, o autômato estará em $q_1$ se, e somente se, a palavra terminar em $a$.
+
+A @fig-afd1-a contém a representação desse autômato.
+
+![Autômato $A_1$](/chapters/images/afd1-a.png){#fig-afd1-a width="30%"}
+
+##### Segundo autômato: palavras que terminam em `b`
+
+O segundo autômato, denominado $M_2$, reconhece as palavras que terminam com o símbolo $b$. Sua estrutura é semelhante à do primeiro autômato:
+
+- $p_0$: estado inicial e não final, que representa uma palavra vazia ou um prefixo cuja última letra é $a$;
+- $p_1$: estado final, que representa uma palavra cuja última letra é $b$.
+
+Ao ler $a$, o autômato passa para $p_0$; ao ler $b$, passa para $p_1$. Portanto, uma palavra é aceita por $M_2$ se, e somente se, terminar em $b$.
+
+A @fig-afd2-b apresenta a representação gráfica desse autômato.
+
+![Autômato $A_2$](/chapters/images/afd2-b.png){#fig-afd2-b width="30%"}
+
+##### Construção do autômato produto
+
+Para reconhecer a união das duas linguagens, construímos um terceiro autômato $M$ que simula $M_1$ e $M_2$ simultaneamente.
+
+O conjunto de estados é o produto cartesiano:
+
+$$
+Q=Q_1\times Q_2.
+$$
+
+Como $Q_1=\{q_0,q_1\}$ e $Q_2=\{p_0,p_1\}$, obtemos:
+
+$$
+Q=\{
+(q_0,p_0),
+(q_0,p_1),
+(q_1,p_0),
+(q_1,p_1)
+\}.
+$$
+
+Cada estado representa a situação dos dois autômatos originais após a leitura do mesmo prefixo da palavra.
+
+Por exemplo, o estado $(q_1,p_0)$ indica que $M_1$ está em seu estado final, enquanto $M_2$ está em seu estado não final. Isso significa que a palavra processada termina em $a$, sendo aceita por $M_1$.
+
+Já o estado $(q_0,p_1)$ indica que a palavra termina em $b$, sendo aceita por $M_2$.
+
+O estado inicial do autômato produto é:
+
+$$
+q_0'=(q_0,p_0).
+$$
+
+A função de transição é calculada componente a componente. Assim,
+
+$$
+\delta((r_1,r_2),x)
+=
+(\delta_1(r_1,x),\delta_2(r_2,x)).
+$$
+
+Considere, por exemplo, a leitura do símbolo $a$ a partir do estado inicial. No primeiro autômato, a transição é de $q_0$ para $q_1$; no segundo, é de $p_0$ para $p_0$. Logo,
+
+$$
+\delta((q_0,p_0),a)=(q_1,p_0).
+$$
+
+De modo semelhante, ao ler $b$, temos:
+
+$$
+\delta((q_0,p_0),b)=(q_0,p_1).
+$$
+
+A tabela a seguir apresenta todas as transições do autômato produto.
+
+| Estado | Entrada `a` | Entrada `b` |
+|:--|:--|:--|
+| $(q_0,p_0)$ | $(q_1,p_0)$ | $(q_0,p_1)$ |
+| $(q_1,p_0)$ | $(q_1,p_0)$ | $(q_0,p_1)$ |
+| $(q_0,p_1)$ | $(q_1,p_0)$ | $(q_0,p_1)$ |
+| $(q_1,p_1)$ | $(q_1,p_0)$ | $(q_0,p_1)$ |
+
+##### Definição dos estados finais
+
+Como queremos reconhecer a união $A_1\cup A_2$, um estado do autômato produto será final quando pelo menos uma de suas componentes for final.
+
+Portanto,
+
+$$
+F=(F_1\times Q_2)\cup(Q_1\times F_2).
+$$
+
+Nesse exemplo, $F_1=\{q_1\}$ e $F_2=\{p_1\}$. Assim, o conjunto de estados finais é:
+
+$$
+F=\{
+(q_1,p_0),
+(q_0,p_1),
+(q_1,p_1)
+\}.
+$$
+
+O estado $(q_1,p_1)$ pertence à definição formal do conjunto de estados finais, pois ambas as componentes são finais. Entretanto, esse estado é inalcançável: uma palavra sobre $\{a,b\}$ não pode terminar simultaneamente em $a$ e em $b$.
+
+A @fig-uniao contém a representação gráfica do autômato produto, incluindo os quatro estados definidos pela construção cartesiana.
+
+![Autômato união de $A_1$ e $A_2$](/chapters/images/afd-uniao.png){#afd-uniao width="50%"}
+
+##### Simulação do reconhecimento
+
+Para verificar o funcionamento do autômato produto, considere algumas palavras de entrada.
+
+| Palavra | Estado final alcançado | Resultado |
+|:--|:--|:--|
+| $\varepsilon$ | $(q_0,p_0)$ | Rejeitada |
+| $a$ | $(q_1,p_0)$ | Aceita |
+| $b$ | $(q_0,p_1)$ | Aceita |
+| $ab$ | $(q_0,p_1)$ | Aceita |
+| $ba$ | $(q_1,p_0)$ | Aceita |
+| $aab$ | $(q_0,p_1)$ | Aceita |
+| $bba$ | $(q_1,p_0)$ | Aceita |
+
+A palavra vazia $\varepsilon$ é rejeitada porque não termina em $a$ nem em $b$. Todas as palavras não vazias são aceitas, pois necessariamente terminam em um desses dois símbolos.
+
+Consequentemente, a linguagem reconhecida pelo autômato produto é:
+
+$$
+A=A_1\cup A_2=\{a,b\}^+.
+$$
+
+Esse exemplo ilustra a ideia central da prova de fechamento: como os dois autômatos originais são finitos, seu produto também possui um número finito de estados. A construção permite reconhecer a união das linguagens por meio de um único AFD.
+
+**Observação.** Embora o autômato produto tenha quatro estados na construção formal, o estado $(q_1,p_1)$ é inalcançável. Portanto, ele pode ser removido sem alterar a linguagem reconhecida. O autômato resultante terá três estados alcançáveis e continuará reconhecendo $\{a,b\}^+$.
+
+
+#### Complemento de uma linguagem regular
+
+A operação de complemento também preserva a regularidade das linguagens. Seja $A$ uma linguagem regular sobre o alfabeto $\Sigma$, reconhecida por um autômato finito determinístico
+
+$$
+M = (Q,\Sigma,\delta,q_0,F).
+$$
+
+O complemento de $A$, em relação a $\Sigma^*$, é definido por
+
+$$
+\overline{A} = \Sigma^* \setminus A.
+$$
+
+Essa linguagem contém todas as palavras sobre o alfabeto $\Sigma$ que **não são reconhecidas por $M$**.
+
+Para construir um autômato que reconheça $\overline{A}$, basta trocar os estados finais pelos estados não finais do autômato original. Assim, obtemos o autômato
+
+$$
+M' = (Q,\Sigma,\delta,q_0,Q \setminus F).
+$$
+
+Observe que o conjunto de estados, o alfabeto, a função de transição e o estado inicial permanecem inalterados. Apenas o conjunto de estados finais é substituído por seu complemento em $Q$.
+
+Como $M$ é determinístico e sua função de transição está definida para todos os pares de estado e símbolo, toda palavra de $\Sigma^*$ termina em exatamente um estado. Portanto, se $M$ aceita uma palavra, $M'$ a rejeita; se $M$ rejeita uma palavra, $M'$ a aceita.
+
+Consequentemente,
+
+$$
+L(M') = \Sigma^* \setminus L(M) = \overline{A}.
+$$
+
+Como $M'$ é um autômato finito determinístico, concluímos que $\overline{A}$ também é regular. Logo, **a classe das linguagens regulares é fechada sob a operação de complemento**.
+
+**Atenção:** essa construção exige um autômato determinístico completo. Se houver transições ausentes, será necessário completá-lo, normalmente acrescentando um estado não final de erro (*estado poço*), antes de inverter os estados finais. Para um autômato finito não determinístico, a simples troca dos estados finais pelos não finais não produz, em geral, o complemento da linguagem reconhecida.
+
+
 ### Autômatos Finitos Não-Determinísticos
 
 Um outro formalismo utilizado na representação de linguagens regulares é o **Autômato Finito Não-Determinístico (AFN)**. Embora o AFN não aumente o poder de especificação dos Autômatos Finitos Determinísticos (AFDs), ele pode tornar mais simples e natural a definição de algumas máquinas.
@@ -1746,19 +2101,140 @@ Alguns exemplos de ER considerando o alfabeto $\Sigma = \{a, b\}$:
 
 ### Conversão de ER para AFN
 
-A classe de Linguagens Regulares é fechada com relação as operações de União, Concatenação e fecho de Kleene [@vieira; @sipser]. A demonstração pode ser feita a partir construção de AFNs para essas operações, conforme ilustrado na @fig-uniao, @fig-concatenacao e @fig-kleene.
+:::{#thm-fecho-regular}
+A classe de Linguagens Regulares é fechada com relação as operações de União, Concatenação e fecho de Kleene. 
+:::
 
-![Construção de uma AFN $A$ para reconhecer $A_1 \cup A_2$](/chapters/images/uniao-vieira.png){#fig-uniao width="70%"}
+A construção de autômatos finitos não determinísticos (AFNs) a partir de expressões regulares pode ser realizada de forma incremental, combinando autômatos menores por meio de operações sobre linguagens. Neste processo, cada operação é representada por uma estrutura de estados e transições que permite construir um AFN equivalente à expressão regular considerada [@vieira; @sipser].
 
-![Construção de uma AFN $A$ para reconhecer $A_1A_2$](/chapters/images/concatena-vieira.png){#fig-concatenacao width="60%"}
+Considere que $A$ e $B$ são AFNs que reconhecem, respectivamente, as linguagens $L(A)$ e $L(B)$. As construções apresentadas permitem obter novos autômatos que reconhecem a união, a concatenação e o fecho de Kleene dessas linguagens.
 
-![Construção de uma AFN $A$ para reconhecer $A_1^*$](/chapters/images/kleene-vieira.png){#fig-kleene width="40%"}
+#### Operação de união
 
-Usamos essa propriedade para transformar as Expressões Regulares em Autômatos Finitos Não-Determinísticos.
+A operação de união entre duas linguagens $L(A)$ e $L(B)$ produz uma linguagem que contém todas as palavras reconhecidas por pelo menos um dos dois autômatos. Sua definição é:
+
+$$
+L(A)\cup L(B)=\{w\mid w\in L(A)\text{ ou }w\in L(B)\}
+$$
+
+Para construir um AFN que reconheça essa linguagem, são criados um novo estado inicial $q_i$ e um novo estado final $q_f$. O novo estado inicial é conectado, por transições $\varepsilon$, aos estados iniciais dos autômatos $A$ e $B$. Dessa forma, o processamento pode começar em qualquer um dos dois autômatos, sem consumir símbolos da entrada.
+
+Em seguida, todos os estados finais originais de $A$ e $B$ deixam de ser finais e recebem transições $\varepsilon$ para o novo estado final $q_f$. Assim, quando o processamento de qualquer um dos autômatos alcança um de seus estados finais originais, ele pode realizar uma transição vazia para o novo estado final.
+
+O novo estado final passa a ser o único estado final do autômato resultante. Portanto, uma palavra será aceita se puder ser reconhecida integralmente pelo autômato $A$ ou pelo autômato $B$.
+
+A demonstração da construção de AFNs para união está ilustrado na @fig-uniao-vieira.
+
+![Construção de uma AFN $A$ para reconhecer $A \cup B$](/chapters/images/uniao-vieira.png){#fig-uniao-vieira width="60%"}
+
+#### Operação de concatenação
+
+A concatenação de duas linguagens $L(A)$ e $L(B)$ corresponde ao conjunto de palavras que podem ser formadas pela justaposição de uma palavra de $L(A)$ com uma palavra de $L(B)$. Formalmente:
+
+$$
+L(A)L(B)=\{xy\mid x\in L(A)\text{ e }y\in L(B)\}
+$$
+
+Para construir o AFN correspondente, são criados um novo estado inicial $q_i$ e um novo estado final $q_f$. O novo estado inicial é conectado ao estado inicial de $A$ por uma transição $\varepsilon$. Essa transição permite iniciar o processamento de $A$ sem consumir nenhum símbolo da entrada.
+
+Todos os estados finais originais de $A$ deixam de ser finais e são conectados, por transições $\varepsilon$, ao estado inicial de $B$. Essas transições permitem que, após reconhecer uma palavra pertencente a $L(A)$, o processamento continue em $B$, sem consumir símbolos adicionais.
+
+Por fim, todos os estados finais originais de $B$ deixam de ser finais e são conectados ao novo estado final $q_f$ por transições $\varepsilon$. O novo estado final passa a ser o único estado final do autômato resultante.
+
+Dessa maneira, uma palavra será aceita somente se puder ser dividida em duas partes: a primeira reconhecida por $A$ e a segunda reconhecida por $B$, respeitando a ordem da concatenação.
+
+A demonstração da construção de AFNs para concatenação está ilustrado na @fig-concatena-vieira.
+
+![Construção de uma AFN $A$ para reconhecer $AB$](/chapters/images/concatena-vieira.png){#fig-concatena-vieira width="60%"}
+
+#### Fecho de Kleene
+
+O fecho de Kleene de uma linguagem $L(A)$ corresponde ao conjunto de todas as concatenações de zero ou mais palavras pertencentes a essa linguagem. Sua definição é:
+
+$$
+L(A)^*=\bigcup_{n\geq 0}L(A)^n
+$$
+
+Em particular, a linguagem resultante sempre contém a palavra vazia $\varepsilon$, correspondente à concatenação de zero palavras.
+
+Para construir o AFN correspondente, são criados um novo estado inicial $q_i$ e um novo estado final $q_f$. O novo estado inicial é conectado ao estado inicial de $A$ por uma transição $\varepsilon$, permitindo iniciar o reconhecimento de uma palavra pertencente a $L(A)$.
+
+Além disso, o novo estado inicial é conectado diretamente ao novo estado final por uma transição $\varepsilon$. Essa ligação permite aceitar a palavra vazia, sem executar o autômato $A$.
+
+Todos os estados finais originais de $A$ deixam de ser finais e recebem transições $\varepsilon$ para o novo estado final $q_f$. Dessa forma, o processamento pode terminar após reconhecer uma palavra de $L(A)$.
+
+Para permitir a repetição, o novo estado final também é conectado ao novo estado inicial por uma transição $\varepsilon$. Essa ligação possibilita retornar ao início da construção e processar outra ocorrência de uma palavra de $L(A)$. Assim, o autômato pode reconhecer zero, uma ou várias ocorrências de palavras da linguagem original.
+
+O novo estado final passa a ser o único estado final do autômato resultante. A combinação dessas transições garante que o AFN reconheça exatamente o fecho de Kleene da linguagem original.
+
+A demonstração da construção de AFNs para a operação de fecho de Kleene está ilustrado na @fig-kleene-vieira.
+
+![Construção de uma AFN $A$ para reconhecer $A^*$](/chapters/images/kleene-vieira.png){#fig-kleene-vieira width="60%"}
+
+#### Construção de AFNs pelo método de Thompson
+
+O método de Thompson permite traduzir sistematicamente uma expressão regular em um autômato finito não determinístico (AFN). A ideia central é construir autômatos para expressões menores e combiná-los de acordo com as operações presentes na expressão regular.
+
+Nesta abordagem, as operações de união, concatenação e fecho de Kleene são implementadas por meio de transições $\varepsilon$ e, quando necessário, pela criação de novos estados. Uma transição $\varepsilon$ permite passar de um estado a outro sem consumir nenhum símbolo da palavra de entrada.
+
+Considere que $A$ e $B$ são AFNs que reconhecem as linguagens $L(A)$ e $L(B)$, respectivamente. A seguir, são apresentadas as regras para construir os autômatos correspondentes às operações de união, concatenação e fecho de Kleene.
+
+#### União de duas linguagens
+
+Para construir um AFN que reconheça essa linguagem, cria-se um novo estado inicial $q_i$. Esse estado é conectado, por transições $\varepsilon$, aos estados iniciais de $A$ e $B$.
+
+Os estados finais dos dois autômatos são preservados como estados finais. Não é necessário criar um novo estado final, pois o autômato resultante aceita uma palavra quando o processamento alcança um estado final de qualquer um dos dois autômatos originais.
+
+A partir do novo estado inicial, o AFN pode escolher, de maneira não determinística, entre iniciar o processamento em $A$ ou em $B$. Como as transições que realizam essa escolha são transições $\varepsilon$, nenhum símbolo da entrada é consumido nessa etapa.
+
+A demonstração da construção de AFNs para a operação de união está ilustrado na @fig-uniao-sipser.
+
+![Construção de uma AFN $A$ para reconhecer $A \cup B$](/chapters/images/uniao-sipser.png){#fig-uniao-sipser width="60%"}
+
+#### Concatenação de duas linguagens
+
+Para construir o AFN correspondente à concatenação, não é necessário criar novos estados. A construção é realizada conectando os estados finais de $A$ ao estado inicial de $B$.
+
+Cada estado final de $A$ recebe uma transição $\varepsilon$ para o estado inicial de $B$ e deixa de ser final. Os estados finais de $B$ permanecem finais no autômato resultante.
+
+Essas transições permitem que o processamento, após reconhecer uma palavra pertencente a $L(A)$, continue pelo autômato $B$ sem consumir nenhum símbolo adicional. Como os estados finais de $A$ deixam de ser finais, a aceitação somente ocorre quando o processamento alcança um estado final de $B$.
+
+O estado inicial do autômato resultante é o estado inicial de $A$, enquanto os estados finais são aqueles que já eram finais em $B$. Dessa forma, o autômato reconhece as palavras que podem ser divididas em duas partes consecutivas: uma reconhecida por $A$ e outra reconhecida por $B$.
+
+A demonstração da construção de AFNs para a operação de concatenação está ilustrado na @fig-concatena-sipser.
+
+![Construção de uma AFN $A$ para reconhecer $AB$](/chapters/images/concatena-sipser.png){#fig-concatena-sipser width="60%"}
+
+#### Fecho de Kleene
+
+Para construir o AFN que reconhece $L(A)^*$, cria-se um novo estado $q_i$ que será simultaneamente inicial e final. O novo estado é conectado, por uma transição $\varepsilon$, ao estado inicial do autômato $A$.
+
+O fato de $q_i$ ser final permite aceitar imediatamente a palavra vazia, sem percorrer nenhuma transição do autômato original.
+
+Além disso, cada estado final de $A$ recebe uma transição $\varepsilon$ de volta ao estado inicial de $A$. Essas transições permitem reiniciar o processamento do autômato original, possibilitando o reconhecimento de novas ocorrências de palavras pertencentes a $L(A)$.
+
+Os estados que já eram finais em $A$ permanecem finais. Assim, após reconhecer uma palavra de $L(A)$, o processamento pode terminar em um desses estados ou continuar para reconhecer outra ocorrência da linguagem. O novo estado inicial também permanece final, garantindo a aceitação de zero ocorrências.
+
+A demonstração da construção de AFNs para a operação de fecho de Kleene está ilustrado na @fig-kleene-sipser.
+
+![Construção de uma AFN $A$ para reconhecer $A^*$](/chapters/images/kleene-sipser.png){#fig-kleene-sipser width="60%"}
+
+#### Resumo das operações
+
+| Operação | Modificações no AFN | Estados finais do resultado |
+|---|---|---|
+| União $A\cup B$ | Cria um novo estado inicial, conectado por $\varepsilon$ aos estados iniciais de $A$ e $B$. | Os estados finais de $A$ e $B$ permanecem finais. |
+| Concatenação $AB$ | Cada estado final de $A$ recebe uma transição $\varepsilon$ para o estado inicial de $B$ e deixa de ser final. | Os estados finais de $B$ permanecem finais. |
+| Fecho de Kleene $A^*$ | Cria um novo estado inicial e final; adiciona uma transição $\varepsilon$ para o início de $A$ e transições de retorno dos finais de $A$ ao início de $A$. | Os estados finais de $A$ permanecem finais, e o novo estado também é final. |
+
 
 ### Conversão de AFN para AFD
 
-Para todo Autômato Finito Não-Determinístico existe um Autômato Finito Determinístico correspondente [@vieira; @lewis; @sipser]. A demonstração pode ser realizada através da simulação da execução em paralelo da computação do AFN.
+:::{#thm-afn-afd}
+Para todo Autômato Finito Não-Determinístico existe um Autômato Finito Determinístico correspondente.
+:::
+
+A demonstração pode ser realizada através da simulação da execução em paralelo da computação do AFN [@vieira; @lewis; @sipser].
 
 Basicamente, ao invés de mudar para um único estado a cada transição, no AFN poderemos nos deslocar para um conjunto de estados possíveis, dada o não-determinismo de algumas transições.
 
@@ -1838,6 +2314,8 @@ Através de $P(Q)$ e $\varepsilon\text{-fecho}(R)$ podemos construir o AFD $M = 
 -   $i = \varepsilon\text{-fecho}(\{i\})$.
 
 -   $F' = \{R \in Q' | R$ contém um estado de aceitação do $AFN \}$
+
+#### Exemplo de conversão de uma expressão regular para um AFD correspondente
 
 Para exemplificar todo o processo de conversão de uma expressão regular para um autômato finito não-determinístico e desse para um autômato finito determinístico, faremos uma tradução para $ER = 0^*1+0$:
 

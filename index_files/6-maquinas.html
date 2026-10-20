@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>6&nbsp; A Máquina de Turing e as Máquinas Virtuais – Teoria de Linguagens e Compiladores</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/7-semantico-geracao.html" rel="next">
+<link href="../chapters/5-sintatico.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5de800ff0d570d78397ee07e50104809.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Nenhum resultado",
+    "search-matching-documents-text": "documentos correspondentes",
+    "search-copy-link-title": "Copiar link para a busca",
+    "search-hide-matches-text": "Esconder correspondências adicionais",
+    "search-more-match-text": "mais correspondência neste documento",
+    "search-more-matches-text": "mais correspondências neste documento",
+    "search-clear-button-title": "Limpar",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar",
+    "search-label": "Procurar"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/6-maquinas.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">A Máquina de Turing e as Máquinas Virtuais</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Procurar" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Teoria de Linguagens e Compiladores</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Procurar"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prefácio</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/1-introducao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução à Teoria de Linguagens</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/2-fundamentos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/3-compilador.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/4-lexico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/5-sintatico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">As Linguagens Livres de Contexto e a Análise Sintática</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/6-maquinas.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">A Máquina de Turing e as Máquinas Virtuais</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/7-semantico-geracao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">A Análise Semântica e a Geração de Código</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/8-projetos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Projetos de Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/9-sumario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Sumário</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/10-referencias.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Referências</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Índice</h2>
+   
+  <ul>
+  <li><a href="#a-máquina-de-turing" id="toc-a-máquina-de-turing" class="nav-link active" data-scroll-target="#a-máquina-de-turing"><span class="header-section-number">6.1</span> A Máquina de Turing</a>
+  <ul class="collapse">
+  <li><a href="#definição-formal" id="toc-definição-formal" class="nav-link" data-scroll-target="#definição-formal">Definição formal</a></li>
+  <li><a href="#funcionamento-de-uma-máquina-de-turing" id="toc-funcionamento-de-uma-máquina-de-turing" class="nav-link" data-scroll-target="#funcionamento-de-uma-máquina-de-turing">Funcionamento de uma Máquina de Turing</a></li>
+  <li><a href="#configuração-instantânea" id="toc-configuração-instantânea" class="nav-link" data-scroll-target="#configuração-instantânea">Configuração instantânea</a></li>
+  <li><a href="#exemplo-de-máquina-de-turing" id="toc-exemplo-de-máquina-de-turing" class="nav-link" data-scroll-target="#exemplo-de-máquina-de-turing">Exemplo de Máquina de Turing</a></li>
+  <li><a href="#reconhecimento-e-decisão" id="toc-reconhecimento-e-decisão" class="nav-link" data-scroll-target="#reconhecimento-e-decisão">Reconhecimento e decisão</a></li>
+  <li><a href="#simulador-de-máquina-de-turing" id="toc-simulador-de-máquina-de-turing" class="nav-link" data-scroll-target="#simulador-de-máquina-de-turing">Simulador de Máquina de Turing</a></li>
+  <li><a href="#decidibilidade" id="toc-decidibilidade" class="nav-link" data-scroll-target="#decidibilidade">Decidibilidade</a></li>
+  <li><a href="#o-problema-da-parada" id="toc-o-problema-da-parada" class="nav-link" data-scroll-target="#o-problema-da-parada">O problema da parada</a></li>
+  <li><a href="#síntese-dos-resultados" id="toc-síntese-dos-resultados" class="nav-link" data-scroll-target="#síntese-dos-resultados">Síntese dos resultados</a></li>
+  <li><a href="#considerações-finais" id="toc-considerações-finais" class="nav-link" data-scroll-target="#considerações-finais">Considerações finais</a></li>
+  </ul></li>
+  <li><a href="#da-máquina-de-turing-à-máquina-virtual" id="toc-da-máquina-de-turing-à-máquina-virtual" class="nav-link" data-scroll-target="#da-máquina-de-turing-à-máquina-virtual"><span class="header-section-number">6.2</span> Da Máquina de Turing à máquina virtual</a>
+  <ul class="collapse">
+  <li><a href="#da-linguagem-de-alto-nível-à-máquina-virtual" id="toc-da-linguagem-de-alto-nível-à-máquina-virtual" class="nav-link" data-scroll-target="#da-linguagem-de-alto-nível-à-máquina-virtual">Da linguagem de alto nível à máquina virtual</a></li>
+  <li><a href="#organização-da-máquina-virtual-simples" id="toc-organização-da-máquina-virtual-simples" class="nav-link" data-scroll-target="#organização-da-máquina-virtual-simples">Organização da Máquina Virtual Simples</a></li>
+  <li><a href="#conjunto-de-instruções-da-mvs" id="toc-conjunto-de-instruções-da-mvs" class="nav-link" data-scroll-target="#conjunto-de-instruções-da-mvs">Conjunto de instruções da MVS</a></li>
+  <li><a href="#tradução-de-expressões-aritméticas" id="toc-tradução-de-expressões-aritméticas" class="nav-link" data-scroll-target="#tradução-de-expressões-aritméticas">Tradução de expressões aritméticas</a></li>
+  <li><a href="#tradução-de-comandos-de-atribuição" id="toc-tradução-de-comandos-de-atribuição" class="nav-link" data-scroll-target="#tradução-de-comandos-de-atribuição">Tradução de comandos de atribuição</a></li>
+  <li><a href="#tradução-de-comandos-de-seleção" id="toc-tradução-de-comandos-de-seleção" class="nav-link" data-scroll-target="#tradução-de-comandos-de-seleção">Tradução de comandos de seleção</a></li>
+  <li><a href="#tradução-de-comandos-de-repetição" id="toc-tradução-de-comandos-de-repetição" class="nav-link" data-scroll-target="#tradução-de-comandos-de-repetição">Tradução de comandos de repetição</a></li>
+  <li><a href="#tradução-de-comandos-de-entrada-e-saída" id="toc-tradução-de-comandos-de-entrada-e-saída" class="nav-link" data-scroll-target="#tradução-de-comandos-de-entrada-e-saída">Tradução de comandos de entrada e saída</a></li>
+  <li><a href="#tradução-de-um-programa-completo" id="toc-tradução-de-um-programa-completo" class="nav-link" data-scroll-target="#tradução-de-um-programa-completo">Tradução de um programa completo</a></li>
+  <li><a href="#relação-entre-a-máquina-de-turing-a-máquina-virtual-e-o-compilador" id="toc-relação-entre-a-máquina-de-turing-a-máquina-virtual-e-o-compilador" class="nav-link" data-scroll-target="#relação-entre-a-máquina-de-turing-a-máquina-virtual-e-o-compilador">Relação entre a máquina de Turing, a máquina virtual e o compilador</a></li>
+  <li><a href="#simulador-da-máquina-virtual-simples" id="toc-simulador-da-máquina-virtual-simples" class="nav-link" data-scroll-target="#simulador-da-máquina-virtual-simples">Simulador da Máquina Virtual Simples</a></li>
+  <li><a href="#considerações-finais-1" id="toc-considerações-finais-1" class="nav-link" data-scroll-target="#considerações-finais-1">Considerações finais</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">A Máquina de Turing e as Máquinas Virtuais</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../chapters/images/maquinas.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<p>Até este ponto, foram apresentados os principais conceitos relacionados às linguagens formais, aos autômatos e aos mecanismos utilizados no reconhecimento e na análise de programas. Neste capítulo, o foco desloca-se do reconhecimento de linguagens para a <strong>execução de computações</strong>. Para isso, serão estudados diferentes modelos de máquina, estabelecendo uma relação entre os modelos teóricos da computação e os mecanismos utilizados na implementação de linguagens de programação.</p>
+<p>A ideia de uma máquina é fundamental para a Ciência da Computação. Uma máquina pode ser entendida, de maneira abstrata, como um dispositivo capaz de receber uma entrada, executar uma sequência de operações de acordo com regras bem definidas e produzir um resultado. Dependendo do modelo adotado, a máquina pode possuir diferentes formas de memória, mecanismos de controle e operações. Essa abstração permite estudar a computação independentemente dos detalhes de uma implementação específica.</p>
+<p>Inicialmente, será apresentada a <strong>Máquina de Turing</strong>, um dos modelos matemáticos mais importantes para o estudo da computabilidade. A Máquina de Turing possui uma estrutura bastante simples, constituída essencialmente por uma fita que funciona como memória, um cabeçote de leitura e escrita e um conjunto finito de estados. Apesar de sua simplicidade, esse modelo é suficientemente poderoso para representar uma ampla classe de processos computacionais. Além de permitir a definição formal de computação, a Máquina de Turing fornece uma base para a compreensão dos limites do que pode ou não ser computado por um algoritmo.</p>
+<p>A apresentação da Máquina de Turing também permitirá retomar conceitos importantes estudados anteriormente, como <strong>estado, configuração, função de transição e computação</strong>, agora sob a perspectiva de um modelo de máquina capaz de modificar sua memória durante a execução. A noção de <strong>configuração instantânea</strong> será particularmente importante, pois permite descrever passo a passo a evolução de uma computação.</p>
+<p>Embora a Máquina de Turing seja extremamente útil como modelo teórico, ela não corresponde diretamente ao ambiente no qual programas reais são executados. Para aproximar os conceitos estudados de uma implementação de compiladores, será introduzido, na sequência, um segundo modelo: uma <strong>máquina virtual</strong>.</p>
+<p>A máquina virtual será definida como uma máquina abstrata projetada para executar o código intermediário produzido pelo compilador. Em vez de executar diretamente as instruções da arquitetura física de um computador, o programa será executado sobre um conjunto de instruções, uma memória e mecanismos de controle definidos pelo próprio modelo virtual. Dessa forma, a máquina virtual estabelece uma camada intermediária entre o código gerado pelo compilador e o hardware responsável pela execução.</p>
+<p>Essa abordagem permite separar duas questões que, em uma máquina física, estão fortemente relacionadas: <strong>o que deve ser executado</strong> e <strong>como essa execução é realizada pelo hardware</strong>. O compilador pode, assim, gerar código para uma arquitetura virtual bem definida, enquanto o ambiente de execução se encarrega de interpretar ou executar essas instruções.</p>
+<p>Será apresentado também o <strong>ambiente virtual de execução</strong>, responsável por manter o estado da máquina durante a execução de um programa. Nesse ambiente serão definidos os elementos necessários para a execução do código intermediário, como memória, pilha de execução, registradores ou estruturas equivalentes, instruções e mecanismos de controle do fluxo de execução. A execução será descrita por meio de configurações da máquina, permitindo acompanhar a evolução do programa instrução por instrução.</p>
+<p>A escolha de uma máquina virtual como destino da geração de código estabelece uma ligação direta com os conteúdos de compilação apresentados nos capítulos anteriores. O compilador deixa de ter como objetivo imediato a geração de instruções para um processador específico e passa a produzir um <strong>código intermediário</strong>, definido em termos das operações da máquina virtual. Posteriormente, esse código pode ser interpretado pelo ambiente virtual ou traduzido para uma arquitetura física.</p>
+<p>Assim, o capítulo estabelece uma ponte entre três níveis de abstração. No primeiro nível está o <strong>modelo teórico de computação</strong>, representado pela Máquina de Turing; no segundo, a <strong>máquina virtual</strong>, que fornece um modelo abstrato de execução adequado à implementação de compiladores; e, no terceiro, o <strong>hardware real</strong>, responsável pela execução efetiva das instruções.</p>
+<p>Essa perspectiva é importante para compreender que um compilador não apenas traduz uma linguagem para outra. Ele também realiza uma transformação entre diferentes <strong>modelos de execução</strong>. Ao gerar código intermediário, o compilador transforma a representação do programa obtida nas fases anteriores em uma sequência de operações que pode ser executada por uma máquina abstrata. A partir dessa representação, torna-se possível estudar de maneira concreta a relação entre a análise do programa, a geração de código e sua execução.</p>
+<p>Ao longo do capítulo, os exemplos e simuladores serão utilizados para tornar esse processo observável. A execução poderá ser acompanhada por meio das configurações instantâneas da máquina, permitindo visualizar as alterações de estado e memória produzidas por cada instrução. Dessa maneira, conceitos que frequentemente são apresentados de forma abstrata — como estado, memória, pilha, instrução, chamada de procedimento e fluxo de execução — poderão ser explorados de maneira interativa.</p>
+<p>O objetivo, portanto, é construir gradualmente uma visão unificada da computação: partindo de um modelo matemático extremamente simples, a Máquina de Turing, e avançando até um modelo de máquina virtual suficientemente estruturado para servir como destino da geração de código de um compilador. Essa transição permitirá conectar os fundamentos teóricos da computação aos mecanismos práticos envolvidos na execução de programas.</p>
+<section id="a-máquina-de-turing" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="a-máquina-de-turing"><span class="header-section-number">6.1</span> A Máquina de Turing</h2>
+<p>Nos capítulos anteriores foram apresentados diferentes modelos de computação. Os autômatos finitos constituem modelos adequados para o reconhecimento de linguagens regulares e para problemas nos quais a quantidade de memória disponível é limitada. Os autômatos com pilha ampliam essa capacidade ao incorporar uma memória potencialmente ilimitada organizada segundo o princípio de que o último elemento armazenado é o primeiro a ser recuperado. Apesar dessas extensões, existem problemas que não podem ser resolvidos por esses modelos. Torna-se necessário, portanto, considerar um modelo de computação mais geral, capaz de representar uma classe muito mais ampla de processos computacionais.</p>
+<p>A <strong>Máquina de Turing</strong> foi proposta por Alan Turing em 1936 como um modelo matemático para a realização de computações. Sua importância não está apenas em sua capacidade de reconhecer linguagens mais complexas, mas também no fato de fornecer uma definição formal para o conceito de computação. Embora seja constituída por elementos extremamente simples, a Máquina de Turing possui recursos suficientes para representar os procedimentos realizados por um computador de propósito geral.</p>
+<p>Uma Máquina de Turing pode ser vista como uma extensão dos modelos de autômatos estudados anteriormente. Assim como um autômato finito, ela possui um conjunto finito de estados e um mecanismo de controle baseado em uma função de transição. A diferença fundamental está na forma como a memória é utilizada. Enquanto um autômato finito dispõe apenas de sua memória interna, e um autômato com pilha possui uma memória estruturada, a Máquina de Turing utiliza uma <strong>fita potencialmente ilimitada</strong> que pode ser utilizada tanto para leitura quanto para escrita. Essa característica permite que a máquina armazene informações durante a computação e posteriormente retorne a essas informações para utilizá-las em novas etapas do processamento.</p>
+<p>A fita desempenha, portanto, o papel de memória da máquina. Inicialmente, a entrada é armazenada nas primeiras posições da fita, enquanto as demais posições contêm o símbolo branco, representado por <span class="math inline">\(\sqcup\)</span>. Sobre a fita atua um <strong>cabeçote de leitura e escrita</strong>, que pode ler o símbolo da posição corrente, substituí-lo por outro símbolo e deslocar-se para a esquerda ou para a direita. A possibilidade de modificar a fita durante a execução é uma das características fundamentais que diferenciam a Máquina de Turing dos autômatos apresentados anteriormente.</p>
+<p>Durante uma computação, a máquina utiliza a fita não apenas para armazenar a entrada, mas também como memória de trabalho. Informações podem ser marcadas, substituídas ou acrescentadas à fita e posteriormente recuperadas pelo deslocamento do cabeçote até a posição correspondente. Dessa forma, uma Máquina de Turing pode executar algoritmos que exigem uma quantidade arbitrária de memória, limitada apenas pelo tamanho da região da fita efetivamente utilizada durante a computação.</p>
+<p>A execução da máquina é determinada pelo estado atual e pelo símbolo que se encontra sob o cabeçote. A partir dessas informações, a função de transição determina três ações: o próximo estado da máquina, o símbolo que deve ser escrito na posição corrente e a direção na qual o cabeçote deve se mover. Uma computação pode prosseguir por um número arbitrário de passos até que a máquina entre em um estado de aceitação ou em um estado de rejeição. Caso nenhum desses estados seja alcançado, a computação pode continuar indefinidamente.</p>
+<p>Essa possibilidade de uma computação que nunca termina é uma característica importante da Máquina de Turing. Em particular, uma máquina pode reconhecer uma cadeia pertencente a uma determinada linguagem e também rejeitar uma cadeia que não pertence a ela, mas, dependendo do modelo de máquina e da linguagem considerada, pode existir uma entrada para a qual a máquina nunca chega a uma decisão. Essa distinção será fundamental posteriormente para o estudo da <strong>decidibilidade</strong>.</p>
+<section id="definição-formal" class="level3">
+<h3 class="anchored" data-anchor-id="definição-formal">Definição formal</h3>
+<p>Formalmente, uma Máquina de Turing <span class="math inline">\(M\)</span> pode ser definida como uma 7-upla</p>
+<p><span class="math display">\[
+M=(Q,\Sigma,\Gamma,\delta,q_0,q_{aceita},q_{rejeita}),
+\]</span></p>
+<p>em que <span class="math inline">\(Q\)</span> é um conjunto finito de estados, <span class="math inline">\(\Sigma\)</span> é o alfabeto de entrada, <span class="math inline">\(\Gamma\)</span> é o alfabeto da fita, <span class="math inline">\(\delta\)</span> é a função de transição, <span class="math inline">\(q_0\)</span> é o estado inicial, <span class="math inline">\(q_{aceita}\)</span> é o estado de aceitação e <span class="math inline">\(q_{rejeita}\)</span> é o estado de rejeição.</p>
+<p>O conjunto <span class="math inline">\(Q\)</span> contém todos os estados que podem ser assumidos pela máquina durante sua execução. O estado <span class="math inline">\(q_0\)</span> representa o estado no qual a máquina inicia a computação. Os estados <span class="math inline">\(q_{aceita}\)</span> e <span class="math inline">\(q_{rejeita}\)</span> representam, respectivamente, as duas possíveis decisões finais da máquina.</p>
+<p>O alfabeto <span class="math inline">\(\Sigma\)</span> corresponde aos símbolos que podem aparecer na entrada. O símbolo branco <span class="math inline">\(\sqcup\)</span> não pertence a esse alfabeto. Já o alfabeto da fita <span class="math inline">\(\Gamma\)</span> contém todos os símbolos que podem ser utilizados durante a computação, incluindo o símbolo branco e os símbolos do alfabeto de entrada. Assim,</p>
+<p><span class="math display">\[
+\Sigma \subseteq \Gamma
+\qquad\text{e}\qquad
+\sqcup\in\Gamma.
+\]</span></p>
+<p>A diferença entre os dois alfabetos é importante porque a máquina pode utilizar símbolos que não fazem parte da entrada para armazenar informações auxiliares durante a computação. Por exemplo, pode utilizar um símbolo <span class="math inline">\(x\)</span> para marcar uma posição da fita que já foi processada.</p>
+<p>A função de transição é definida por</p>
+<p><span class="math display">\[
+\delta:Q\times\Gamma
+\longrightarrow
+Q\times\Gamma\times\{E,D\}.
+\]</span></p>
+<p>Ela especifica o comportamento da máquina em cada passo da computação. Se a máquina estiver no estado <span class="math inline">\(q\)</span> e o cabeçote estiver sobre uma célula contendo o símbolo <span class="math inline">\(a\)</span>, uma transição</p>
+<p><span class="math display">\[
+\delta(q,a)=(r,b,E)
+\]</span></p>
+<p>determina que a máquina deve mudar para o estado <span class="math inline">\(r\)</span>, substituir o símbolo <span class="math inline">\(a\)</span> pelo símbolo <span class="math inline">\(b\)</span> e deslocar o cabeçote uma posição para a esquerda. De maneira análoga, uma transição</p>
+<p><span class="math display">\[
+\delta(q,a)=(r,b,D)
+\]</span></p>
+<p>determina a escrita de <span class="math inline">\(b\)</span>, a mudança para o estado <span class="math inline">\(r\)</span> e o deslocamento do cabeçote uma posição para a direita.</p>
+</section>
+<section id="funcionamento-de-uma-máquina-de-turing" class="level3">
+<h3 class="anchored" data-anchor-id="funcionamento-de-uma-máquina-de-turing">Funcionamento de uma Máquina de Turing</h3>
+<p>Considere uma entrada</p>
+<p><span class="math display">\[
+w=w_1w_2\ldots w_n\in\Sigma^*.
+\]</span></p>
+<p>Inicialmente, os símbolos <span class="math inline">\(w_1,\ldots,w_n\)</span> ocupam as primeiras posições da fita, e as posições seguintes contêm o símbolo branco. O cabeçote começa sobre o primeiro símbolo da entrada e a máquina encontra-se no estado inicial <span class="math inline">\(q_0\)</span>. A partir dessa configuração, a execução ocorre pela aplicação sucessiva da função de transição.</p>
+<p>Diferentemente de um autômato finito, o cabeçote da Máquina de Turing pode deslocar-se tanto para a esquerda quanto para a direita. Além disso, os símbolos encontrados na fita podem ser modificados durante a execução. A máquina pode, portanto, percorrer repetidamente uma mesma região da fita, utilizando-a como memória de trabalho.</p>
+<p>A computação termina quando a máquina entra em <span class="math inline">\(q_{aceita}\)</span> ou <span class="math inline">\(q_{rejeita}\)</span>. No primeiro caso, a entrada é aceita; no segundo, a entrada é rejeitada. Se nenhum desses estados for alcançado, a máquina continua sua execução indefinidamente. Essa propriedade distingue uma máquina que simplesmente <strong>reconhece</strong> uma linguagem de uma máquina que <strong>decide</strong> uma linguagem.</p>
+</section>
+<section id="configuração-instantânea" class="level3">
+<h3 class="anchored" data-anchor-id="configuração-instantânea">Configuração instantânea</h3>
+<p>Para acompanhar uma computação, é necessário representar não apenas o estado atual da máquina, mas também o conteúdo relevante da fita e a posição do cabeçote. Para isso, utiliza-se o conceito de <strong>configuração instantânea</strong>.</p>
+<p>Uma configuração instantânea de uma Máquina de Turing pode ser representada por</p>
+<p><span class="math display">\[
+\langle u,q,av\rangle,
+\]</span></p>
+<p>em que:</p>
+<ul>
+<li><span class="math inline">\(u\)</span> representa o conteúdo da fita à esquerda do cabeçote;</li>
+<li><span class="math inline">\(q\)</span> é o estado atual da máquina;</li>
+<li><span class="math inline">\(a\)</span> é o símbolo que está sob o cabeçote;</li>
+<li><span class="math inline">\(v\)</span> representa o restante da fita à direita do cabeçote.</li>
+</ul>
+<p>Assim, o símbolo que aparece imediatamente após o estado <span class="math inline">\(q\)</span> é aquele que está sendo lido pelo cabeçote. Por exemplo,</p>
+<p><span class="math display">\[
+\langle 010,q_4,010\rangle
+\]</span></p>
+<p>indica que a máquina está no estado <span class="math inline">\(q_4\)</span>, que o cabeçote está sobre o primeiro símbolo <span class="math inline">\(0\)</span> do terceiro componente e que o conteúdo relevante da fita é formado pelas partes <span class="math inline">\(010\)</span> e <span class="math inline">\(010\)</span>.</p>
+<p>A configuração instantânea permite representar cada passo da computação por meio de uma relação de sucessão, denotada por <span class="math inline">\(\vdash\)</span>.</p>
+<p>Considere uma configuração</p>
+<p><span class="math display">\[
+\langle u,q,av\rangle
+\]</span></p>
+<p>e suponha que a função de transição determine</p>
+<p><span class="math display">\[
+\delta(q,a)=(p,b,D).
+\]</span></p>
+<p>Nesse caso, a máquina está no estado <span class="math inline">\(q\)</span>, lê o símbolo <span class="math inline">\(a\)</span>, escreve <span class="math inline">\(b\)</span>, desloca o cabeçote uma posição para a <strong>direita</strong> e muda para o estado <span class="math inline">\(p\)</span>. A configuração seguinte será</p>
+<p><span class="math display">\[
+\langle ub,p,v\rangle.
+\]</span></p>
+<p>Portanto,</p>
+<p><span class="math display">\[
+\langle u,q,av\rangle
+\;\vdash\;
+\langle ub,p,v\rangle.
+\]</span></p>
+<p>De forma análoga, considere a transição</p>
+<p><span class="math display">\[
+\delta(q,a)=(p,b,E).
+\]</span></p>
+<p>A máquina escreve <span class="math inline">\(b\)</span>, desloca o cabeçote uma posição para a <strong>esquerda</strong> e muda para o estado <span class="math inline">\(p\)</span>. Se <span class="math inline">\(u=xc\)</span>, isto é, se <span class="math inline">\(c\)</span> é o último símbolo de <span class="math inline">\(u\)</span>, então a configuração seguinte será</p>
+<p><span class="math display">\[
+\langle x,p,cbv\rangle.
+\]</span></p>
+<p>Assim,</p>
+<p><span class="math display">\[
+\langle xc,q,av\rangle
+\;\vdash\;
+\langle x,p,cbv\rangle.
+\]</span></p>
+<p>Quando o movimento do cabeçote for de permanência, isto é,</p>
+<p><span class="math display">\[
+\delta(q,a)=(p,b,P),
+\]</span></p>
+<p>a máquina escreve <span class="math inline">\(b\)</span>, permanece na mesma posição da fita e muda para o estado <span class="math inline">\(p\)</span>. Nesse caso,</p>
+<p><span class="math display">\[
+\langle u,q,av\rangle
+\;\vdash\;
+\langle u,p,bv\rangle.
+\]</span></p>
+<p>A configuração inicial de uma Máquina de Turing que recebe uma palavra <span class="math inline">\(w\)</span> como entrada é representada por</p>
+<p><span class="math display">\[
+\langle \_,q_0,w\rangle,
+\]</span></p>
+<p>em que <span class="math inline">\(\_\)</span> representa a parte vazia da fita à esquerda do cabeçote. A partir dessa configuração, cada aplicação da função de transição produz uma nova configuração.</p>
+<p>A computação da máquina pode, portanto, ser representada por uma sequência</p>
+<p><span class="math display">\[
+C_0\vdash C_1\vdash C_2\vdash\cdots\vdash C_k,
+\]</span></p>
+<p>em que <span class="math inline">\(C_0\)</span> é a configuração inicial e cada configuração subsequente é obtida pela aplicação de uma transição.</p>
+<p>No simulador, essa sequência é apresentada passo a passo. A cada etapa, são exibidos o estado atual, o conteúdo da fita e a posição do cabeçote, permitindo acompanhar visualmente a configuração instantânea correspondente. A transição executada também é destacada no diagrama da máquina, relacionando a representação formal da computação com sua representação gráfica.</p>
+</section>
+<section id="exemplo-de-máquina-de-turing" class="level3">
+<h3 class="anchored" data-anchor-id="exemplo-de-máquina-de-turing">Exemplo de Máquina de Turing</h3>
+<p>Para ilustrar o funcionamento de uma Máquina de Turing, considere a linguagem</p>
+<p><span class="math display">\[
+L=\{w.w\mid w\in\{a,b\}^*\}.
+\]</span></p>
+<p>A linguagem contém as cadeias formadas por duas cópias idênticas de uma mesma palavra <span class="math inline">\(w\)</span>, separadas pelo símbolo <code>.</code>. Por exemplo,</p>
+<p><span class="math display">\[
+ab.ab
+\]</span></p>
+<p>pertence à linguagem, enquanto</p>
+<p><span class="math display">\[
+ab.ba
+\]</span></p>
+<p>não pertence.</p>
+<p>Uma Máquina de Turing pode reconhecer essa linguagem utilizando a fita como memória de trabalho. A estratégia consiste em comparar, da esquerda para a direita, os símbolos da primeira ocorrência de <span class="math inline">\(w\)</span> com os símbolos correspondentes da segunda ocorrência. Para controlar os símbolos que já foram comparados, a máquina pode substituí-los por símbolos auxiliares. Neste exemplo, utilizaremos <span class="math inline">\(x\)</span> para marcar símbolos <span class="math inline">\(a\)</span> já processados e <span class="math inline">\(y\)</span> para marcar símbolos <span class="math inline">\(b\)</span> já processados.</p>
+<p>Inicialmente, a palavra de entrada encontra-se na fita:</p>
+<p><span class="math display">\[
+ab.ab
+\]</span></p>
+<p>A máquina procura o primeiro símbolo ainda não marcado antes do separador <code>.</code>. Ao encontrar um <span class="math inline">\(a\)</span>, substitui-o por <span class="math inline">\(x\)</span> e entra em um estado que indica que deverá procurar um <span class="math inline">\(a\)</span> correspondente na segunda parte da palavra. De maneira análoga, quando encontra um <span class="math inline">\(b\)</span>, substitui-o por <span class="math inline">\(x\)</span> e procura um <span class="math inline">\(b\)</span> correspondente.</p>
+<p>Depois de marcar o símbolo escolhido na primeira parte, a máquina percorre a fita até ultrapassar o separador <code>.</code> e procura o primeiro símbolo ainda não marcado na segunda parte. Se esse símbolo for o esperado, ele também é marcado. Caso contrário, a máquina entra no estado de rejeição. Após realizar a comparação, a máquina retorna ao início da primeira parte da fita e repete o procedimento.</p>
+<p>A máquina de Turing para essa linguagem pode ser formalmente definida por:</p>
+<p><span class="math inline">\(M=(Q,\Sigma,\Gamma,\delta,q_0,q_{aceita},q_{rejeita})\)</span>,</p>
+<p>Onde:</p>
+<ul>
+<li><span class="math inline">\(Q = \{q_0, q_a, q_b, q_{a2}, q_{b2}, q_{ret}, q_{check}, q_f, q_r\}\)</span></li>
+<li><span class="math inline">\(\Sigma = \{a,b,.\}\)</span></li>
+<li><span class="math inline">\(\Gamma = \{a,b,.,x,\_\}\)</span></li>
+<li><span class="math inline">\(q_0 = q_0\)</span></li>
+<li><span class="math inline">\(q_{aceita} = q_f\)</span></li>
+<li><span class="math inline">\(q_{rejeita} = q_r\)</span></li>
+<li>E a função de transição <span class="math inline">\(\delta\)</span> é:</li>
+</ul>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 29%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Estado</th>
+<th style="text-align: center;"><span class="math inline">\(a\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(b\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\text{.}\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\_\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><strong><span class="math inline">\(q_0\)</span></strong></td>
+<td style="text-align: center;"><span class="math inline">\((q_a,x,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_b,y,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_0,x,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{check},.,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{f},\_,D)\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><strong><span class="math inline">\(q_a\)</span></strong></td>
+<td style="text-align: center;"><span class="math inline">\((q_a,a,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_a,b,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_a,x,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{a2},.,D)\)</span></td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><strong><span class="math inline">\(q_b\)</span></strong></td>
+<td style="text-align: center;"><span class="math inline">\((q_b,a,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_b,b,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_b,x,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{b2},.,D)\)</span></td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><strong><span class="math inline">\(q_{a2}\)</span></strong></td>
+<td style="text-align: center;"><span class="math inline">\((q_{a2},a,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{a2},b,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{a2},x,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{a2},.,D)\)</span></td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><strong><span class="math inline">\(q_{b2}\)</span></strong></td>
+<td style="text-align: center;"><span class="math inline">\((q_{b2},a,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{b2},b,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{b2},x,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{b2},.,D)\)</span></td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><strong><span class="math inline">\(q_{ret}\)</span></strong></td>
+<td style="text-align: center;"><span class="math inline">\((q_{ret},a,E)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{ret},b,E)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{ret},x,E)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{ret},.,E)\)</span></td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><strong><span class="math inline">\(q_{check}\)</span></strong></td>
+<td style="text-align: center;"><span class="math inline">\((q_{r},a,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{r},b,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{check},x,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{check},.,D)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((q_{f},\_,D)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Um diagrama desta Máquina de Turing está representado na <a href="#fig-mt-wptow" class="quarto-xref">Figura&nbsp;<span>6.1</span></a>.</p>
+<div id="fig-mt-wptow" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mt-wptow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/mt-w.w.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mt-wptow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;6.1: Máquina de Turing para L={w.ww{a,b}^*}.
+</figcaption>
+</figure>
+</div>
+<p>Considere a entrada</p>
+<p><span class="math display">\[
+ab.ab
+\]</span></p>
+<p>A configuração inicial é</p>
+<p><span class="math display">\[
+C_0=\langle\_,q_0,ab.ab\rangle,
+\]</span></p>
+<p>em que <span class="math inline">\(\_\)</span> representa o símbolo branco da fita. A máquina está no estado inicial <span class="math inline">\(q_0\)</span> e o cabeçote encontra-se sobre o primeiro símbolo <span class="math inline">\(a\)</span>.</p>
+<p>A máquina encontra um <span class="math inline">\(a\)</span>, marca esse símbolo com <span class="math inline">\(x\)</span> e passa para um estado que representa a busca pelo <span class="math inline">\(a\)</span> correspondente na segunda parte:</p>
+<p><span class="math display">\[
+C_0
+=
+\langle\_,q_0,ab.ab\rangle
+\]</span></p>
+<p><span class="math display">\[
+\vdash
+\langle \_x,q_a,b.ab\rangle
+\]</span></p>
+<p>A partir desse ponto, a máquina percorre a primeira parte da palavra até encontrar o separador <code>.</code> e, em seguida, procura o primeiro símbolo ainda não marcado na segunda parte. Ao encontrar o <span class="math inline">\(a\)</span> correspondente, marca-o com <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[
+\langle\_x,q_a,b.ab\rangle
+\vdash^*
+\langle \_xb.,q_{a2},ab\rangle
+\]</span></p>
+<p><span class="math display">\[
+\vdash
+\langle \_xb,q_{ret},.xb\rangle.
+\]</span></p>
+<p>O símbolo <span class="math inline">\(a\)</span> da segunda parte foi, portanto, marcado. A máquina retorna ao início da fita para procurar o próximo símbolo ainda não processado na primeira parte:</p>
+<p><span class="math display">\[
+\langle\_xb,q_{ret},.xb\rangle
+\vdash^*
+\langle\_,q_0,xb.xb\rangle.
+\]</span></p>
+<p>Agora o primeiro símbolo ainda não marcado da primeira parte é <span class="math inline">\(b\)</span>. A máquina o substitui por <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[
+\langle\_,q_0,xb.xb\rangle
+\vdash^*
+\langle\_xx,q_b,.xb\rangle
+\]</span></p>
+<p>Ela percorre novamente a fita até a segunda parte e procura o primeiro símbolo ainda não marcado. Nesse caso, encontra <span class="math inline">\(b\)</span>, que corresponde ao símbolo armazenado implicitamente no estado:</p>
+<p><span class="math display">\[
+\vdash^*
+\langle\_xx,q_b,.xb\rangle
+\vdash^*
+\langle\_xx.x,q_{b2},b\rangle
+\]</span></p>
+<p><span class="math display">\[
+\vdash
+\langle\_xx.,q_{ret},xx\rangle
+\]</span></p>
+<p>A máquina retorna novamente ao início da fita. Nesse momento, todos os símbolos da primeira parte e todos os símbolos correspondentes da segunda parte estão marcados:</p>
+<p><span class="math display">\[
+\langle\_xx.,q_{ret},xx\rangle
+\vdash^*
+\langle\_,q_0,xx.xx\rangle
+\]</span></p>
+<p>Ao percorrer a primeira parte, a máquina não encontra mais símbolos <span class="math inline">\(a\)</span> ou <span class="math inline">\(b\)</span> não marcados e encontra o separador <code>.</code>. <span class="math display">\[
+\langle\_,q_0,xx.xx\rangle
+\vdash^*
+\langle\_xx.,q_{check},xx\rangle
+\]</span></p>
+<p>Ela então verifica a segunda parte. Como também não existem símbolos não marcados após o separador, a máquina entra no estado de aceitação: <span class="math display">\[
+\langle\_xx.,q_{check},xx\rangle
+\vdash^*
+\langle\_xx.xx\_,q_{f},\_\rangle
+\]</span></p>
+<p>Assim, a computação termina em um estado de aceitação e, portanto,</p>
+<p><span class="math display">\[
+ab.ab\in L.
+\]</span></p>
+<p>A sequência pode ser resumida por</p>
+<p><span class="math display">\[
+\begin{aligned}
+\langle\_,q_0,ab.ab\rangle
+&amp;\vdash^*
+\langle\_,q_0,xb.xb\rangle
+&amp;\vdash^*
+\langle\_,q_0,xx.xx\rangle
+&amp;\vdash^*
+\langle\_xx.xx\_,q_{f},\_\rangle
+\end{aligned}
+\]</span></p>
+<p>O símbolo <span class="math inline">\(\vdash^*\)</span> representa uma ou mais aplicações da relação de sucessão entre configurações. Dessa forma, é possível omitir os passos intermediários em que a máquina simplesmente percorre a fita, concentrando a representação nos momentos relevantes da computação.</p>
+<p>No simulador, esses passos podem ser acompanhados individualmente. A cada execução de uma transição, a configuração instantânea é atualizada, mostrando o estado corrente, o conteúdo da fita e a posição do cabeçote. Simultaneamente, a transição correspondente pode ser destacada no diagrama da máquina.</p>
+<p>Esse exemplo evidencia uma característica fundamental da Máquina de Turing: a fita funciona não apenas como meio de armazenamento da entrada, mas também como <strong>memória de trabalho</strong>. O símbolo auxiliar <span class="math inline">\(x\)</span> permite registrar quais posições já foram processadas, enquanto os estados da máquina permitem controlar qual símbolo deve ser procurado na segunda parte da entrada.</p>
+<p>A mesma estratégia permite identificar palavras que não pertencem à linguagem. Por exemplo, para a entrada</p>
+<p><span class="math display">\[
+ab.ba,
+\]</span></p>
+<p>a máquina marca inicialmente o <span class="math inline">\(a\)</span> da primeira parte e procura um <span class="math inline">\(a\)</span> na segunda parte. Como o primeiro símbolo não marcado encontrado após o separador é <span class="math inline">\(b\)</span>, ocorre uma incompatibilidade e a máquina entra no estado de rejeição.</p>
+</section>
+<section id="reconhecimento-e-decisão" class="level3">
+<h3 class="anchored" data-anchor-id="reconhecimento-e-decisão">Reconhecimento e decisão</h3>
+<p>A possibilidade de uma Máquina de Turing permanecer executando indefinidamente leva a uma distinção importante. Uma linguagem é denominada <strong>Turing-reconhecível</strong> quando existe uma Máquina de Turing capaz de reconhecê-la. Isso significa que, para uma cadeia pertencente à linguagem, a máquina eventualmente entra no estado de aceitação. Para cadeias que não pertencem à linguagem, entretanto, a máquina pode rejeitar ou pode continuar executando indefinidamente.</p>
+<p>Uma linguagem é denominada <strong>Turing-decidível</strong> quando existe uma Máquina de Turing que sempre termina sua computação, aceitando ou rejeitando a entrada. Portanto, toda linguagem decidível é também Turing-reconhecível, mas uma linguagem Turing-reconhecível não precisa ser decidível.</p>
+<p>Essa distinção será retomada na seção dedicada à <strong>decidibilidade</strong>, na qual será estudado o problema de determinar quais problemas podem ser resolvidos por um algoritmo que sempre termina. O problema da parada, em particular, mostrará que existem problemas para os quais não existe uma Máquina de Turing capaz de produzir uma decisão correta para todas as entradas e sempre terminar sua computação.</p>
+</section>
+<section id="simulador-de-máquina-de-turing" class="level3">
+<h3 class="anchored" data-anchor-id="simulador-de-máquina-de-turing">Simulador de Máquina de Turing</h3>
+<p>O simulador apresentado a seguir permite visualizar, de forma interativa, o funcionamento de uma Máquina de Turing. Inicialmente, o usuário pode definir os principais elementos da máquina: o conjunto de estados, o alfabeto de entrada, o alfabeto da fita, o estado inicial, o estado de aceitação e o estado de rejeição.</p>
+<p>A partir dessas informações, o simulador permite construir a <strong>tabela de transição</strong>, que representa a função de transição da máquina. Para cada combinação de estado atual e símbolo lido na fita, a tabela especifica o estado para o qual a máquina deve transitar, o símbolo que deve ser escrito na posição corrente da fita e o movimento realizado pelo cabeçote. O cabeçote pode se deslocar uma posição para a <strong>direita</strong>, uma posição para a <strong>esquerda</strong> ou <strong>permanecer na mesma posição</strong>.</p>
+<p>Após o preenchimento da tabela de transição, o simulador gera automaticamente o <strong>diagrama da Máquina de Turing</strong>, permitindo visualizar graficamente seus estados e transições.</p>
+<p>Por fim, o usuário pode fornecer uma palavra de entrada para realizar a simulação da computação. A execução pode ser acompanhada passo a passo, permitindo observar a transição realizada em cada etapa e a respectiva <strong>configuração instantânea</strong> da máquina. Dessa forma, o simulador relaciona a representação formal da máquina — por meio da tabela de transição — com sua representação gráfica e com o processo efetivo de computação sobre uma palavra de entrada.</p>
+<div class="simulacao-container"><iframe src="https://luizedsilva.github.io/Livro-LTC/p5js/mt/" width="100%" height="400" style="border:none;"></iframe></div>
+</section>
+<section id="decidibilidade" class="level3">
+<h3 class="anchored" data-anchor-id="decidibilidade">Decidibilidade</h3>
+<p>A teoria da computação investiga os problemas que podem ser resolvidos por algoritmos e os limites do processamento automático de informações. Embora os computadores sejam capazes de executar uma enorme variedade de tarefas, nem todo problema formulado de maneira precisa pode ser resolvido por um algoritmo que produza uma resposta correta em tempo finito para qualquer entrada.</p>
+<p>O estudo da <strong>decidibilidade</strong> procura estabelecer quais problemas admitem uma solução algorítmica completa. Para isso, utiliza-se um modelo formal de computação, como a máquina de Turing, que permite descrever algoritmos independentemente de uma linguagem de programação ou de uma arquitetura específica.</p>
+<p>A investigação da decidibilidade possui duas vertentes complementares. A primeira consiste em demonstrar que determinado problema pode ser resolvido, apresentando um algoritmo que sempre termina e fornece a resposta correta. A segunda consiste em demonstrar que nenhum algoritmo pode resolver o problema em todas as situações possíveis.</p>
+<p>Conhecer os problemas indecidíveis é tão importante quanto conhecer aqueles que podem ser resolvidos. Esse conhecimento permite reconhecer os limites da automação, avaliar o que pode ser verificado por ferramentas de análise de programas e compreender por que determinadas tarefas não admitem uma solução geral. Além disso, a identificação desses limites estimula a busca por soluções alternativas, como algoritmos que funcionam apenas para classes restritas de entradas ou procedimentos que fornecem respostas em determinadas situações, sem garantir uma resposta para todas elas.</p>
+<section id="problemas-de-decisão-e-linguagens-decidíveis" class="level4">
+<h4 class="anchored" data-anchor-id="problemas-de-decisão-e-linguagens-decidíveis">Problemas de decisão e linguagens decidíveis</h4>
+<p>Um problema de decisão é um problema cuja resposta pode ser expressa por uma das duas possibilidades: <strong>sim</strong> ou <strong>não</strong>. Por exemplo, dado um número inteiro, verificar se ele é par constitui um problema de decisão. Na teoria de linguagens, muitos problemas podem ser formulados como perguntas sobre a pertinência de uma cadeia a uma linguagem.</p>
+<p>Seja uma linguagem <span class="math inline">\(A\)</span> sobre um alfabeto <span class="math inline">\(\Sigma\)</span>. O problema de decisão associado a <span class="math inline">\(A\)</span> consiste em determinar, para uma cadeia de entrada <span class="math inline">\(w\in\Sigma^*\)</span>, se <span class="math inline">\(w\in A\)</span>.</p>
+<p>Uma máquina de Turing pode ser utilizada para resolver esse problema. Quando a máquina aceita <span class="math inline">\(w\)</span>, a resposta é positiva; quando rejeita <span class="math inline">\(w\)</span>, a resposta é negativa. Entretanto, não basta que a máquina forneça a resposta correta quando termina: é necessário garantir que ela termine para toda entrada.</p>
+<p><strong>Definição — Linguagem decidível.</strong> Uma linguagem <span class="math inline">\(A\)</span> é decidível se existe uma máquina de Turing que, para toda entrada <span class="math inline">\(w\)</span>, termina sua execução e satisfaz as seguintes condições:</p>
+<ul>
+<li>se <span class="math inline">\(w\in A\)</span>, a máquina aceita <span class="math inline">\(w\)</span>;</li>
+<li>se <span class="math inline">\(w\notin A\)</span>, a máquina rejeita <span class="math inline">\(w\)</span>.</li>
+</ul>
+<p>Uma máquina de Turing que satisfaz essas condições é denominada <em>decisor</em> para <span class="math inline">\(A\)</span>.</p>
+<p>A condição de término é essencial. Considere uma máquina que aceita todas as cadeias pertencentes a <span class="math inline">\(A\)</span>, mas entra em um laço infinito quando recebe uma cadeia que não pertence a <span class="math inline">\(A\)</span>. Essa máquina não decide <span class="math inline">\(A\)</span>, pois não fornece uma resposta negativa em tempo finito.</p>
+<p>A decidibilidade não exige que o algoritmo seja eficiente. Um decisor pode realizar uma quantidade muito grande de operações e ainda assim decidir a linguagem, desde que termine para toda entrada. A questão da eficiência computacional é estudada principalmente pela teoria da complexidade, enquanto a decidibilidade investiga inicialmente a existência de um procedimento que sempre forneça uma resposta.</p>
+<section id="linguagens-reconhecíveis" class="level5">
+<h5 class="anchored" data-anchor-id="linguagens-reconhecíveis">Linguagens reconhecíveis</h5>
+<p>Uma linguagem <span class="math inline">\(A\)</span> é <em>Turing-reconhecível</em> se existe uma máquina de Turing que aceita toda cadeia pertencente a <span class="math inline">\(A\)</span>. Para as cadeias que não pertencem a <span class="math inline">\(A\)</span>, a máquina pode rejeitar ou executar indefinidamente.</p>
+<p>Portanto, toda linguagem decidível é Turing-reconhecível, mas a recíproca não é verdadeira.</p>
+<p>A diferença pode ser resumida da seguinte maneira:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tipo de máquina</th>
+<th>Entrada pertencente à linguagem</th>
+<th>Entrada não pertencente à linguagem</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Decisor</td>
+<td>Aceita e termina</td>
+<td>Rejeita e termina</td>
+</tr>
+<tr class="even">
+<td>Reconhecedor</td>
+<td>Aceita e termina</td>
+<td>Rejeita ou não termina</td>
+</tr>
+</tbody>
+</table>
+<p>Essa distinção será fundamental para compreender o problema da parada, que demonstra a existência de linguagens reconhecíveis que não são decidíveis.</p>
+</section>
+</section>
+<section id="decidibilidade-para-linguagens-regulares" class="level4">
+<h4 class="anchored" data-anchor-id="decidibilidade-para-linguagens-regulares">Decidibilidade para linguagens regulares</h4>
+<p>As linguagens regulares possuem propriedades que facilitam a construção de algoritmos de decisão. Uma linguagem regular pode ser representada por um autômato finito determinístico (AFD), um autômato finito não determinístico (AFN) ou uma expressão regular. Como esses formalismos possuem procedimentos efetivos de conversão e análise, vários problemas envolvendo linguagens regulares são decidíveis.</p>
+<section id="problema-de-aceitação-para-afds" class="level5">
+<h5 class="anchored" data-anchor-id="problema-de-aceitação-para-afds">Problema de aceitação para AFDs</h5>
+<p>Considere o problema de determinar se um autômato finito determinístico aceita uma determinada cadeia. Seja</p>
+<p><span class="math display">\[
+A_{\mathrm{AFD}}=\{\langle B,w\rangle\mid B\text{ é um AFD que aceita }w\}.
+\]</span></p>
+<p>A notação <span class="math inline">\(\langle B,w\rangle\)</span> representa uma codificação da descrição do autômato <span class="math inline">\(B\)</span> e da cadeia <span class="math inline">\(w\)</span>. Dessa forma, o problema pode ser tratado como uma linguagem: uma codificação pertence a <span class="math inline">\(A_{\mathrm{AFD}}\)</span> se, e somente se, o autômato descrito aceita a cadeia fornecida.</p>
+<p><strong>Teorema 1.</strong> A linguagem <span class="math inline">\(A_{\mathrm{AFD}}\)</span> é decidível.</p>
+<p><strong>Demonstração.</strong> Constrói-se uma máquina de Turing <span class="math inline">\(M_1\)</span> que recebe como entrada <span class="math inline">\(\langle B,w\rangle\)</span> e executa as seguintes etapas:</p>
+<ol type="1">
+<li>Verifica se a entrada contém uma codificação válida de um AFD e de uma cadeia. Se não contiver, rejeita.</li>
+<li>Simula a execução de <span class="math inline">\(B\)</span> sobre <span class="math inline">\(w\)</span>, começando no estado inicial e consumindo os símbolos de <span class="math inline">\(w\)</span>, um a um.</li>
+<li>Ao terminar a leitura da cadeia, verifica o estado alcançado.</li>
+<li>Aceita se o estado for de aceitação; caso contrário, rejeita.</li>
+</ol>
+<p>A simulação termina porque um AFD realiza uma transição para cada símbolo consumido e a cadeia de entrada possui comprimento finito. Consequentemente, <span class="math inline">\(M_1\)</span> sempre termina e fornece a resposta correta. Logo, <span class="math inline">\(A_{\mathrm{AFD}}\)</span> é decidível.</p>
+<p>Esse resultado mostra que verificar a aceitação de uma cadeia por um AFD é um problema decidível. Não é necessário examinar todas as cadeias possíveis: basta simular o autômato sobre a cadeia específica fornecida.</p>
+</section>
+<section id="problema-de-aceitação-para-afns" class="level5">
+<h5 class="anchored" data-anchor-id="problema-de-aceitação-para-afns">Problema de aceitação para AFNs</h5>
+<p>Um autômato finito não determinístico pode possuir várias transições possíveis para um mesmo símbolo e estado, além de transições vazias, que não consomem símbolos da entrada. Assim, a aceitação ocorre quando existe pelo menos um caminho de execução que termina em um estado de aceitação após consumir toda a cadeia.</p>
+<p>Considere a linguagem</p>
+<p><span class="math display">\[
+A_{\mathrm{AFN}}=\{\langle B,w\rangle\mid B\text{ é um AFN que aceita }w\}.
+\]</span></p>
+<p><strong>Teorema 2.</strong> A linguagem <span class="math inline">\(A_{\mathrm{AFN}}\)</span> é decidível.</p>
+<p><strong>Demonstração.</strong> Seja <span class="math inline">\(M_2\)</span> uma máquina de Turing que recebe <span class="math inline">\(\langle B,w\rangle\)</span>, em que <span class="math inline">\(B\)</span> é um AFN.</p>
+<ol type="1">
+<li>Converte <span class="math inline">\(B\)</span> em um AFD equivalente <span class="math inline">\(C\)</span>, utilizando a construção dos subconjuntos. Quando necessário, a construção considera os fechos-<span class="math inline">\(\varepsilon\)</span> dos estados.</li>
+<li>Executa <span class="math inline">\(M_1\)</span> sobre a entrada <span class="math inline">\(\langle C,w\rangle\)</span>.</li>
+<li>Produz a mesma resposta obtida por <span class="math inline">\(M_1\)</span>: aceita se <span class="math inline">\(C\)</span> aceita <span class="math inline">\(w\)</span> e rejeita caso contrário.</li>
+</ol>
+<p>A conversão de um AFN em um AFD é um procedimento efetivo que termina, e os dois autômatos reconhecem a mesma linguagem. Como <span class="math inline">\(M_1\)</span> é um decisor, <span class="math inline">\(M_2\)</span> também termina para toda entrada válida e responde corretamente. Portanto, <span class="math inline">\(A_{\mathrm{AFN}}\)</span> é decidível.</p>
+<p>A demonstração utiliza uma estratégia recorrente na teoria da computação: transformar um problema em outro problema já conhecido como decidível. Como a conversão preserva a linguagem reconhecida, a resposta obtida para o AFD resolve o problema original.</p>
+</section>
+<section id="problema-de-aceitação-para-expressões-regulares" class="level5">
+<h5 class="anchored" data-anchor-id="problema-de-aceitação-para-expressões-regulares">Problema de aceitação para expressões regulares</h5>
+<p>Uma expressão regular representa uma linguagem regular por meio de operações como união, concatenação e fecho de Kleene. Por isso, também é possível decidir se uma cadeia pertence à linguagem representada por uma expressão regular.</p>
+<p>Definimos</p>
+<p><span class="math display">\[
+A_{\mathrm{ER}}=\{\langle R,w\rangle\mid R\text{ é uma expressão regular que aceita }w\}.
+\]</span></p>
+<p><strong>Teorema 3.</strong> A linguagem <span class="math inline">\(A_{\mathrm{ER}}\)</span> é decidível.</p>
+<p><strong>Demonstração.</strong> Constrói-se uma máquina <span class="math inline">\(M_3\)</span> que recebe <span class="math inline">\(\langle R,w\rangle\)</span> e executa os seguintes passos:</p>
+<ol type="1">
+<li>Converte a expressão regular <span class="math inline">\(R\)</span> em um AFN equivalente <span class="math inline">\(B\)</span>, utilizando construções para união, concatenação e fecho de Kleene.</li>
+<li>Executa <span class="math inline">\(M_2\)</span> sobre <span class="math inline">\(\langle B,w\rangle\)</span>.</li>
+<li>Aceita se <span class="math inline">\(M_2\)</span> aceitar e rejeita caso contrário.</li>
+</ol>
+<p>A conversão de uma expressão regular em um AFN termina e preserva a linguagem representada. Como <span class="math inline">\(M_2\)</span> decide o problema de aceitação para AFNs, o procedimento também decide o problema para expressões regulares.</p>
+<p>Assim, os três formalismos — AFDs, AFNs e expressões regulares — permitem resolver o problema de pertinência de uma cadeia à linguagem que representam.</p>
+</section>
+<section id="problema-da-vacuidade-para-afds" class="level5">
+<h5 class="anchored" data-anchor-id="problema-da-vacuidade-para-afds">Problema da vacuidade para AFDs</h5>
+<p>Além de verificar se um autômato aceita uma cadeia específica, podemos perguntar se ele aceita alguma cadeia. Esse é o problema da vacuidade, também chamado de problema da linguagem vazia.</p>
+<p>Seja</p>
+<p><span class="math display">\[
+V_{\mathrm{AFD}}=\{\langle A\rangle\mid A\text{ é um AFD e }L(A)=\varnothing\}.
+\]</span></p>
+<p>A linguagem <span class="math inline">\(L(A)\)</span> é vazia quando não existe nenhuma cadeia aceita pelo autômato.</p>
+<p><strong>Teorema 4.</strong> A linguagem <span class="math inline">\(V_{\mathrm{AFD}}\)</span> é decidível.</p>
+<p><strong>Demonstração.</strong> Constrói-se uma máquina de Turing <span class="math inline">\(M_4\)</span> que recebe a descrição de um AFD <span class="math inline">\(A\)</span> e realiza uma busca nos estados alcançáveis a partir do estado inicial:</p>
+<ol type="1">
+<li>Marca o estado inicial de <span class="math inline">\(A\)</span>.</li>
+<li>Repete o seguinte procedimento até que nenhum novo estado seja marcado: para cada estado já marcado, marca todos os estados alcançados por suas transições.</li>
+<li>Verifica se algum estado de aceitação foi marcado.</li>
+<li>Se nenhum estado de aceitação foi alcançado, aceita, indicando que <span class="math inline">\(L(A)=\varnothing\)</span>. Caso contrário, rejeita.</li>
+</ol>
+<p>A busca termina porque um AFD possui um número finito de estados. A cada iteração, ou nenhum estado novo é marcado, ou pelo menos um estado adicional passa a ser marcado. Como a quantidade de estados é finita, o procedimento necessariamente termina.</p>
+<p>Se nenhum estado de aceitação for alcançável a partir do estado inicial, nenhuma cadeia poderá conduzir o autômato a um estado de aceitação. Logo, sua linguagem é vazia. Se algum estado de aceitação for alcançável, existe uma sequência de símbolos que conduz a esse estado, e a linguagem não é vazia.</p>
+<p>Portanto, <span class="math inline">\(M_4\)</span> decide <span class="math inline">\(V_{\mathrm{AFD}}\)</span>.</p>
+<p>O algoritmo não precisa enumerar todas as cadeias possíveis. Mesmo que existam infinitas cadeias sobre o alfabeto do autômato, basta examinar a estrutura finita de seus estados e transições.</p>
+</section>
+<section id="equivalência-de-afds" class="level5">
+<h5 class="anchored" data-anchor-id="equivalência-de-afds">Equivalência de AFDs</h5>
+<p>Dois autômatos são equivalentes quando reconhecem exatamente a mesma linguagem. A equivalência pode ser expressa por</p>
+<p><span class="math display">\[
+L(A)=L(B).
+\]</span></p>
+<p>O problema consiste em determinar se dois AFDs reconhecem as mesmas cadeias. Definimos</p>
+<p><span class="math display">\[
+EQ_{\mathrm{AFD}}=\{\langle A,B\rangle\mid A\text{ e }B\text{ são AFDs e }L(A)=L(B)\}.
+\]</span></p>
+<p><strong>Teorema 5.</strong> A linguagem <span class="math inline">\(EQ_{\mathrm{AFD}}\)</span> é decidível.</p>
+<p><strong>Demonstração.</strong> A ideia consiste em verificar se existe alguma cadeia aceita por apenas um dos dois autômatos. Para isso, constrói-se um AFD <span class="math inline">\(C\)</span> que reconhece a diferença simétrica das linguagens:</p>
+<p><span class="math display">\[
+\begin{aligned}
+L(C)={}&amp;(L(A)\cap\overline{L(B)})\\
+&amp;\cup(\overline{L(A)}\cap L(B)).
+\end{aligned}
+\]</span></p>
+<p>A expressão <span class="math inline">\(\overline{L(A)}\)</span> representa o complemento da linguagem de <span class="math inline">\(A\)</span>, considerando o alfabeto de entrada adotado. A diferença simétrica contém as cadeias que pertencem a uma das linguagens, mas não a ambas.</p>
+<p>O procedimento de decisão é o seguinte:</p>
+<ol type="1">
+<li>Constrói <span class="math inline">\(C\)</span> utilizando as operações de complemento, interseção e união de linguagens regulares.</li>
+<li>Executa <span class="math inline">\(M_4\)</span> sobre <span class="math inline">\(\langle C\rangle\)</span>, verificando se <span class="math inline">\(L(C)=\varnothing\)</span>.</li>
+<li>Se <span class="math inline">\(M_4\)</span> aceitar, aceita a entrada original, pois não existe cadeia que diferencie os autômatos. Caso contrário, rejeita.</li>
+</ol>
+<p>Se <span class="math inline">\(L(C)=\varnothing\)</span>, não existe cadeia aceita por apenas um dos autômatos, de modo que <span class="math inline">\(L(A)=L(B)\)</span>. Se <span class="math inline">\(L(C)\neq\varnothing\)</span>, existe pelo menos uma cadeia que é aceita por um autômato e rejeitada pelo outro.</p>
+<p>Como as operações de construção de <span class="math inline">\(C\)</span> são efetivas e <span class="math inline">\(M_4\)</span> é um decisor, o procedimento sempre termina. Portanto, <span class="math inline">\(EQ_{\mathrm{AFD}}\)</span> é decidível.</p>
+<p>Esse exemplo ilustra outra técnica importante: um problema de equivalência pode ser reduzido a um problema de vacuidade. Em vez de comparar diretamente todos os elementos de duas linguagens, constrói-se uma linguagem que representa suas diferenças e verifica-se se ela é vazia.</p>
+</section>
+</section>
+<section id="decidibilidade-para-linguagens-livres-de-contexto" class="level4">
+<h4 class="anchored" data-anchor-id="decidibilidade-para-linguagens-livres-de-contexto">Decidibilidade para linguagens livres de contexto</h4>
+<p>As linguagens livres de contexto são reconhecidas por autômatos com pilha e podem ser descritas por gramáticas livres de contexto (GLCs). Embora algumas propriedades das linguagens regulares também sejam decidíveis para linguagens livres de contexto, outras apresentam dificuldades maiores.</p>
+<p>Nesta seção, consideraremos três problemas: verificar se uma gramática gera uma cadeia específica, verificar se a linguagem de uma gramática é vazia e verificar se duas gramáticas geram a mesma linguagem.</p>
+<section id="problema-de-pertinência-para-gramáticas-livres-de-contexto" class="level5">
+<h5 class="anchored" data-anchor-id="problema-de-pertinência-para-gramáticas-livres-de-contexto">Problema de pertinência para gramáticas livres de contexto</h5>
+<p>Seja <span class="math inline">\(G\)</span> uma gramática livre de contexto e <span class="math inline">\(w\)</span> uma cadeia. O problema consiste em determinar se <span class="math inline">\(G\)</span> gera <span class="math inline">\(w\)</span>, isto é, se existe uma derivação</p>
+<p><span class="math display">\[
+S\Rightarrow^* w,
+\]</span></p>
+<p>em que <span class="math inline">\(S\)</span> é o símbolo inicial da gramática e <span class="math inline">\(\Rightarrow^*\)</span> representa zero ou mais passos de derivação.</p>
+<p>Definimos</p>
+<p><span class="math display">\[
+A_{\mathrm{GLC}}=\{\langle G,w\rangle\mid G\text{ é uma GLC que gera }w\}.
+\]</span></p>
+<p><strong>Teorema 6.</strong> A linguagem <span class="math inline">\(A_{\mathrm{GLC}}\)</span> é decidível.</p>
+<p><strong>Demonstração.</strong> Constrói-se uma máquina de Turing <span class="math inline">\(M_6\)</span> que recebe <span class="math inline">\(\langle G,w\rangle\)</span> e executa os seguintes passos:</p>
+<ol type="1">
+<li>Converte <span class="math inline">\(G\)</span> para a forma normal de Chomsky, preservando a linguagem gerada, com o tratamento apropriado para a cadeia vazia.</li>
+<li>Se <span class="math inline">\(w\)</span> possui comprimento <span class="math inline">\(n\geq 1\)</span>, enumera as derivações possíveis com <span class="math inline">\(2n-1\)</span> passos de produção. Se <span class="math inline">\(w=\varepsilon\)</span>, verifica separadamente se a gramática gera a cadeia vazia.</li>
+<li>Verifica se alguma das derivações enumeradas gera exatamente <span class="math inline">\(w\)</span>.</li>
+<li>Aceita se encontrar uma derivação que gere <span class="math inline">\(w\)</span>; caso contrário, rejeita.</li>
+</ol>
+<p>Na forma normal de Chomsky, as produções são, em geral, da forma <span class="math inline">\(A\rightarrow BC\)</span> ou <span class="math inline">\(A\rightarrow a\)</span>, com uma produção especial para a cadeia vazia quando ela pertence à linguagem. Para uma cadeia não vazia de comprimento <span class="math inline">\(n\)</span>, uma derivação que a gera pode ser representada por uma árvore de derivação com <span class="math inline">\(n\)</span> folhas terminais e, no caso binário, <span class="math inline">\(n-1\)</span> nós internos. O número de produções utilizadas é, portanto, <span class="math inline">\(2n-1\)</span>.</p>
+<p>Como a gramática possui um número finito de produções, existe apenas um número finito de derivações com esse limite de passos. Logo, a enumeração termina. Se a cadeia pertence à linguagem, uma derivação correspondente será encontrada; caso contrário, nenhuma derivação enumerada produzirá a cadeia.</p>
+<p>Assim, <span class="math inline">\(M_6\)</span> termina para toda entrada e responde corretamente. Portanto, <span class="math inline">\(A_{\mathrm{GLC}}\)</span> é decidível.</p>
+<p>A demonstração é baseada na existência de um limite finito para a busca. A conversão para a forma normal de Chomsky restringe a estrutura das derivações e torna possível examinar sistematicamente as alternativas em um espaço finito.</p>
+</section>
+<section id="problema-da-vacuidade-para-gramáticas-livres-de-contexto" class="level5">
+<h5 class="anchored" data-anchor-id="problema-da-vacuidade-para-gramáticas-livres-de-contexto">Problema da vacuidade para gramáticas livres de contexto</h5>
+<p>O problema da vacuidade para uma gramática livre de contexto consiste em verificar se ela não gera nenhuma cadeia terminal. Definimos</p>
+<p><span class="math display">\[
+V_{\mathrm{GLC}}=\{\langle G\rangle\mid G\text{ é uma GLC e }L(G)=\varnothing\}.
+\]</span></p>
+<p><strong>Teorema 7.</strong> A linguagem <span class="math inline">\(V_{\mathrm{GLC}}\)</span> é decidível.</p>
+<p><strong>Demonstração.</strong> A ideia é verificar se o símbolo inicial da gramática pode gerar alguma cadeia composta exclusivamente por terminais. Para isso, constrói-se uma máquina de Turing <span class="math inline">\(M_7\)</span> que realiza uma marcação progressiva dos símbolos da gramática:</p>
+<ol type="1">
+<li>Marca todos os símbolos terminais.</li>
+<li>Marca também qualquer variável <span class="math inline">\(A\)</span> para a qual exista uma produção <span class="math inline">\(A\rightarrow U_1U_2\cdots U_k\)</span> em que todos os símbolos do lado direito já estejam marcados. Uma produção <span class="math inline">\(A\rightarrow\varepsilon\)</span> também permite marcar <span class="math inline">\(A\)</span>, pois seu lado direito não contém símbolos que precisem ser gerados.</li>
+<li>Repete o procedimento até que nenhuma variável nova possa ser marcada.</li>
+<li>Se a variável inicial não estiver marcada, aceita, indicando que a linguagem gerada é vazia. Caso contrário, rejeita.</li>
+</ol>
+<p>Uma variável marcada pode gerar uma cadeia formada somente por terminais. Inicialmente, isso é verdadeiro para as produções cujos lados direitos contêm apenas terminais ou são vazios. Em seguida, a propriedade é propagada para as variáveis cujas produções dependem de símbolos que já possuem essa capacidade.</p>
+<p>Como a gramática possui um número finito de variáveis, o procedimento não pode marcar novas variáveis indefinidamente. Portanto, termina.</p>
+<p>Se o símbolo inicial for marcado, existe uma derivação que produz uma cadeia terminal, e a linguagem não é vazia. Se não for marcado após o encerramento do procedimento, nenhuma derivação a partir do símbolo inicial poderá produzir uma cadeia terminal. Logo, a linguagem é vazia.</p>
+<p>Portanto, <span class="math inline">\(M_7\)</span> decide <span class="math inline">\(V_{\mathrm{GLC}}\)</span>.</p>
+</section>
+<section id="equivalência-de-gramáticas-livres-de-contexto" class="level5">
+<h5 class="anchored" data-anchor-id="equivalência-de-gramáticas-livres-de-contexto">Equivalência de gramáticas livres de contexto</h5>
+<p>Duas gramáticas livres de contexto <span class="math inline">\(G\)</span> e <span class="math inline">\(H\)</span> são equivalentes quando geram exatamente a mesma linguagem:</p>
+<p><span class="math display">\[
+L(G)=L(H).
+\]</span></p>
+<p>O problema de equivalência é definido por</p>
+<p><span class="math display">\[
+EQ_{\mathrm{GLC}}=\{\langle G,H\rangle\mid G\text{ e }H\text{ são GLCs e }L(G)=L(H)\}.
+\]</span></p>
+<p><strong>Teorema 8.</strong> A linguagem <span class="math inline">\(EQ_{\mathrm{GLC}}\)</span> não é decidível.</p>
+<p>Esse resultado estabelece um contraste importante entre linguagens regulares e linguagens livres de contexto. Para AFDs, a equivalência pode ser decidida por meio da construção da diferença simétrica e do teste de vacuidade. Para gramáticas livres de contexto, não existe um algoritmo geral que sempre termine e determine corretamente se duas gramáticas arbitrárias geram a mesma linguagem.</p>
+<p>A existência de algoritmos para decidir a pertinência de uma cadeia e a vacuidade de uma gramática não implica que o problema de equivalência também seja decidível. Cada problema precisa ser analisado individualmente. Uma propriedade pode ser decidível enquanto outra, aparentemente relacionada, é indecidível.</p>
+</section>
+<section id="toda-linguagem-livre-de-contexto-é-decidível" class="level5">
+<h5 class="anchored" data-anchor-id="toda-linguagem-livre-de-contexto-é-decidível">Toda linguagem livre de contexto é decidível</h5>
+<p>Embora o problema de equivalência entre gramáticas livres de contexto seja indecidível, toda linguagem livre de contexto é decidível.</p>
+<p><strong>Teorema 9.</strong> Toda linguagem livre de contexto é uma linguagem decidível.</p>
+<p><strong>Demonstração.</strong> Seja <span class="math inline">\(A\)</span> uma linguagem livre de contexto. Por definição, existe uma gramática livre de contexto <span class="math inline">\(G\)</span> tal que <span class="math inline">\(L(G)=A\)</span>.</p>
+<p>Construímos uma máquina de Turing <span class="math inline">\(M_8\)</span> que recebe uma cadeia <span class="math inline">\(w\)</span> e executa o seguinte procedimento:</p>
+<ol type="1">
+<li>Executa <span class="math inline">\(M_6\)</span> sobre a entrada <span class="math inline">\(\langle G,w\rangle\)</span>.</li>
+<li>Se <span class="math inline">\(M_6\)</span> aceitar, aceita <span class="math inline">\(w\)</span>; caso contrário, rejeita <span class="math inline">\(w\)</span>.</li>
+</ol>
+<p>Como <span class="math inline">\(M_6\)</span> decide se uma cadeia é gerada por uma gramática livre de contexto, o procedimento sempre termina. Além disso, como <span class="math inline">\(L(G)=A\)</span>, a cadeia <span class="math inline">\(w\)</span> será aceita exatamente quando pertencer a <span class="math inline">\(A\)</span>.</p>
+<p>Logo, <span class="math inline">\(M_8\)</span> decide <span class="math inline">\(A\)</span>, e toda linguagem livre de contexto é decidível.</p>
+<p>Esse teorema mostra que o problema de pertinência para uma gramática livre de contexto é decidível, mesmo que a equivalência entre duas gramáticas livres de contexto não seja. É importante distinguir a pergunta “esta cadeia pertence à linguagem?” da pergunta “estas duas gramáticas geram exatamente a mesma linguagem?”.</p>
+</section>
+</section>
+</section>
+<section id="o-problema-da-parada" class="level3">
+<h3 class="anchored" data-anchor-id="o-problema-da-parada">O problema da parada</h3>
+<p>Até aqui, foram apresentados problemas para os quais é possível construir máquinas de Turing que sempre terminam. Entretanto, nem todo problema de decisão admite um decisor. A existência de problemas indecidíveis estabelece um limite fundamental para o que pode ser resolvido algoritmicamente.</p>
+<p>Um dos resultados mais importantes da teoria da computação é a indecidibilidade do problema da parada. Ele demonstra que não existe um algoritmo geral capaz de determinar corretamente, para qualquer programa ou máquina de Turing e qualquer entrada, se a execução terminará.</p>
+<p>Esse resultado tem consequências relevantes para a análise automática de programas. Por exemplo, não existe um procedimento geral que, para qualquer programa arbitrário e qualquer entrada, determine sempre se sua execução terminará. Isso não significa que seja impossível analisar programas específicos: muitos programas podem ser verificados por métodos estáticos, testes ou análises especializadas. O limite está na existência de uma solução geral que funcione corretamente para todos os casos.</p>
+<section id="o-problema-de-aceitação-para-máquinas-de-turing" class="level4">
+<h4 class="anchored" data-anchor-id="o-problema-de-aceitação-para-máquinas-de-turing">O problema de aceitação para máquinas de Turing</h4>
+<p>Considere a linguagem</p>
+<p><span class="math display">\[
+A_{\mathrm{MT}}=\{\langle M,w\rangle\mid M\text{ é uma MT que aceita }w\}.
+\]</span></p>
+<p>A entrada contém a descrição de uma máquina de Turing <span class="math inline">\(M\)</span> e uma cadeia <span class="math inline">\(w\)</span>. A pergunta é se <span class="math inline">\(M\)</span>, quando executada sobre <span class="math inline">\(w\)</span>, alcançará um estado de aceitação.</p>
+<p><strong>Teorema 10.</strong> A linguagem <span class="math inline">\(A_{\mathrm{MT}}\)</span> é Turing-reconhecível, mas não é decidível.</p>
+<p>Para compreender a primeira parte do teorema, construímos uma máquina de Turing universal <span class="math inline">\(U\)</span>, capaz de simular a execução de outra máquina descrita na entrada.</p>
+<p>A máquina <span class="math inline">\(U\)</span> recebe <span class="math inline">\(\langle M,w\rangle\)</span> e executa os seguintes passos:</p>
+<ol type="1">
+<li>Simula <span class="math inline">\(M\)</span> sobre a entrada <span class="math inline">\(w\)</span>.</li>
+<li>Se <span class="math inline">\(M\)</span> entrar em um estado de aceitação, aceita.</li>
+<li>Se <span class="math inline">\(M\)</span> entrar em um estado de rejeição, rejeita.</li>
+<li>Se <span class="math inline">\(M\)</span> continuar executando indefinidamente, a simulação também continuará indefinidamente.</li>
+</ol>
+<p>Esse procedimento reconhece <span class="math inline">\(A_{\mathrm{MT}}\)</span>, pois aceita todas as entradas em que a máquina simulada aceita a cadeia. Contudo, ele não é um decisor: quando <span class="math inline">\(M\)</span> entra em um laço infinito, <span class="math inline">\(U\)</span> também não termina.</p>
+<p>A existência desse reconhecedor demonstra que <span class="math inline">\(A_{\mathrm{MT}}\)</span> é Turing-reconhecível. Para concluir que a linguagem não é decidível, é necessário demonstrar que nenhum outro algoritmo poderia resolver o problema em todos os casos.</p>
+</section>
+<section id="o-problema-da-parada-e-sua-relação-com-a-aceitação" class="level4">
+<h4 class="anchored" data-anchor-id="o-problema-da-parada-e-sua-relação-com-a-aceitação">O problema da parada e sua relação com a aceitação</h4>
+<p>O problema da parada pergunta se uma máquina de Turing termina sua execução sobre determinada entrada, independentemente de aceitar ou rejeitar. Sua linguagem pode ser definida por</p>
+<p><span class="math display">\[
+HALT_{\mathrm{MT}}=\{\langle M,w\rangle\mid M\text{ termina sua execução sobre }w\}.
+\]</span></p>
+<p>O problema de aceitação <span class="math inline">\(A_{\mathrm{MT}}\)</span> e o problema da parada <span class="math inline">\(HALT_{\mathrm{MT}}\)</span> são relacionados, mas não são idênticos.</p>
+<p>Se <span class="math inline">\(M\)</span> aceita <span class="math inline">\(w\)</span>, então <span class="math inline">\(M\)</span> necessariamente termina sua execução. Entretanto, se <span class="math inline">\(M\)</span> não aceita <span class="math inline">\(w\)</span>, existem duas possibilidades: ela pode rejeitar a entrada e terminar, ou pode executar indefinidamente.</p>
+<p>Assim, a simulação direta permite reconhecer a aceitação, mas não permite decidir em todos os casos se a máquina terminará. Nos dois problemas, a dificuldade está em lidar com execuções que podem continuar para sempre.</p>
+<p>Os dois problemas são indecidíveis. A seguir, será demonstrada a indecidibilidade de <span class="math inline">\(A_{\mathrm{MT}}\)</span>, utilizando um argumento por contradição e autorreferência.</p>
+</section>
+<section id="demonstração-da-indecidibilidade-do-problema-de-aceitação" class="level4">
+<h4 class="anchored" data-anchor-id="demonstração-da-indecidibilidade-do-problema-de-aceitação">Demonstração da indecidibilidade do problema de aceitação</h4>
+<p>Suponha, por contradição, que exista uma máquina de Turing <span class="math inline">\(H\)</span> capaz de decidir <span class="math inline">\(A_{\mathrm{MT}}\)</span>. Isso significa que <span class="math inline">\(H\)</span> recebe uma codificação <span class="math inline">\(\langle M,w\rangle\)</span> e sempre termina, respondendo corretamente:</p>
+<ul>
+<li>aceita se <span class="math inline">\(M\)</span> aceita <span class="math inline">\(w\)</span>;</li>
+<li>rejeita se <span class="math inline">\(M\)</span> não aceita <span class="math inline">\(w\)</span>, seja porque rejeita ou porque sua execução não termina.</li>
+</ul>
+<p>A segunda condição é mais forte do que simplesmente simular <span class="math inline">\(M\)</span>. A máquina <span class="math inline">\(H\)</span> teria que fornecer uma resposta negativa mesmo nos casos em que <span class="math inline">\(M\)</span> entra em um laço infinito.</p>
+<p>Com base nessa hipótese, construiremos uma nova máquina de Turing <span class="math inline">\(D\)</span>, que utiliza <span class="math inline">\(H\)</span> como subrotina. A máquina <span class="math inline">\(D\)</span> recebe a descrição de uma máquina <span class="math inline">\(M\)</span> e executa o seguinte procedimento:</p>
+<ol type="1">
+<li>Executa <span class="math inline">\(H\)</span> sobre a entrada <span class="math inline">\(\langle M,\langle M\rangle\rangle\)</span>, isto é, pergunta se <span class="math inline">\(M\)</span> aceita sua própria descrição.</li>
+<li>Se <span class="math inline">\(H\)</span> responder que <span class="math inline">\(M\)</span> aceita <span class="math inline">\(\langle M\rangle\)</span>, então <span class="math inline">\(D\)</span> rejeita.</li>
+<li>Se <span class="math inline">\(H\)</span> responder que <span class="math inline">\(M\)</span> não aceita <span class="math inline">\(\langle M\rangle\)</span>, então <span class="math inline">\(D\)</span> aceita.</li>
+</ol>
+<p>Em outras palavras, <span class="math inline">\(D\)</span> produz exatamente o contrário da resposta dada por <span class="math inline">\(H\)</span> quando a máquina analisada recebe sua própria descrição como entrada.</p>
+<p>A construção é válida porque a descrição de uma máquina de Turing pode ser codificada como uma cadeia. Portanto, uma máquina pode receber e processar a codificação de outra máquina, inclusive sua própria codificação.</p>
+<p>Como <span class="math inline">\(H\)</span> foi suposto um decisor, ele sempre termina. Consequentemente, <span class="math inline">\(D\)</span> também termina para toda entrada válida: após executar <span class="math inline">\(H\)</span>, basta inverter sua resposta.</p>
+<p>Agora, consideremos o que acontece quando <span class="math inline">\(D\)</span> recebe sua própria descrição <span class="math inline">\(\langle D\rangle\)</span>.</p>
+<p>Existem apenas duas possibilidades.</p>
+<p><strong>Caso 1: <span class="math inline">\(D\)</span> aceita <span class="math inline">\(\langle D\rangle\)</span>.</strong></p>
+<p>Como <span class="math inline">\(H\)</span> deveria decidir corretamente o problema de aceitação, ele responderia que <span class="math inline">\(D\)</span> aceita sua própria descrição. Entretanto, pela definição de <span class="math inline">\(D\)</span>, quando <span class="math inline">\(H\)</span> responde que a máquina aceita, <span class="math inline">\(D\)</span> deve rejeitar. Portanto, <span class="math inline">\(D\)</span> rejeita <span class="math inline">\(\langle D\rangle\)</span>, contradizendo a hipótese inicial deste caso.</p>
+<p><strong>Caso 2: <span class="math inline">\(D\)</span> rejeita <span class="math inline">\(\langle D\rangle\)</span>.</strong></p>
+<p>Nesse caso, <span class="math inline">\(H\)</span> responderia que <span class="math inline">\(D\)</span> não aceita sua própria descrição. Pela definição de <span class="math inline">\(D\)</span>, quando <span class="math inline">\(H\)</span> responde que a máquina não aceita, <span class="math inline">\(D\)</span> deve aceitar. Portanto, <span class="math inline">\(D\)</span> aceita <span class="math inline">\(\langle D\rangle\)</span>, contradizendo novamente a hipótese inicial.</p>
+<p>Nos dois casos, obtemos uma contradição. Logo, a hipótese de que <span class="math inline">\(H\)</span> existe é falsa.</p>
+<p>Concluímos que não existe uma máquina de Turing que decida <span class="math inline">\(A_{\mathrm{MT}}\)</span>. Portanto, o problema de aceitação para máquinas de Turing é indecidível.</p>
+</section>
+<section id="por-que-o-argumento-funciona" class="level4">
+<h4 class="anchored" data-anchor-id="por-que-o-argumento-funciona">Por que o argumento funciona?</h4>
+<p>A demonstração utiliza três ideias fundamentais.</p>
+<p>A primeira é a hipótese de que existe um decisor universal para o problema de aceitação. Esse decisor deveria analisar qualquer máquina e qualquer entrada, sempre terminando com uma resposta correta.</p>
+<p>A segunda é a construção de uma máquina que consulta o decisor e inverte sua resposta. A máquina <span class="math inline">\(D\)</span> não tenta prever diretamente o comportamento de todas as máquinas: ela utiliza a suposta solução geral e age deliberadamente de maneira contrária ao resultado informado.</p>
+<p>A terceira é a autorreferência. Ao executar <span class="math inline">\(D\)</span> sobre sua própria descrição, fazemos com que a máquina seja analisada exatamente no caso para o qual foi construída para contrariar a resposta do decisor.</p>
+<p>A contradição não decorre de uma falha na execução de <span class="math inline">\(D\)</span>. Pelo contrário, se <span class="math inline">\(H\)</span> existisse, <span class="math inline">\(D\)</span> seria um procedimento bem definido e terminaria para toda entrada. O problema está na impossibilidade de existir um decisor <span class="math inline">\(H\)</span> com as propriedades supostas.</p>
+<p>É importante observar que o argumento não demonstra que nenhuma máquina pode analisar qualquer outra máquina. Máquinas podem simular outras máquinas, verificar comportamentos particulares e decidir várias propriedades de programas. O que a demonstração exclui é a existência de um decisor geral para o problema de aceitação.</p>
+</section>
+<section id="indecidibilidade-do-problema-da-parada" class="level4">
+<h4 class="anchored" data-anchor-id="indecidibilidade-do-problema-da-parada">Indecidibilidade do problema da parada</h4>
+<p>O problema da parada também é indecidível. Esse resultado pode ser obtido a partir da indecidibilidade do problema de aceitação.</p>
+<p>Suponha que existisse um decisor <span class="math inline">\(K\)</span> para <span class="math inline">\(HALT_{\mathrm{MT}}\)</span>, capaz de determinar se uma máquina <span class="math inline">\(M\)</span> termina sua execução sobre uma entrada <span class="math inline">\(w\)</span>.</p>
+<p>Poderíamos utilizar <span class="math inline">\(K\)</span> para construir um decisor para <span class="math inline">\(A_{\mathrm{MT}}\)</span>:</p>
+<ol type="1">
+<li>Recebe <span class="math inline">\(\langle M,w\rangle\)</span> e executa <span class="math inline">\(K\)</span> para determinar se <span class="math inline">\(M\)</span> termina sobre <span class="math inline">\(w\)</span>.</li>
+<li>Se <span class="math inline">\(K\)</span> responder que <span class="math inline">\(M\)</span> não termina, rejeita, pois uma execução infinita não pode aceitar.</li>
+<li>Se <span class="math inline">\(K\)</span> responder que <span class="math inline">\(M\)</span> termina, simula <span class="math inline">\(M\)</span> sobre <span class="math inline">\(w\)</span> até que a execução termine.</li>
+<li>Aceita se <span class="math inline">\(M\)</span> aceitar e rejeita se <span class="math inline">\(M\)</span> rejeitar.</li>
+</ol>
+<p>Esse procedimento sempre terminaria. No primeiro caso, <span class="math inline">\(K\)</span> já forneceria a resposta negativa. No segundo, a resposta de <span class="math inline">\(K\)</span> garantiria que a simulação terminaria. Assim, obteríamos um decisor para <span class="math inline">\(A_{\mathrm{MT}}\)</span>.</p>
+<p>Entretanto, já demonstramos que <span class="math inline">\(A_{\mathrm{MT}}\)</span> é indecidível. Portanto, a suposição de que <span class="math inline">\(K\)</span> existe leva a uma contradição.</p>
+<p>Concluímos que o problema da parada é indecidível.</p>
+<p>Esse argumento é um exemplo de redução entre problemas: se um problema indecidível pudesse ser resolvido por meio de um decisor para outro problema, então a existência desse decisor também resolveria o problema indecidível. Como isso é impossível, o decisor suposto não pode existir.</p>
+</section>
+</section>
+<section id="síntese-dos-resultados" class="level3">
+<h3 class="anchored" data-anchor-id="síntese-dos-resultados">Síntese dos resultados</h3>
+<p>Os resultados apresentados mostram que a decidibilidade depende da natureza do problema analisado. Não basta identificar o formalismo utilizado; é necessário especificar a propriedade que se deseja verificar.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Problema</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Aceitação de uma cadeia por um AFD</td>
+<td>Decidível</td>
+</tr>
+<tr class="even">
+<td>Aceitação de uma cadeia por um AFN</td>
+<td>Decidível</td>
+</tr>
+<tr class="odd">
+<td>Aceitação de uma cadeia por uma expressão regular</td>
+<td>Decidível</td>
+</tr>
+<tr class="even">
+<td>Vacuidade da linguagem de um AFD</td>
+<td>Decidível</td>
+</tr>
+<tr class="odd">
+<td>Equivalência entre dois AFDs</td>
+<td>Decidível</td>
+</tr>
+<tr class="even">
+<td>Pertinência de uma cadeia a uma GLC</td>
+<td>Decidível</td>
+</tr>
+<tr class="odd">
+<td>Vacuidade da linguagem de uma GLC</td>
+<td>Decidível</td>
+</tr>
+<tr class="even">
+<td>Equivalência entre duas GLCs</td>
+<td>Indecidível</td>
+</tr>
+<tr class="odd">
+<td>Aceitação para máquinas de Turing</td>
+<td>Indecidível</td>
+</tr>
+<tr class="even">
+<td>Problema da parada para máquinas de Turing</td>
+<td>Indecidível</td>
+</tr>
+</tbody>
+</table>
+<p>A comparação entre esses resultados evidencia duas conclusões. Primeiro, a existência de uma representação finita de uma linguagem não garante, por si só, que toda propriedade de interesse seja decidível. Segundo, a decidibilidade de um problema não implica a decidibilidade de todos os problemas relacionados.</p>
+<p>Para linguagens regulares, os procedimentos de conversão entre formalismos, as operações de fechamento e a análise de grafos finitos permitem resolver diversos problemas. Para linguagens livres de contexto, o problema de pertinência e o problema da vacuidade são decidíveis, mas a equivalência entre gramáticas livres de contexto é indecidível. Para máquinas de Turing, a indecidibilidade do problema de aceitação e do problema da parada demonstra limites fundamentais da computação.</p>
+</section>
+<section id="considerações-finais" class="level3">
+<h3 class="anchored" data-anchor-id="considerações-finais">Considerações finais</h3>
+<p>A decidibilidade constitui um dos conceitos centrais da teoria da computação, pois permite distinguir os problemas para os quais existe um algoritmo geral que sempre termina daqueles para os quais tal algoritmo não pode existir.</p>
+<p>A construção de decisores, como os apresentados para linguagens regulares e livres de contexto, demonstra como procedimentos finitos podem resolver problemas de pertinência, vacuidade e equivalência em determinadas classes de linguagens. Em contrapartida, o argumento diagonal utilizado no problema de aceitação mostra que nem toda questão sobre o comportamento de uma máquina de Turing pode ser resolvida algoritmicamente.</p>
+<p>O problema da parada possui uma consequência especialmente relevante: não existe um método geral que determine corretamente, para qualquer programa e qualquer entrada, se sua execução terminará. Esse limite não impede a análise de programas específicos, mas estabelece que nenhuma solução geral pode cobrir todos os casos possíveis.</p>
+<p>Portanto, compreender a decidibilidade é essencial tanto para o desenvolvimento de algoritmos quanto para o estudo de linguagens formais, compiladores e ferramentas de análise de programas. Antes de procurar um algoritmo para um problema, é importante investigar se esse algoritmo pode existir. Essa investigação permite reconhecer os limites teóricos da computação e direcionar os esforços para métodos que sejam efetivamente possíveis.</p>
+</section>
+</section>
+<section id="da-máquina-de-turing-à-máquina-virtual" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="da-máquina-de-turing-à-máquina-virtual"><span class="header-section-number">6.2</span> Da Máquina de Turing à máquina virtual</h2>
+<p>A máquina de Turing é um modelo formal utilizado para estudar o que pode ser computado por meio de um procedimento algorítmico. Sua importância está na possibilidade de descrever, de maneira abstrata, os passos de uma computação, sem depender de uma arquitetura específica de computador ou de uma linguagem de programação.</p>
+<p>Na prática, entretanto, os programas escritos em linguagens de alto nível não são executados diretamente por uma máquina de Turing. Para que sejam executados em um computador real, é necessário traduzir suas construções para instruções que possam ser interpretadas pelo processador ou por outro ambiente de execução. Essa tradução é uma das tarefas centrais de um compilador.</p>
+<p>O objetivo principal de um compilador é transformar um programa escrito em uma linguagem-fonte em uma representação equivalente que possa ser executada por uma máquina-alvo. Em um compilador tradicional, essa representação pode ser o código de máquina de uma arquitetura real. Como as arquiteturas reais apresentam muitos detalhes, trabalhar diretamente com suas instruções pode tornar o estudo da compilação excessivamente complexo.</p>
+<p>Uma alternativa didática consiste em definir uma máquina abstrata mais simples, com memória, registradores e um conjunto reduzido de instruções. Essa máquina serve como alvo para o compilador e permite estudar a tradução de expressões, atribuições, comandos de seleção, repetição e entrada e saída. Neste capítulo, será utilizada a <strong>Máquina Virtual Simples (MVS)</strong>, baseada na Máquina de Execução Pascal (MEPA), proposta por Tomás Kowaltowski.</p>
+<p>A MVS não substitui a máquina de Turing como modelo teórico de computação. Seu propósito é diferente: oferecer uma arquitetura simplificada na qual se possa representar e executar o código produzido por um compilador didático. A máquina de Turing permite raciocinar sobre a computabilidade; a máquina virtual permite explorar, de forma concreta, como as construções de uma linguagem de programação são traduzidas em instruções executáveis.</p>
+<section id="da-linguagem-de-alto-nível-à-máquina-virtual" class="level3">
+<h3 class="anchored" data-anchor-id="da-linguagem-de-alto-nível-à-máquina-virtual">Da linguagem de alto nível à máquina virtual</h3>
+<p>Considere um programa escrito em uma linguagem de alto nível. Essa linguagem permite expressar operações por meio de construções próximas da maneira como os seres humanos descrevem algoritmos, como expressões aritméticas, atribuições, comandos condicionais e laços de repetição.</p>
+<p>O processador, por sua vez, executa instruções de baixo nível definidas por sua arquitetura. A função do compilador é estabelecer uma tradução entre essas duas representações, preservando o comportamento do programa.</p>
+<p>Em termos gerais, o processo pode ser representado por:</p>
+<p><span class="math display">\[
+\text{Programa-fonte}
+\longrightarrow
+\text{Compilador}
+\longrightarrow
+\text{Código-alvo}
+\]</span></p>
+<p>Quando o código-alvo é definido para uma arquitetura real, o compilador precisa considerar detalhes como registradores físicos, modos de endereçamento e conjunto de instruções. Para fins didáticos, podemos substituir essa arquitetura por uma máquina virtual com um conjunto pequeno e bem definido de operações.</p>
+<p>Nesse cenário, o compilador traduz o programa-fonte para uma sequência de instruções da MVS. Um interpretador ou simulador da máquina virtual executa essas instruções, atualizando a memória e os registradores de acordo com a semântica de cada operação.</p>
+<p>A utilização de uma máquina virtual separa duas preocupações: a tradução da linguagem de programação e a execução do código gerado. Essa separação facilita o desenvolvimento e a compreensão de um compilador, pois não exige a implementação imediata de código de máquina para um processador específico.</p>
+</section>
+<section id="organização-da-máquina-virtual-simples" class="level3">
+<h3 class="anchored" data-anchor-id="organização-da-máquina-virtual-simples">Organização da Máquina Virtual Simples</h3>
+<p>A memória da MVS é dividida em duas regiões principais:</p>
+<ul>
+<li><strong>Memória de programa (<span class="math inline">\(P\)</span>):</strong> armazena a sequência de instruções do programa que está sendo executado.</li>
+<li><strong>Memória de dados (<span class="math inline">\(M\)</span>):</strong> funciona como uma pilha na qual são armazenados os valores manipulados pelas instruções.</li>
+</ul>
+<p>As duas regiões podem ser entendidas como vetores cujas posições são identificadas por índices inteiros, a partir de zero, até um limite definido pela implementação.</p>
+<p>Além dessas regiões de memória, a MVS possui três registradores de controle: <span class="math inline">\(i\)</span>, <span class="math inline">\(s\)</span> e <span class="math inline">\(d\)</span>.</p>
+<section id="registrador-de-instrução" class="level4">
+<h4 class="anchored" data-anchor-id="registrador-de-instrução">Registrador de instrução</h4>
+<p>O registrador <span class="math inline">\(i\)</span> contém o endereço da próxima instrução a ser executada. Assim, a instrução corrente é obtida por meio de <span class="math inline">\(P[i]\)</span>.</p>
+<p>Na execução normal, após uma instrução ser executada, o registrador <span class="math inline">\(i\)</span> é incrementado para apontar para a próxima posição do programa. As instruções de desvio constituem uma exceção: elas alteram explicitamente o valor de <span class="math inline">\(i\)</span>, transferindo o controle para outro endereço.</p>
+<p>Essa organização permite representar a sequência de execução de um programa como uma sucessão de posições da memória de programa. Em vez de executar necessariamente as instruções na ordem em que aparecem, a máquina pode saltar para outros trechos do código.</p>
+</section>
+<section id="registrador-de-topo-da-pilha" class="level4">
+<h4 class="anchored" data-anchor-id="registrador-de-topo-da-pilha">Registrador de topo da pilha</h4>
+<p>O registrador <span class="math inline">\(s\)</span> indica a posição ocupada pelo elemento que está no topo da pilha de dados, isto é, <span class="math inline">\(M[s]\)</span>.</p>
+<p>A pilha é utilizada para armazenar constantes, valores de variáveis e resultados intermediários de expressões. As instruções que inserem um valor na pilha incrementam <span class="math inline">\(s\)</span>; as que consomem operandos normalmente diminuem esse registrador.</p>
+<p>Na configuração inicial, a pilha está vazia e <span class="math inline">\(s=-1\)</span>. Dessa forma, a primeira inserção incrementa <span class="math inline">\(s\)</span> para zero e armazena o valor em <span class="math inline">\(M[0]\)</span>.</p>
+<p>A pilha simplifica a geração de código. Para calcular uma expressão, o compilador pode produzir instruções que colocam os operandos na pilha e, em seguida, executam uma operação que retira esses operandos e coloca o resultado no lugar apropriado.</p>
+</section>
+<section id="registrador-de-base" class="level4">
+<h4 class="anchored" data-anchor-id="registrador-de-base">Registrador de base</h4>
+<p>O registrador <span class="math inline">\(d\)</span> contém um endereço de base utilizado no endereçamento de variáveis. Nos exemplos apresentados, os endereços das variáveis são fornecidos como operandos das instruções, e o registrador de base permite generalizar o endereçamento de variáveis globais e locais.</p>
+<p>Essa organização está relacionada à necessidade de distinguir as posições de memória associadas às variáveis. Durante a tradução, o compilador atribui endereços às variáveis e utiliza esses endereços nas instruções que leem ou armazenam seus valores.</p>
+</section>
+<section id="estado-da-máquina" class="level4">
+<h4 class="anchored" data-anchor-id="estado-da-máquina">Estado da máquina</h4>
+<p>Em uma visão simplificada, a configuração da MVS é determinada pelo conteúdo da memória de programa, pelo conteúdo da memória de dados e pelos valores dos registradores. A execução de uma instrução transforma essa configuração em outra.</p>
+<p>Podemos representar essa ideia de forma abstrata por:</p>
+<p><span class="math display">\[
+C = (P,M,i,s,d)
+\]</span></p>
+<p>A execução de uma instrução modifica um ou mais componentes de <span class="math inline">\(C\)</span>. Por exemplo, uma operação aritmética altera a pilha; uma instrução de desvio modifica o registrador <span class="math inline">\(i\)</span>; e uma instrução de armazenamento modifica uma posição da memória de dados.</p>
+<p>Essa visão é semelhante à utilizada para descrever configurações instantâneas em outros modelos de computação: o comportamento da máquina pode ser compreendido como uma sequência de configurações produzidas pela aplicação das regras de execução.</p>
+</section>
+</section>
+<section id="conjunto-de-instruções-da-mvs" class="level3">
+<h3 class="anchored" data-anchor-id="conjunto-de-instruções-da-mvs">Conjunto de instruções da MVS</h3>
+<p>As instruções da MVS são operações elementares que o compilador combina para representar construções da linguagem-fonte. A seguir, elas são organizadas por finalidade.</p>
+<section id="instruções-de-manipulação-da-pilha-e-da-memória" class="level4">
+<h4 class="anchored" data-anchor-id="instruções-de-manipulação-da-pilha-e-da-memória">Instruções de manipulação da pilha e da memória</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Instrução</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>CRCT k</code></td>
+<td>Insere a constante <code>k</code> no topo da pilha.</td>
+</tr>
+<tr class="even">
+<td><code>CRVG n</code></td>
+<td>Lê o valor armazenado em <code>M[n]</code> e o insere na pilha.</td>
+</tr>
+<tr class="odd">
+<td><code>ARZG n</code></td>
+<td>Armazena em <code>M[n]</code> o valor do topo da pilha e remove esse valor da pilha.</td>
+</tr>
+<tr class="even">
+<td><code>AMEM n</code></td>
+<td>Reserva espaço para <code>n</code> posições de dados, avançando o topo da pilha.</td>
+</tr>
+</tbody>
+</table>
+<p>A instrução <code>CRCT k</code> executa as operações:</p>
+<p><span class="math display">\[
+s \leftarrow s+1
+\]</span></p>
+<p><span class="math display">\[
+M[s] \leftarrow k
+\]</span></p>
+<p>Já a instrução <code>CRVG n</code> consulta a posição indicada pelo operando e coloca uma cópia de seu conteúdo no topo da pilha:</p>
+<p><span class="math display">\[
+s \leftarrow s+1
+\]</span></p>
+<p><span class="math display">\[
+M[s] \leftarrow M[n]
+\]</span></p>
+<p>A instrução <code>ARZG n</code> realiza o movimento inverso: utiliza o valor que está no topo da pilha para atualizar uma posição de memória e, depois, remove o valor consumido:</p>
+<p><span class="math display">\[
+M[n] \leftarrow M[s]
+\]</span></p>
+<p><span class="math display">\[
+s \leftarrow s-1
+\]</span></p>
+<p>Essas três instruções são suficientes para carregar constantes, consultar variáveis e armazenar resultados em variáveis. A instrução <code>AMEM n</code> é usada na preparação do espaço de dados necessário para as variáveis do programa.</p>
+</section>
+<section id="instruções-aritméticas" class="level4">
+<h4 class="anchored" data-anchor-id="instruções-aritméticas">Instruções aritméticas</h4>
+<p>As operações aritméticas trabalham com os dois elementos que estão no topo da pilha. O segundo elemento a partir do topo é combinado com o elemento do topo, e o resultado ocupa a posição do primeiro operando. Em seguida, o topo da pilha é reduzido em uma unidade.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Instrução</th>
+<th>Operação</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SOMA</code></td>
+<td>Soma os dois valores do topo da pilha.</td>
+</tr>
+<tr class="even">
+<td><code>SUBT</code></td>
+<td>Subtrai o valor do topo do valor imediatamente abaixo dele.</td>
+</tr>
+<tr class="odd">
+<td><code>MULT</code></td>
+<td>Multiplica os dois valores do topo da pilha.</td>
+</tr>
+<tr class="even">
+<td><code>DIVI</code></td>
+<td>Divide o valor imediatamente abaixo do topo pelo valor do topo.</td>
+</tr>
+</tbody>
+</table>
+<p>Por exemplo, para <code>SOMA</code>, a atualização é:</p>
+<p><span class="math display">\[
+M[s-1] \leftarrow M[s-1] + M[s]
+\]</span></p>
+<p><span class="math display">\[
+s \leftarrow s-1
+\]</span></p>
+<p>Para <code>SUBT</code>, a ordem dos operandos é importante:</p>
+<p><span class="math display">\[
+M[s-1] \leftarrow M[s-1] - M[s]
+\]</span></p>
+<p><span class="math display">\[
+s \leftarrow s-1
+\]</span></p>
+<p>As operações de subtração e divisão não são comutativas. Por isso, a ordem em que os operandos são colocados na pilha precisa corresponder à estrutura da expressão original.</p>
+</section>
+<section id="instruções-relacionais-e-lógicas" class="level4">
+<h4 class="anchored" data-anchor-id="instruções-relacionais-e-lógicas">Instruções relacionais e lógicas</h4>
+<p>As instruções relacionais comparam os dois valores do topo da pilha e substituem os operandos por um resultado lógico. Nos exemplos da MVS, o valor <code>1</code> representa verdadeiro e o valor <code>0</code> representa falso.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Instrução</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>CMMA</code></td>
+<td>Compara se o valor abaixo do topo é maior que o valor do topo.</td>
+</tr>
+<tr class="even">
+<td><code>CMME</code></td>
+<td>Compara se o valor abaixo do topo é menor que o valor do topo.</td>
+</tr>
+<tr class="odd">
+<td><code>CMIG</code></td>
+<td>Compara se os dois valores são iguais.</td>
+</tr>
+<tr class="even">
+<td><code>DISJ</code></td>
+<td>Calcula a disjunção lógica dos dois valores do topo.</td>
+</tr>
+<tr class="odd">
+<td><code>CONJ</code></td>
+<td>Calcula a conjunção lógica dos dois valores do topo.</td>
+</tr>
+<tr class="even">
+<td><code>NEGA</code></td>
+<td>Inverte o valor lógico do topo da pilha.</td>
+</tr>
+</tbody>
+</table>
+<p>Para <code>CMMA</code>, por exemplo, a máquina compara <span class="math inline">\(M[s-1]\)</span> e <span class="math inline">\(M[s]\)</span>. Se <span class="math inline">\(M[s-1] &gt; M[s]\)</span>, o resultado é <code>1</code>; caso contrário, é <code>0</code>. O resultado ocupa a posição <span class="math inline">\(M[s-1]\)</span>, e o topo da pilha diminui em uma unidade.</p>
+<p>A instrução <code>NEGA</code> opera sobre um único valor lógico e pode ser descrita por:</p>
+<p><span class="math display">\[
+M[s] \leftarrow 1-M[s]
+\]</span></p>
+<p>Considerando a representação de verdadeiro por <code>1</code> e falso por <code>0</code>, essa operação transforma <code>1</code> em <code>0</code> e <code>0</code> em <code>1</code>.</p>
+<p>Essas instruções permitem traduzir as condições utilizadas em comandos de seleção e repetição. A expressão lógica é avaliada primeiro; seu resultado determina o caminho que será executado em seguida.</p>
+</section>
+<section id="instruções-de-desvio" class="level4">
+<h4 class="anchored" data-anchor-id="instruções-de-desvio">Instruções de desvio</h4>
+<p>As instruções de desvio alteram o fluxo de execução do programa.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Instrução</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>DSVS p</code></td>
+<td>Desvia incondicionalmente para o endereço <code>p</code>.</td>
+</tr>
+<tr class="even">
+<td><code>DSVF p</code></td>
+<td>Desvia para <code>p</code> se o valor do topo da pilha for falso; caso contrário, prossegue para a próxima instrução.</td>
+</tr>
+<tr class="odd">
+<td><code>NADA</code></td>
+<td>Não realiza operação sobre os dados; pode ser usada como destino de um rótulo.</td>
+</tr>
+</tbody>
+</table>
+<p>A instrução <code>DSVS p</code> atualiza o registrador de instrução:</p>
+<p><span class="math display">\[
+i \leftarrow p
+\]</span></p>
+<p>A instrução <code>DSVF p</code> consulta o valor lógico no topo da pilha. Se esse valor for zero, altera <span class="math inline">\(i\)</span> para <span class="math inline">\(p\)</span>; caso contrário, avança para a instrução seguinte. Em ambos os casos, o valor lógico consumido é removido da pilha.</p>
+<p>Os rótulos, como <code>L1</code> e <code>L2</code>, são nomes simbólicos utilizados pelo compilador para identificar posições do programa. Antes da execução, cada rótulo precisa ser associado ao endereço correspondente na memória de programa.</p>
+</section>
+<section id="instruções-de-entrada-saída-e-controle" class="level4">
+<h4 class="anchored" data-anchor-id="instruções-de-entrada-saída-e-controle">Instruções de entrada, saída e controle</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Instrução</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>LEIA</code></td>
+<td>Lê um valor de entrada e o coloca no topo da pilha.</td>
+</tr>
+<tr class="even">
+<td><code>ESCR</code></td>
+<td>Exibe o valor do topo da pilha e o remove.</td>
+</tr>
+<tr class="odd">
+<td><code>INPP</code></td>
+<td>Inicializa os registradores e a pilha para a execução do programa.</td>
+</tr>
+<tr class="even">
+<td><code>FIMP</code></td>
+<td>Finaliza a execução do programa.</td>
+</tr>
+</tbody>
+</table>
+<p>A instrução <code>LEIA</code> incrementa o topo da pilha e armazena nele o valor recebido da entrada. A instrução <code>ESCR</code> apresenta o valor do topo e depois o remove.</p>
+<p>A instrução <code>INPP</code> estabelece a configuração inicial da máquina:</p>
+<p><span class="math display">\[
+s \leftarrow -1
+\]</span></p>
+<p><span class="math display">\[
+i \leftarrow 1
+\]</span></p>
+<p><span class="math display">\[
+d \leftarrow 0
+\]</span></p>
+<p>A instrução <code>FIMP</code> indica o encerramento da execução. Assim, um programa completo em MVS normalmente começa com <code>INPP</code>, reserva espaço para as variáveis globais quando necessário e termina com <code>FIMP</code>.</p>
+</section>
+</section>
+<section id="tradução-de-expressões-aritméticas" class="level3">
+<h3 class="anchored" data-anchor-id="tradução-de-expressões-aritméticas">Tradução de expressões aritméticas</h3>
+<p>A MVS utiliza uma pilha para avaliar expressões. Por esse motivo, expressões escritas na notação infixa, em que o operador aparece entre os operandos, são traduzidas para uma sequência de instruções compatível com a avaliação em pilha. Essa sequência corresponde à ideia da <strong>Notação Polonesa Reversa (NPR)</strong>, na qual o operador aparece depois de seus operandos.</p>
+<p>Considere a expressão:</p>
+<p><span class="math display">\[
+B \times (A+30)-A
+\]</span></p>
+<p>Suponha que o endereço de <code>A</code> seja <code>1</code>, o endereço de <code>B</code> seja <code>3</code>, e que os valores armazenados sejam <span class="math inline">\(A=10\)</span> e <span class="math inline">\(B=2\)</span>.</p>
+<p>O compilador gera a seguinte sequência:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode mvs code-with-copy"><code class="sourceCode mvs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CRVG</span>  <span class="dv">3</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CRVG</span>  <span class="dv">1</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">CRCT</span>  <span class="dv">30</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">SOMA</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">MULT</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">CRVG</span>  <span class="dv">1</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">SUBT</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A execução pode ser acompanhada observando a evolução da pilha, ilustrado na <a href="#fig-expressao" class="quarto-xref">Figura&nbsp;<span>6.2</span></a></p>
+<div id="fig-expressao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-expressao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/expressao.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-expressao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;6.2: Simulação das operações na pilha de execução
+</figcaption>
+</figure>
+</div>
+<ol type="1">
+<li><code>CRVG 3</code> carrega o valor de <code>B (2)</code> na pilha.</li>
+<li><code>CRVG 1</code> carrega o valor de <code>A (10)</code> no topo.</li>
+<li><code>CRCT 30</code> carrega a constante <code>30</code> e coloca no topo.</li>
+<li><code>SOMA</code> combina <code>10</code> e <code>30</code>, produzindo <code>40</code>.</li>
+<li><code>MULT</code> combina <code>2</code> e <code>40</code>, produzindo <code>80</code>.</li>
+<li><code>CRVG 1</code> carrega novamente o valor de <code>A</code>, isto é, <code>10</code> no topo.</li>
+<li><code>SUBT</code> calcula <code>80 - 10</code>, produzindo <code>70</code>.</li>
+</ol>
+<p>O resultado corresponde à avaliação da expressão original:</p>
+<p><span class="math display">\[
+2 \times (10+30)-10 = 70
+\]</span></p>
+<p>O exemplo mostra que o compilador não precisa gerar uma instrução específica para cada expressão completa. Ele combina operações elementares de leitura, inserção de constantes e aritmética. A pilha mantém os resultados intermediários até que eles sejam consumidos por uma operação posterior.</p>
+</section>
+<section id="tradução-de-comandos-de-atribuição" class="level3">
+<h3 class="anchored" data-anchor-id="tradução-de-comandos-de-atribuição">Tradução de comandos de atribuição</h3>
+<p>Um comando de atribuição calcula o valor de uma expressão e armazena o resultado na variável indicada à esquerda do operador de atribuição.</p>
+<p>Considere:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode simples code-with-copy"><code class="sourceCode simples"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">A</span> <span class="op">+</span> <span class="va">B</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Suponha que os endereços das variáveis sejam <code>10</code> para <code>A</code> e <code>12</code> para <code>B</code>. A tradução para a MVS é:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode mvs code-with-copy"><code class="sourceCode mvs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CRVG</span>  <span class="dv">10</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CRVG</span>  <span class="dv">12</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">SOMA</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">ARZG</span>  <span class="dv">10</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>As duas primeiras instruções colocam os valores de <code>A</code> e <code>B</code> na pilha. A instrução <code>SOMA</code> calcula o resultado e o mantém no topo. Finalmente, <code>ARZG 10</code> armazena o resultado na posição de memória associada à variável <code>A</code>.</p>
+<p>O padrão de tradução de uma atribuição pode ser resumido em três etapas:</p>
+<ol type="1">
+<li>Gerar as instruções necessárias para avaliar a expressão do lado direito.</li>
+<li>Deixar o resultado da expressão no topo da pilha.</li>
+<li>Utilizar <code>ARZG</code> para armazenar o resultado no endereço da variável do lado esquerdo.</li>
+</ol>
+<p>Essa estratégia permite traduzir atribuições com expressões de complexidade arbitrária, desde que as expressões possam ser traduzidas para as instruções disponíveis na MVS.</p>
+</section>
+<section id="tradução-de-comandos-de-seleção" class="level3">
+<h3 class="anchored" data-anchor-id="tradução-de-comandos-de-seleção">Tradução de comandos de seleção</h3>
+<p>O comando de seleção permite escolher entre diferentes sequências de instruções, conforme o resultado de uma condição. Considere a estrutura:</p>
+<pre class="text"><code>se E então
+    C1
+senão
+    C2
+fimse</code></pre>
+<p>A tradução utiliza uma instrução condicional e uma instrução de desvio incondicional. Primeiro, o código que avalia <code>E</code> coloca um valor lógico no topo da pilha. Em seguida, <code>DSVF</code> desvia para o trecho correspondente ao caso falso. Ao final do primeiro ramo, <code>DSVS</code> evita que a execução continue indevidamente pelo segundo ramo.</p>
+<p>O esquema geral para tradução da estrutura de seleção a linguagem Simples está representado na <a href="#fig-selecao" class="quarto-xref">Figura&nbsp;<span>6.3</span></a>.</p>
+<div id="fig-selecao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-selecao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/selecao.png" class="img-fluid figure-img" style="width:40.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-selecao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;6.3: Esquema de tradução da estrutura de seleção
+</figcaption>
+</figure>
+</div>
+<p>O rótulo <code>L1</code> identifica o início do ramo executado quando a condição é falsa, e <code>L2</code> identifica o ponto comum após a seleção.</p>
+<section id="exemplo-de-seleção" class="level4">
+<h4 class="anchored" data-anchor-id="exemplo-de-seleção">Exemplo de seleção</h4>
+<p>Considere o seguinte trecho de programa:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode simples code-with-copy"><code class="sourceCode simples"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">V</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">se</span> <span class="va">A</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">entao</span> <span class="va">A</span> <span class="op">&lt;-</span> <span class="va">F</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">senao</span> <span class="va">A</span> <span class="op">&lt;-</span> <span class="va">V</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">fimse</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Supondo que os valores lógicos sejam representados por <code>1</code> para verdadeiro e <code>0</code> para falso, a tradução apresentada nos slides é:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode mvs code-with-copy"><code class="sourceCode mvs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">1</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">0</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVF</span>  <span class="fu">L1</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">0</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVS</span>  <span class="fu">L2</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">L1</span>  <span class="kw">NADA</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">1</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">L2</span>  <span class="kw">NADA</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>As primeiras instruções atribuem <code>1</code> à posição de memória <code>0</code>, que representa a variável <code>A</code> nesse exemplo. Em seguida, <code>CRVG 0</code> recupera seu valor e <code>DSVF L1</code> verifica a condição.</p>
+<p>Se <code>A</code> for falsa, a execução desvia para <code>L1</code> e atribui <code>1</code> a <code>A</code>. Se <code>A</code> for verdadeira, a execução prossegue, atribui <code>0</code> a <code>A</code> e salta para <code>L2</code>, evitando executar o ramo alternativo.</p>
+<p>Esse exemplo demonstra como uma estrutura de alto nível é convertida em instruções de carga, armazenamento e desvio. A seleção não exige uma instrução única que represente todo o comando: seu comportamento é obtido pela combinação de instruções elementares.</p>
+</section>
+</section>
+<section id="tradução-de-comandos-de-repetição" class="level3">
+<h3 class="anchored" data-anchor-id="tradução-de-comandos-de-repetição">Tradução de comandos de repetição</h3>
+<p>Os comandos de repetição são implementados por meio de desvios que retornam a um ponto anterior do programa. Considere a estrutura:</p>
+<pre class="text"><code>enquanto E faca
+    C
+fimenquanto</code></pre>
+<p>A condição precisa ser avaliada antes de cada execução do corpo. Se for verdadeira, o corpo é executado e o controle retorna ao ponto de avaliação. Se for falsa, a execução desvia para a instrução posterior ao laço.</p>
+<p>O esquema geral para tradução da estrutura de seleção a linguagem Simples está representado na <a href="#fig-repeticao" class="quarto-xref">Figura&nbsp;<span>6.4</span></a>.</p>
+<div id="fig-repeticao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-repeticao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/repeticao.png" class="img-fluid figure-img" style="width:40.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-repeticao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;6.4: Esquema de tradução da estrutura de repetição
+</figcaption>
+</figure>
+</div>
+<p>O rótulo <code>L1</code> identifica o início do teste. O rótulo <code>L2</code> identifica a saída do laço. A instrução <code>DSVS L1</code> faz com que a condição seja avaliada novamente após a execução do corpo.</p>
+<section id="exemplo-de-repetição" class="level4">
+<h4 class="anchored" data-anchor-id="exemplo-de-repetição">Exemplo de repetição</h4>
+<p>Considere o programa:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode simples code-with-copy"><code class="sourceCode simples"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">x</span> <span class="op">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">enquanto</span> <span class="va">x</span> <span class="op">&lt;</span> <span class="dv">10</span> <span class="kw">faca</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="dv">2</span> <span class="op">*</span> <span class="va">x</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">fimenquanto</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A tradução para a MVS é:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode mvs code-with-copy"><code class="sourceCode mvs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">1</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">L1</span>  <span class="kw">NADA</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">0</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">10</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CMME</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVF</span>  <span class="fu">L2</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">2</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">0</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">MULT</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVS</span>  <span class="fu">L1</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="fu">L2</span>  <span class="kw">NADA</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>As primeiras instruções atribuem <code>1</code> a <code>x</code>. Em seguida, o programa testa a condição <code>x &lt; 10</code>. A instrução <code>CMME</code> produz <code>1</code> se o valor de <code>x</code> for menor que <code>10</code> e <code>0</code> caso contrário.</p>
+<p>Se o resultado for falso, <code>DSVF L2</code> encerra a repetição. Se for verdadeiro, o programa calcula <code>2 * x</code>, armazena o resultado em <code>x</code> e retorna ao rótulo <code>L1</code>.</p>
+<p>A sequência dos valores de <code>x</code> será:</p>
+<p><span class="math display">\[
+1 \rightarrow 2 \rightarrow 4 \rightarrow 8 \rightarrow 16
+\]</span></p>
+<p>Quando <code>x</code> passa a valer <code>16</code>, a condição <code>x &lt; 10</code> é falsa, e o laço termina. O exemplo ilustra como um comando de repetição é representado por um ciclo no fluxo de controle do código gerado.</p>
+</section>
+</section>
+<section id="tradução-de-comandos-de-entrada-e-saída" class="level3">
+<h3 class="anchored" data-anchor-id="tradução-de-comandos-de-entrada-e-saída">Tradução de comandos de entrada e saída</h3>
+<p>A MVS oferece as instruções <code>LEIA</code> e <code>ESCR</code> para realizar operações de entrada e saída. A primeira obtém um valor e o coloca no topo da pilha; a segunda exibe o valor do topo e o remove.</p>
+<p>Considere o programa:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode simples code-with-copy"><code class="sourceCode simples"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">leia</span> <span class="va">A</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">leia</span> <span class="va">B</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">escreva</span> <span class="va">A</span> <span class="op">+</span> <span class="va">B</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Supondo que as variáveis <code>A</code> e <code>B</code> estejam associadas às posições <code>0</code> e <code>1</code>, respectivamente, a tradução é:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode mvs code-with-copy"><code class="sourceCode mvs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">LEIA</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">LEIA</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">1</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">0</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">1</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SOMA</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ESCR</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A primeira instrução <code>LEIA</code> recebe um valor, que é armazenado em <code>M[0]</code> por <code>ARZG 0</code>. A segunda leitura é armazenada em <code>M[1]</code>. Depois, <code>CRVG 0</code> e <code>CRVG 1</code> colocam os dois valores na pilha, <code>SOMA</code> calcula o resultado e <code>ESCR</code> apresenta a soma.</p>
+<p>Esse padrão também evidencia a divisão de responsabilidades entre o compilador e a máquina virtual. O compilador traduz os comandos para uma sequência de instruções, enquanto a execução dessas instruções realiza as operações de entrada, armazenamento, cálculo e saída.</p>
+</section>
+<section id="tradução-de-um-programa-completo" class="level3">
+<h3 class="anchored" data-anchor-id="tradução-de-um-programa-completo">Tradução de um programa completo</h3>
+<p>Para traduzir um programa completo, é necessário inicializar a máquina, reservar espaço para as variáveis e encerrar a execução adequadamente.</p>
+<p>As instruções de controle utilizadas são:</p>
+<ul>
+<li><code>INPP</code>: inicializa a máquina, definindo <span class="math inline">\(s=-1\)</span>, <span class="math inline">\(i=1\)</span> e <span class="math inline">\(d=0\)</span>.</li>
+<li><code>AMEM n</code>: reserva espaço para as variáveis globais, avançando o topo da pilha em <code>n</code> posições.</li>
+<li><code>FIMP</code>: finaliza a execução.</li>
+</ul>
+<p>Considere o programa:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode simples code-with-copy"><code class="sourceCode simples"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">programa</span> <span class="va">repete</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">inteiro</span> <span class="va">i</span> <span class="va">j</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">inicio</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">i</span> <span class="op">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">enquanto</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="dv">10</span> <span class="kw">faca</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">j</span> <span class="op">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">enquanto</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="dv">10</span> <span class="kw">faca</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>      <span class="kw">escreva</span> <span class="va">i</span> <span class="op">+</span> <span class="va">j</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>      <span class="va">j</span> <span class="op">&lt;-</span> <span class="va">j</span> <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fimenquanto</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">i</span> <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">fimenquanto</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="kw">fimprograma</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A tradução apresentada nos slides é:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode mvs code-with-copy"><code class="sourceCode mvs"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INPP</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">AMEM</span>  <span class="dv">2</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">1</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">L1</span>  <span class="kw">NADA</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">0</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">10</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CMME</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVF</span>  <span class="fu">L2</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">1</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">1</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="fu">L3</span>  <span class="kw">NADA</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">1</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">10</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CMME</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVF</span>  <span class="fu">L4</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">0</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">1</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SOMA</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ESCR</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">1</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">1</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SOMA</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">1</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVS</span>  <span class="fu">L3</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="fu">L4</span>  <span class="kw">NADA</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRVG</span>  <span class="dv">0</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>  <span class="dv">1</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SOMA</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ARZG</span>  <span class="dv">0</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">DSVS</span>  <span class="fu">L1</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="fu">L2</span>  <span class="kw">NADA</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FIMP</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A instrução <code>INPP</code> inicializa a máquina, e <code>AMEM 2</code> reserva espaço para as duas variáveis inteiras. Neste exemplo, <code>i</code> é armazenada em <code>M[0]</code> e <code>j</code> em <code>M[1]</code>.</p>
+<p>O primeiro laço, identificado por <code>L1</code> e <code>L2</code>, controla os valores de <code>i</code>. Para cada valor de <code>i</code> menor que <code>10</code>, o programa inicializa <code>j</code> com <code>1</code> e executa o laço interno, identificado por <code>L3</code> e <code>L4</code>.</p>
+<p>No laço interno, o programa calcula e exibe <code>i + j</code>. Depois, incrementa <code>j</code> e retorna a <code>L3</code> para testar novamente a condição <code>j &lt; 10</code>. Quando essa condição se torna falsa, a execução sai do laço interno, incrementa <code>i</code> e retorna a <code>L1</code>.</p>
+<p>Quando <code>i &lt; 10</code> deixa de ser verdadeira, a execução prossegue para <code>L2</code> e alcança <code>FIMP</code>, encerrando o programa.</p>
+<p>O exemplo reúne os principais mecanismos da MVS: manipulação da pilha, leitura e armazenamento de variáveis, operações aritméticas, comparação, desvios condicionais e desvios incondicionais. Ele mostra como estruturas de alto nível podem ser representadas por uma sequência de instruções simples.</p>
+</section>
+<section id="relação-entre-a-máquina-de-turing-a-máquina-virtual-e-o-compilador" class="level3">
+<h3 class="anchored" data-anchor-id="relação-entre-a-máquina-de-turing-a-máquina-virtual-e-o-compilador">Relação entre a máquina de Turing, a máquina virtual e o compilador</h3>
+<p>A máquina de Turing e a MVS são modelos abstratos de computação, mas foram concebidos para finalidades diferentes.</p>
+<p>A máquina de Turing é utilizada para estudar formalmente a computabilidade e os limites dos algoritmos. Sua descrição concentra-se nos estados, na fita, no cabeçote e na função de transição. Ela permite investigar se um problema admite um procedimento algorítmico, independentemente de detalhes de implementação.</p>
+<p>A MVS, por sua vez, foi projetada para facilitar o estudo da execução de programas compilados. Sua organização em memória de programa, pilha de dados e registradores torna explícitos os mecanismos utilizados para avaliar expressões e controlar o fluxo de execução.</p>
+<p>O compilador conecta a linguagem de alto nível à representação executável pela máquina virtual. Ele traduz as construções da linguagem-fonte em sequências de instruções da MVS, procurando preservar o significado do programa original. A máquina virtual executa o código gerado segundo as regras definidas para cada instrução.</p>
+<p>É importante distinguir a tradução da execução. O compilador produz uma representação do programa; o interpretador ou simulador da MVS executa essa representação. Em uma implementação didática, ambos podem ser desenvolvidos como programas separados, o que facilita testar a correção da tradução e a semântica das instruções.</p>
+<p>A MVS não é necessariamente uma máquina virtual de um produto comercial nem depende de um sistema operacional específico. Trata-se de uma arquitetura didática definida para tornar visíveis os princípios fundamentais da geração e execução de código.</p>
+</section>
+<section id="simulador-da-máquina-virtual-simples" class="level3">
+<h3 class="anchored" data-anchor-id="simulador-da-máquina-virtual-simples">Simulador da Máquina Virtual Simples</h3>
+<p>O simulador da Máquina Virtual Simples (MVS) em sequência permite executar programas e acompanhar como as instruções modificam a pilha, os registradores e o fluxo de execução. A ferramenta oferece um editor de código, visualização da pilha de operandos, indicação da instrução atual e um terminal para entrada e saída de dados.</p>
+<p>As instruções sem rótulo devem começar com uma tabulação. Os rótulos são escritos no início da linha, sem dois-pontos, seguidos de uma tabulação e da instrução associada. Para definir um rótulo sem operação, utilize <code>NADA</code>.</p>
+<p>Exemplo de programa que soma dois valores:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode mvs code-with-copy"><code class="sourceCode mvs"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INPP</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>    <span class="dv">10</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">CRCT</span>    <span class="dv">20</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SOMA</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ESCR</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FIMP</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>O programa coloca os valores 10 e 20 na pilha, soma os operandos, apresenta o resultado no terminal e encerra a execução.</p>
+<p>Execute o programa passo a passo e observe as alterações na pilha e nos registradores de controle. O registrador <code>s</code> indica a próxima posição livre da pilha, enquanto <code>i</code> indica a próxima instrução a ser executada.</p>
+<p>No exemplo, <code>CRCT</code> insere valores na pilha, <code>SOMA</code> substitui os dois operandos pelo resultado 30 e <code>ESCR</code> apresenta esse resultado no terminal.</p>
+<p>Modifique o programa inicial para experimentar operações aritméticas, entrada de dados com <code>LEIA</code>, desvios condicionais e laços de repetição. Antes de executar cada instrução, tente prever seu efeito e compare sua previsão com o comportamento observado. Assim, será possível compreender melhor a semântica das instruções e o funcionamento da MVS.</p>
+<div class="simulacao-container"><iframe src="https://luizedsilva.github.io/Livro-LTC/p5js/mvs/" width="100%" height="600" style="border:none;"></iframe></div>
+</section>
+<section id="considerações-finais-1" class="level3">
+<h3 class="anchored" data-anchor-id="considerações-finais-1">Considerações finais</h3>
+<p>A passagem de uma linguagem de alto nível para uma máquina virtual permite compreender como as construções de um programa são transformadas em operações elementares. Expressões são traduzidas em sequências que manipulam a pilha; atribuições combinam avaliação e armazenamento; seleções e repetições são implementadas por desvios; e comandos de entrada e saída utilizam instruções específicas.</p>
+<p>A MVS fornece um ambiente reduzido no qual esses mecanismos podem ser estudados sem a complexidade de uma arquitetura real. Ao mesmo tempo, a descrição de sua execução por meio de memória, registradores e instruções reforça uma ideia central da teoria da computação: um programa pode ser entendido como uma sequência de transformações de estado, cada uma determinada pelas regras de execução da máquina.</p>
+<p>Dessa forma, o estudo da MVS complementa o estudo da máquina de Turing. Enquanto a máquina de Turing oferece uma base para compreender o que pode ser computado, a máquina virtual ajuda a compreender como um compilador representa e prepara um programa para execução.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiada");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiada");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/5-sintatico.html" class="pagination-link" aria-label="As Linguagens Livres de Contexto e a Análise Sintática">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">As Linguagens Livres de Contexto e a Análise Sintática</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/7-semantico-geracao.html" class="pagination-link" aria-label="A Análise Semântica e a Geração de Código">
+        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">A Análise Semântica e a Geração de Código</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

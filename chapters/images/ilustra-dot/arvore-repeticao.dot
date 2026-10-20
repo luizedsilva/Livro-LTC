@@ -1,0 +1,106 @@
+digraph ArvoreDerivacao {
+    graph [
+        rankdir=TB,
+        ordering=out,
+        bgcolor="white",
+        nodesep=0.28,
+        ranksep=0.48,
+        pad=0.2,
+        splines=true,
+    ];
+    node [shape=box, style="rounded", fontname="Arial", fontsize=11, margin="0.09,0.05"];
+    edge [arrowhead=none, color="#555555"];
+
+    repeticao [label="repetição", style="rounded,filled", fillcolor="#dce8f8"];
+    t_enquanto [label="T_ENQUANTO"];
+
+    acao1 [label="printf(\"Lx NADA\");\lempilha(x);\l",shape=plaintext, fontcolor=red];
+    
+    expressao [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    t_faca [label="T_FACA"];
+    
+    acao2 [label="printf(\"DSVS Ly\");\lempilha(y);\l",shape=plaintext, fontcolor=red];
+    
+    lista [label="lista-comando", style="rounded,filled", fillcolor="#e8f2df"];
+    t_fimenquanto [label="T_FIMENQUANTO"];
+    acao3 [label="y = desempilha();\lx = desempilha();\lprintf(\"DSVS Lx\");\lprintf(\"Ly NADA\");\l",shape=plaintext, fontcolor=red];
+
+    repeticao -> t_enquanto;
+    repeticao -> acao1 [style=dotted, color=red];
+    repeticao -> expressao;
+    repeticao -> t_faca;
+    repeticao -> acao2[style=dotted, color=red];
+    repeticao -> lista;
+    repeticao -> t_fimenquanto;
+    repeticao -> acao3[style=dotted, color=red];
+
+    expressao [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    op_menor [label="<"];
+    expr1 [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    termo_a [label="termo", style="rounded,filled", fillcolor="#e8f2df"];
+
+    acao4 [label="printf(\"CRVG A\");",shape=plaintext, fontcolor=red];
+
+    expr2 [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    termo_10 [label="termo", style="rounded,filled", fillcolor="#e8f2df"];
+
+    acao5 [label="printf(\"CRCT 10\");",shape=plaintext, fontcolor=red];
+
+    ident_a [label="T_IDENTIF"];
+
+    numero_10 [label="T_NUMERO"];
+    lex_a [label="A"];
+    lex_10 [label="10"];
+
+    acao6 [label="printf(\"CMME\");",shape=plaintext, fontcolor=red];
+
+
+    expressao -> expr1;
+    expressao -> op_menor;
+    expressao -> expr2;
+    expressao -> acao6[style=dotted, color=red];    
+    expr1 -> termo_a;
+    termo_a -> ident_a;
+    termo_a -> acao4[style=dotted, color=red];
+    ident_a -> lex_a;
+    expr2 -> termo_10;
+    termo_10 -> numero_10;
+    termo_10 -> acao5[style=dotted, color=red];
+    numero_10 -> lex_10;
+
+    lista -> lista_vazia;
+    lista_vazia [label="lista_comando", style="rounded,filled", fillcolor="#e8f2df"];
+    lista -> comando;
+    comando [label="comando", style="rounded,filled", fillcolor="#e8f2df"];
+    atribuicao [label="atribuição", style="rounded,filled", fillcolor="#e8f2df"];
+
+    comando -> atribuicao;
+    atribuicao -> ident_lhs;
+    atribuicao -> operador;
+    atribuicao -> expr_rhs;
+    ident_lhs [label="T_IDENTIF"];
+    ident_lhs -> lex_a3;
+    lex_a3 [label="A"];
+    operador [label="←"];
+    expr_rhs [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    expr3 [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    expr4 [label="expressão", style="rounded,filled", fillcolor="#e8f2df"]; 
+    expr_rhs -> expr3;
+    expr3 -> termo_a2;
+    expr_rhs -> vezes; 
+    expr_rhs -> expr4;
+    expr4 -> termo_1;
+    termo_a2 [label="termo", style="rounded,filled", fillcolor="#e8f2df"];
+    termo_a2 -> ident_rhs;
+    ident_rhs [label="T_IDENTIF"];
+    ident_rhs -> lex_a4;
+    lex_a4 [label="A"];
+    vezes [label="*"];
+    termo_1 [label="termo", style="rounded,filled", fillcolor="#e8f2df"];
+    termo_1 -> numero_1;
+    numero_1 [label="T_NUMERO"];
+    numero_1 -> lex_2;
+    lex_2 [label="2"];
+
+    { rank=same; t_enquanto; expressao; t_faca; lista; t_fimenquanto; }
+}

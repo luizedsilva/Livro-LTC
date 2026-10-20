@@ -1,3 +1,704 @@
 # Projetos de Compiladores
 
 ![](/chapters/images/projetos.png){fig-align="center" width=70%}
+
+A seguir está uma versão desenvolvida para o livro Teoria de Linguagens e Compiladores, mantendo a organização conceitual dos slides e aprofundando as explicações sobre a relação entre compilador, memória, pilha de execução, árvore de ativação e registros de ativação. O texto também estabelece a ligação com o projeto de compilador para a MVS, especialmente com a implementação de funções, procedimentos e passagem de parâmetros.
+
+## Ambientes de execução
+
+A geração de código não encerra o processo de implementação de uma linguagem de programação. Para que um programa compilado possa ser executado corretamente, é necessário estabelecer como suas instruções e seus dados serão organizados na memória e como ocorrerão as chamadas de funções e procedimentos.
+
+Essas decisões envolvem um compromisso entre o compilador, o sistema operacional, a arquitetura da máquina de destino e, quando existente, o ambiente de execução da linguagem. O compilador precisa produzir código que respeite as convenções adotadas por esses componentes, de modo que as instruções geradas possam ser executadas corretamente.
+
+Para isso, considera-se um modelo denominado ambiente de execução (runtime environment). Esse modelo define as estruturas e os mecanismos utilizados durante a execução do programa, incluindo:
+
+- a localização e a alocação do código e dos dados;
+- o acesso a variáveis globais, locais e parâmetros;
+- o gerenciamento da memória utilizada pelas funções e pelos procedimentos;
+- os mecanismos de chamada e retorno de rotinas;
+- as convenções de passagem de parâmetros e de retorno de valores;
+- a comunicação com o sistema operacional, incluindo operações de entrada e saída.
+
+O ambiente de execução estabelece, portanto, as condições necessárias para que as abstrações da linguagem de programação sejam implementadas sobre uma máquina concreta ou virtual.
+
+Considere uma função que recebe dois parâmetros, realiza uma operação aritmética e retorna o resultado. Para executá-la, não basta que o compilador gere a instrução de adição. Também é necessário determinar onde os parâmetros serão armazenados, como as variáveis locais serão acessadas, onde o resultado será colocado e como o controle retornará ao ponto da chamada.
+
+Essas decisões fazem parte da organização do ambiente de execução. Uma vez estabelecidas, o compilador pode traduzir funções e procedimentos utilizando uma convenção consistente de armazenamento de dados, chamada e retorno.
+
+No caso de uma máquina virtual didática, como a MVS utilizada neste livro, esse ambiente pode ser simplificado para fins pedagógicos. Ainda assim, os mesmos princípios precisam ser considerados quando a linguagem passa a oferecer subprogramas, parâmetros e chamadas recursivas.
+
+### Organização da memória
+
+Durante a execução, um programa utiliza diferentes regiões de memória, cada uma destinada a finalidades específicas. Uma organização conceitual comum distingue a área de código, a área de dados globais ou estáticos, a pilha de execução e a área de alocação dinâmica, denominada heap.
+
+Área de código
+
+Instruções do programa compilado
+
+Área global e estática
+
+Variáveis globais, constantes e dados com duração estática
+
+Pilha
+
+Parâmetros, variáveis locais e informações das chamadas
+
+Heap
+
+Objetos e dados alocados dinamicamente
+
+Representação conceitual das regiões de memória. A disposição física e o sentido de crescimento das regiões dependem da plataforma.
+
+A área de código contém as instruções executáveis do programa. Seu conteúdo é produzido pelo compilador ou pelo sistema de ligação e, normalmente, permanece estável durante a execução. Em programas convencionais, o tamanho do código pode ser determinado a partir do executável produzido, embora existam mecanismos que permitem carregar código adicional durante a execução.
+
+A área global ou estática armazena dados cuja duração não depende de uma chamada individual de função. Entre os exemplos estão variáveis globais e variáveis estáticas. O espaço necessário para esses dados pode ser determinado durante a compilação ou a ligação do programa.
+
+A pilha de execução armazena informações relacionadas às chamadas de funções e procedimentos. Cada chamada pode exigir espaço para os parâmetros, as variáveis locais, os valores temporários e o endereço de retorno. Esse espaço é organizado em registros de ativação, que serão estudados adiante.
+
+A heap é utilizada para dados cuja alocação e duração são controladas durante a execução. Por exemplo, um programa pode solicitar memória dinamicamente para armazenar uma estrutura de dados cujo tamanho só é conhecido em tempo de execução. A liberação desse espaço pode ser explícita, como em `free` e `delete`, ou automática, por meio de mecanismos de gerenciamento e coleta de lixo.
+
+É importante distinguir a heap da pilha de execução. A pilha organiza principalmente as informações associadas às chamadas de rotinas, enquanto a heap permite manter objetos e estruturas de dados que precisam existir independentemente do término de uma chamada específica.
+
+Essa divisão é conceitual: sistemas operacionais e arquiteturas reais podem utilizar outras regiões, como áreas de memória mapeadas, bibliotecas compartilhadas e pilhas específicas para diferentes threads.
+
+### Memória estática e dinâmica
+
+A localização dos dados e sua duração são aspectos fundamentais para o gerenciamento da memória.
+
+A alocação estática ocorre quando o espaço necessário para determinados dados é estabelecido antes da execução, geralmente durante a compilação ou a ligação. Variáveis globais e variáveis estáticas são exemplos comuns. Como sua localização é conhecida pelo ambiente de execução, o acesso a esses dados pode ser realizado por endereços previamente determinados.
+
+A alocação dinâmica ocorre durante a execução. O espaço necessário é obtido conforme as operações realizadas pelo programa. A pilha de execução é utilizada para gerenciar as ativações de funções e procedimentos, enquanto a heap é utilizada para objetos e estruturas cuja duração não precisa acompanhar a sequência de chamadas.
+
+Considere o seguinte programa:
+
+```
+int total;
+
+void calcula(int n) {
+    int parcial;
+    parcial = n * 2;
+}
+```
+
+A variável global `total` possui duração estática. Já o parâmetro `n` e a variável local `parcial` estão associados à execução de `calcula`. Em uma implementação que utiliza pilha de execução, o espaço para esses dados pode ser reservado em um registro de ativação criado quando a função é chamada e liberado quando ela retorna.
+
+Se a função for chamada várias vezes, cada ativação poderá possuir seus próprios valores para `n` e `parcial`. Essa característica é indispensável para que chamadas sucessivas ou recursivas não compartilhem indevidamente as variáveis locais.
+
+A distinção entre alocação estática e dinâmica não deve ser confundida com a distinção entre pilha e heap. A primeira diz respeito ao momento e à duração da alocação; a segunda identifica regiões e mecanismos de gerenciamento de memória. A pilha, por exemplo, realiza alocação dinâmica em tempo de execução, mesmo que o tamanho de cada registro de ativação possa ser calculado pelo compilador.
+
+## Pilha de execução
+
+A pilha de execução é uma estrutura de dados utilizada para gerenciar as chamadas e os retornos das funções e dos procedimentos. Sua organização segue a disciplina LIFO (Last In, First Out): o último elemento inserido é o primeiro a ser removido.
+
+Quando uma rotina é chamada, o ambiente de execução reserva espaço para as informações necessárias à sua execução. Esse espaço constitui seu registro de ativação. Quando a rotina termina, o registro correspondente é removido, liberando o espaço utilizado e permitindo que a execução continue no ponto de chamada.
+
+Considere o seguinte programa:
+
+```
+void C() {
+    /* comandos de C */
+}
+
+void B() {
+    C();
+}
+
+int main() {
+    B();
+    return 0;
+}
+```
+
+A execução começa em `main`, que chama `B`. Durante a execução de `B`, ocorre uma chamada a `C`. Nesse momento, as três rotinas possuem ativações vivas: `main`, `B` e `C`.
+
+Estado da pilha durante a execução de C
+
+Ativação de C
+
+Rotina em execução — topo da pilha
+
+Ativação de B
+
+Chamadora de C
+
+Ativação de main
+
+Origem da sequência de chamadas
+
+A representação mostra a ordem lógica dos registros, do topo para a base. A disposição física da memória pode variar.
+
+Quando `C` termina, seu registro de ativação é removido e o controle retorna a `B`. Depois que `B` termina, seu registro é removido, e a execução retorna a `main`. Por fim, a ativação de `main` termina.
+
+A pilha permite que o ambiente de execução preserve o contexto de cada chamada sem precisar reservar antecipadamente um espaço exclusivo para todas as chamadas possíveis de uma rotina. O mesmo código de uma função pode ser executado repetidas vezes, utilizando registros de ativação diferentes.
+
+Essa organização é especialmente importante na recursão. Uma função recursiva chama a si própria, direta ou indiretamente, antes que uma ativação anterior tenha terminado. Cada chamada precisa preservar seus parâmetros, suas variáveis locais e seu endereço de retorno. A pilha oferece um mecanismo natural para organizar essas informações.
+
+### Por que a pilha funciona?
+
+O uso de uma pilha de execução é possível porque as chamadas de funções e procedimentos apresentam uma propriedade de aninhamento. Uma rotina chamada durante a execução de outra precisa terminar antes que a execução da rotina chamadora possa continuar após a chamada, no modelo convencional de chamadas síncronas.
+
+Isso significa que a ordem das ativações e dos retornos é compatível com a disciplina LIFO:
+
+- as ativações são iniciadas na ordem em que as chamadas ocorrem;
+- a ativação mais recente precisa terminar antes que a ativação imediatamente anterior possa continuar após a chamada;
+- os registros são removidos na ordem inversa àquela em que foram criados.
+
+Essa propriedade explica por que não é necessário procurar arbitrariamente qual ativação deve ser encerrada: em uma execução convencional, o registro no topo da pilha corresponde à rotina atualmente ativa.
+
+A afirmação pressupõe chamadas síncronas convencionais. Corrotinas, continuations, execução assíncrona e outros mecanismos podem exigir estruturas de controle adicionais ou gerenciamento de contexto diferente.
+
+## Árvore de ativação
+
+A árvore de ativação é uma representação conceitual da sequência de chamadas de funções e procedimentos durante a execução de um programa. Ela permite visualizar a relação entre uma ativação e as ativações que ocorrem durante sua execução.
+
+Cada nó da árvore representa uma ativação específica de uma rotina. Se, durante a ativação de uma rotina \\(A\\), ocorre uma chamada que cria a ativação \\(B\\), então \\(B\\) é representada como filha de \\(A\\).
+
+É importante observar que os nós representam chamadas, e não apenas nomes de funções. Se uma função recursiva for chamada várias vezes, cada chamada será representada por um nó distinto, mesmo que todos os nós correspondam ao mesmo código-fonte.
+
+### Exemplo: ordenação por quicksort
+
+Considere o seguinte programa simplificado, que utiliza o algoritmo de ordenação quicksort:
+
+```
+int a[11];
+
+void readArray() {
+    int i;
+    /* leitura dos elementos */
+}
+
+int partition(int m, int n) {
+    /* particionamento do vetor */
+}
+
+void quicksort(int m, int n) {
+    int i;
+
+    if (n > m) {
+        i = partition(m, n);
+        quicksort(m, i - 1);
+        quicksort(i + 1, n);
+    }
+}
+
+int main() {
+    readArray();
+    quicksort(0, 10);
+    return 0;
+}
+```
+
+O programa principal chama `readArray` para ler os elementos do vetor e, em seguida, chama `quicksort`. Durante a execução de `quicksort`, ocorre uma chamada a `partition` e, posteriormente, duas chamadas recursivas a `quicksort`.
+
+Uma possível sequência simplificada de execução é:
+
+```
+entra em main()
+    entra em readArray()
+    sai de readArray()
+
+    entra em quicksort(0, 10)
+        entra em partition(0, 10)
+        sai de partition(0, 10)
+
+        entra em quicksort(0, 3)
+            ...
+        sai de quicksort(0, 3)
+
+        entra em quicksort(5, 10)
+            ...
+        sai de quicksort(5, 10)
+
+    sai de quicksort(0, 10)
+sai de main()
+```
+
+Os limites `0, 3` e `5, 10` são ilustrativos, supondo que a primeira partição tenha separado o vetor nesses intervalos. Os valores concretos dependem dos dados e da implementação de `partition`.
+
+A árvore de ativação correspondente a esse trecho pode ser representada da seguinte maneira:
+
+main
+
+readArray()
+
+quicksort(0,10)
+
+partition(0,10)
+
+quicksort(0,3)
+
+quicksort(5,10)
+
+Chamadas recursivas sucessivas
+
+Esquema parcial da árvore de ativação. Cada nó representa uma chamada específica, e os filhos são as ativações iniciadas durante a execução do nó pai.
+
+Na árvore completa, as chamadas recursivas de `quicksort` também podem originar outras chamadas a `partition` e novas ativações de `quicksort`, até que os subvetores tenham tamanho suficiente para encerrar a recursão.
+
+A árvore de ativação permite distinguir duas representações importantes: a árvore descreve todas as relações de chamada ocorridas durante a execução considerada, enquanto a pilha representa apenas as ativações que permanecem vivas em um determinado instante.
+
+### Relação entre a árvore de ativação e a pilha
+
+A sequência de chamadas de um programa corresponde a um percurso em pré-ordem na árvore de ativação, considerando que cada nó é visitado quando sua ativação começa e que as chamadas filhas são visitadas na ordem em que ocorrem.
+
+De maneira análoga, a sequência de retornos corresponde a um percurso em pós-ordem, considerando que um nó termina depois de concluídas as ativações filhas.
+
+Em qualquer instante, as ativações vivas formam o caminho entre a raiz da árvore e o nó correspondente à rotina que está em execução. A pilha contém os registros dessas ativações, com o registro da rotina atual no topo.
+
+Por exemplo, enquanto `partition(0,10)` está sendo executada, o caminho de ativações é:
+
+```
+main
+  └── quicksort(0,10)
+        └── partition(0,10)
+```
+
+A pilha contém os registros correspondentes a essas três ativações. Quando `partition` termina, seu registro é removido, e a execução retorna a `quicksort(0,10)`. O caminho ativo passa então a conter apenas `main` e `quicksort(0,10)`.
+
+A árvore de ativação oferece, portanto, uma visão global da estrutura de chamadas, enquanto a pilha de execução representa o estado ativo dessa estrutura em um momento específico. Essa relação é fundamental para compreender o gerenciamento de funções, procedimentos e recursão.
+
+## Registro de ativação
+
+Quando uma função ou procedimento é chamado, o ambiente de execução precisa preservar as informações necessárias para que a rotina seja executada corretamente e, ao terminar, retorne ao ponto de chamada. O conjunto dessas informações constitui o registro de ativação, também denominado frame.
+
+Cada ativação possui seu próprio registro. Assim, duas chamadas da mesma função podem compartilhar o código executável, mas manter parâmetros, variáveis locais e endereços de retorno diferentes.
+
+Um registro de ativação pode conter as seguintes informações:
+
+- Parâmetros: valores ou referências recebidos na chamada.
+- Variáveis locais: dados declarados no corpo da rotina.
+- Valores temporários: resultados intermediários utilizados na avaliação de expressões.
+- Estado da máquina: informações que precisam ser preservadas durante a chamada, como registradores utilizados pelo chamador.
+- Endereço de retorno: endereço da instrução que deverá ser executada depois que a rotina terminar.
+- Elo de controle: referência ao registro de ativação da rotina chamadora.
+- Elo de acesso: referência utilizada para localizar dados de escopos lexicais externos, quando a linguagem e sua implementação exigem esse mecanismo.
+- Espaço para o resultado: local utilizado para devolver o valor de uma função, conforme a convenção de chamada.
+
+Nem todos os registros de ativação contêm necessariamente todos esses campos. A organização depende da linguagem, da arquitetura e da convenção de chamada. Por exemplo, alguns parâmetros podem ser transmitidos por registradores, e o valor retornado pode ser colocado em um registrador específico, em vez de ocupar uma posição no registro de ativação.
+
+### Organização de um registro de ativação
+
+A figura a seguir apresenta uma organização conceitual possível.
+
+Registro de ativação de uma rotina
+
+Parâmetros
+
+Argumentos recebidos na chamada
+
+Valor de retorno
+
+Resultado da função, se necessário
+
+Endereço de retorno
+
+Ponto de continuação do chamador
+
+Elo de controle
+
+Registro da rotina chamadora
+
+Elo de acesso
+
+Acesso a um escopo externo, quando necessário
+
+Variáveis locais
+
+Dados privados da ativação
+
+Temporários
+
+Resultados intermediários das expressões
+
+Os campos são ilustrativos. Sua ordem, presença e forma de armazenamento variam conforme a implementação.
+
+O registro é criado quando uma ativação começa e permanece disponível enquanto a rotina está em execução. Quando a rotina termina, o ambiente de execução utiliza as informações necessárias para restaurar o contexto do chamador e liberar o espaço correspondente.
+
+Essa organização permite que o compilador utilize deslocamentos relativos para acessar os dados locais. Por exemplo, uma variável pode ser localizada a partir de um registrador que aponta para uma posição de referência do registro de ativação. O deslocamento da variável pode permanecer constante em diferentes chamadas, mesmo que cada registro esteja localizado em uma posição diferente da memória.
+
+### Exemplo de registros de ativação
+
+Considere o seguinte programa:
+
+```
+int soma(int a, int b) {
+    int resultado;
+    resultado = a + b;
+    return resultado;
+}
+
+int main() {
+    int x;
+    x = soma(10, 20);
+    return 0;
+}
+```
+
+Quando `main` chama `soma(10,20)`, o ambiente de execução precisa disponibilizar os valores `10` e `20` para os parâmetros `a` e `b`. A função utiliza esses valores para calcular `resultado`, cujo valor final é `30`.
+
+Durante a execução de `soma`, a pilha contém, conceitualmente, os registros de ativação de `main` e `soma`:
+
+Estado da pilha durante a execução de soma
+
+Registro de soma — topo
+
+a = 10
+
+b = 20
+
+resultado = 30
+
+Endereço de retorno e informações de controle
+
+Registro de main
+
+x e informações de controle de main
+
+Quando `soma` termina, o resultado é disponibilizado ao chamador de acordo com a convenção de retorno. O registro de ativação de `soma` é removido, e a execução continua em `main`, que atribui o valor retornado à variável `x`.
+
+Se `soma` fosse chamada novamente, seria criado outro registro de ativação, com novos valores para `a`, `b` e `resultado`. Essa independência entre ativações permite que a mesma função seja executada repetidas vezes sem misturar seus dados locais.
+
+### Elo de controle e elo de acesso
+
+Embora possam ser representados por referências entre registros, o elo de controle e o elo de acesso têm finalidades distintas.
+
+O elo de controle identifica a relação dinâmica entre a rotina chamada e a rotina que a chamou. Ele permite recuperar o contexto anterior quando a execução retorna. Em uma implementação baseada em pilha, essa relação acompanha a sequência efetiva de chamadas.
+
+O elo de acesso permite localizar dados pertencentes a um escopo lexical externo. Ele é relevante em linguagens que permitem declarar rotinas dentro de outras rotinas e acessar variáveis de escopos envolventes. Sua utilização depende das regras de escopo da linguagem e da estratégia de implementação.
+
+Em programas nos quais todas as rotinas são declaradas em um único nível e não existe acesso a variáveis de escopos externos, o elo de acesso pode ser desnecessário.
+
+Essa distinção é importante porque a relação entre rotinas na estrutura lexical do programa não é necessariamente a mesma relação estabelecida pela sequência de chamadas durante a execução.
+
+## Relação com o projeto de compilador para a MVS
+
+Os conceitos apresentados fornecem a base para ampliar o compilador desenvolvido nos capítulos anteriores, permitindo a implementação de funções, procedimentos, passagem de parâmetros e recursão.
+
+No projeto atual, a tabela de símbolos armazena informações sobre os identificadores, incluindo seu nome, endereço e tipo. Para incorporar subprogramas, será necessário acrescentar informações sobre parâmetros formais, tipo de retorno e localização do código correspondente. Também será preciso estabelecer como os parâmetros e as variáveis locais serão armazenados durante cada ativação.
+
+A implementação pode seguir uma sequência incremental:
+
+1. Definir a convenção de chamada e retorno da MVS.
+2. Implementar chamadas de procedimentos sem parâmetros.
+3. Introduzir parâmetros por valor e verificar quantidade e tipos dos argumentos.
+4. Implementar o retorno de valores das funções.
+5. Organizar variáveis locais e registros de ativação para permitir chamadas recursivas.
+6. Incorporar passagem por referência e, se necessário, mecanismos de acesso a escopos externos.
+
+A MVS precisará oferecer instruções ou mecanismos equivalentes para preservar o endereço de retorno, transferir o controle para o subprograma e restaurar a execução do chamador. Se o conjunto de instruções atual não oferecer esses recursos, será necessário ampliá-lo ou implementar uma convenção de chamada usando as instruções existentes.
+
+A pilha de execução, a árvore de ativação e o registro de ativação descrevem aspectos complementares desse processo. A árvore representa a relação entre as chamadas; a pilha mantém as ativações vivas; e cada registro reúne os dados e o contexto necessários à execução de uma rotina.
+
+Esses conceitos completam o estudo da geração de código ao mostrar que traduzir uma função não significa apenas produzir suas instruções. É necessário também definir como ela recebe argumentos, mantém seu estado durante a execução e devolve o controle ao programa que a chamou.
+
+Segue uma proposta de texto para o último capítulo do livro, dedicado à ampliação do projeto de compilador. A seção parte do compilador já desenvolvido para a MVS e apresenta, de forma progressiva, os conceitos e as modificações necessárias para incorporar funções, procedimentos, parâmetros e chamadas de subprogramas.
+
+### Projeto de compilador com funções, procedimentos e passagem de parâmetros
+
+Nos capítulos anteriores, desenvolvemos os principais componentes de um compilador para uma linguagem de programação simples: análise léxica, análise sintática, análise semântica e geração de código para a Máquina Virtual Simples (MVS). A linguagem implementada permite declarar variáveis, realizar operações aritméticas e lógicas, executar comandos de atribuição e utilizar estruturas de controle, como seleção e repetição.
+
+Embora esses recursos sejam suficientes para implementar algoritmos de pequena complexidade, programas maiores exigem mecanismos que favoreçam a modularização e o reaproveitamento de código. As funções e os procedimentos atendem a essa necessidade ao permitir que um programa seja dividido em unidades menores, cada uma responsável por realizar uma tarefa específica.
+
+Uma função executa um conjunto de comandos e devolve um resultado ao programa que a chamou. Um procedimento também executa um conjunto de comandos, mas não precisa retornar um valor como resultado de uma expressão. Essa distinção permite organizar o programa em operações que produzem valores e operações destinadas à realização de ações.
+
+A utilização dessas construções introduz novos desafios para o compilador. Além de reconhecer as declarações e as chamadas, é necessário verificar a quantidade e os tipos dos parâmetros, controlar o escopo dos identificadores e gerar instruções que permitam transferir a execução entre o programa principal e os subprogramas.
+
+Também é necessário estabelecer como os argumentos são transmitidos, como as variáveis locais são armazenadas e como a execução retorna ao ponto em que ocorreu a chamada. Essas responsabilidades envolvem tanto a análise semântica quanto a geração de código e a organização da memória durante a execução.
+
+Neste capítulo, ampliaremos o projeto de compilador para contemplar declarações de funções e procedimentos, chamadas de subprogramas e diferentes formas de passagem de parâmetros. O objetivo é compreender como os conceitos estudados anteriormente podem ser estendidos para construir uma linguagem de programação com recursos de abstração e modularização mais expressivos.
+
+### Declaração de funções e procedimentos
+
+Uma função ou um procedimento é uma unidade de programa identificada por um nome e constituída, em geral, por uma lista de parâmetros, declarações locais e um corpo de comandos.
+
+Uma declaração de função especifica o tipo do valor que será devolvido. Por exemplo:
+
+```
+funcao soma(inteiro a, inteiro b): inteiro
+inicio
+    retorne a + b;
+fim
+```
+
+A função `soma` recebe dois parâmetros inteiros, `a` e `b`, e retorna a soma de seus valores. O tipo declarado após os parâmetros indica que o resultado da função é inteiro.
+
+Um procedimento pode ser declarado da seguinte forma:
+
+```
+procedimento imprime(inteiro valor)
+inicio
+    escreva valor;
+fim
+```
+
+Nesse exemplo, o procedimento `imprime` recebe um parâmetro inteiro e apresenta seu valor. Não há um resultado a ser utilizado em uma expressão, embora a execução do procedimento possa produzir efeitos, como a escrita de dados.
+
+Os exemplos utilizam uma notação ilustrativa para as declarações. A sintaxe efetivamente adotada pelo compilador deverá ser definida pela gramática da linguagem.
+
+A inclusão dessas construções exige que o compilador reconheça novos elementos sintáticos, entre eles:
+
+- declarações de funções e procedimentos;
+- listas de parâmetros formais;
+- tipos de parâmetros e de retorno;
+- comandos de retorno;
+- chamadas de funções e procedimentos;
+- listas de argumentos efetivos.
+
+Esses elementos precisam ser incorporados à gramática e associados a regras semânticas que garantam a consistência das declarações e das chamadas.
+
+### Parâmetros formais e argumentos efetivos
+
+Os parâmetros permitem que um subprograma receba informações do ambiente que o invoca. Para compreender seu funcionamento, é importante distinguir parâmetros formais de argumentos efetivos.
+
+Os **parâmetros formais** são os identificadores declarados na definição da função ou do procedimento. No exemplo anterior, `a` e `b` são os parâmetros formais da função `soma`.
+
+Os **argumentos efetivos** são os valores ou as expressões fornecidos no momento da chamada. Por exemplo:
+
+```
+resultado = soma(10, 20);
+```
+
+Nessa chamada, `10` e `20` são os argumentos efetivos correspondentes aos parâmetros formais `a` e `b`.
+
+Durante a compilação, o compilador precisa verificar se a chamada respeita a declaração do subprograma. No exemplo, a função espera dois argumentos inteiros. Uma chamada com apenas um argumento ou com tipos incompatíveis deve ser rejeitada, de acordo com as regras da linguagem.
+
+A verificação envolve pelo menos três propriedades:
+
+1. **Quantidade de argumentos:** o número de argumentos deve ser compatível com o número de parâmetros declarados.
+2. **Compatibilidade de tipos:** cada argumento deve ser compatível com o tipo do parâmetro correspondente.
+3. **Ordem dos argumentos:** cada argumento deve ser associado ao parâmetro correto, conforme a posição ou as regras de associação definidas pela linguagem.
+
+Considere a seguinte chamada:
+
+```
+resultado = soma(10);
+```
+
+Se a função exigir dois parâmetros, a chamada apresenta um erro semântico, pois a quantidade de argumentos é insuficiente. Da mesma forma, uma chamada como `soma(10, verdadeiro)` será inválida se o segundo parâmetro exigir um valor inteiro e a linguagem não permitir a conversão do valor lógico.
+
+Essas verificações dependem das informações armazenadas na tabela de símbolos. Portanto, a representação dos identificadores deverá ser ampliada para registrar não apenas as variáveis, mas também as funções e os procedimentos, incluindo suas listas de parâmetros e, no caso das funções, o tipo de retorno.
+
+### Passagem de parâmetros
+
+A passagem de parâmetros determina como os argumentos fornecidos na chamada são disponibilizados ao subprograma. Existem diferentes mecanismos, e a escolha influencia tanto o comportamento do programa quanto a implementação do compilador e da máquina virtual.
+
+#### Passagem por valor
+
+Na passagem por valor, o subprograma recebe uma cópia do valor do argumento. Alterações realizadas no parâmetro formal não modificam diretamente a variável utilizada na chamada.
+
+Considere o procedimento:
+
+```
+procedimento incrementa(inteiro x)
+inicio
+    x = x + 1;
+fim
+```
+
+Suponha que o programa principal execute:
+
+```
+inteiro a;
+a = 5;
+incrementa(a);
+```
+
+Com passagem por valor, o procedimento recebe uma cópia do valor `5`. Ao executar `x = x + 1`, o parâmetro local passa a valer `6`, mas a variável `a` permanece com o valor `5`.
+
+Esse mecanismo exige que o compilador transmita o valor do argumento e que o ambiente de execução disponibilize um espaço de armazenamento para o parâmetro formal.
+
+Na MVS, uma implementação possível consiste em avaliar o argumento, colocar seu valor na pilha de execução e copiá-lo para a posição de memória associada ao parâmetro formal durante a ativação do subprograma.
+
+#### Passagem por referência
+
+Na passagem por referência, o parâmetro formal permite acessar a própria variável associada ao argumento, em vez de receber apenas uma cópia de seu valor. Dessa forma, as modificações realizadas no subprograma podem ser observadas pelo programa que o chamou.
+
+Considere o mesmo procedimento `incrementa`, agora com o parâmetro declarado por referência:
+
+```
+procedimento incrementa(referencia inteiro x)
+inicio
+    x = x + 1;
+fim
+```
+
+Ao executar:
+
+```
+inteiro a;
+a = 5;
+incrementa(a);
+```
+
+o procedimento acessa a variável original. Ao final da chamada, `a` passa a valer `6`.
+
+Para implementar esse mecanismo, o compilador precisa transmitir uma referência à variável, normalmente representada por seu endereço. O acesso ao parâmetro formal deve utilizar essa referência para ler ou modificar o conteúdo da posição de memória correspondente.
+
+Nem toda expressão pode ser utilizada como argumento de um parâmetro por referência. Em uma implementação convencional, o argumento deve designar uma posição de armazenamento válida, como uma variável. Uma constante ou uma expressão aritmética, por exemplo, não pode ser tratada diretamente como uma variável modificável sem regras adicionais.
+
+#### Comparação entre os mecanismos
+
+| Característica                | Passagem por valor                         | Passagem por referência                     |
+| ----------------------------- | ------------------------------------------ | ------------------------------------------- |
+| Informação transmitida        | Valor do argumento                         | Referência à variável                       |
+| Alteração do parâmetro formal | Não altera diretamente a variável original | Pode alterar a variável original            |
+| Armazenamento                 | Cópia do valor                             | Referência ou endereço                      |
+| Uso frequente                 | Fornecimento de dados                      | Consulta e modificação de dados do chamador |
+
+A linguagem implementada no projeto poderá adotar apenas passagem por valor inicialmente e, posteriormente, incorporar passagem por referência. Essa evolução permite compreender o mecanismo básico de chamada antes de introduzir o tratamento de endereços e os efeitos das alterações sobre as variáveis do programa principal.
+
+### Escopo e tabela de símbolos
+
+A introdução de funções e procedimentos exige ampliar a tabela de símbolos utilizada nos projetos anteriores. Até aqui, cada identificador armazenava informações como nome, endereço e tipo. Com os novos recursos, o compilador deverá distinguir variáveis, funções e procedimentos.
+
+Para uma função, por exemplo, a tabela poderá armazenar:
+
+- nome da função;
+- categoria do identificador;
+- tipo do valor retornado;
+- quantidade de parâmetros;
+- tipos dos parâmetros;
+- mecanismos de passagem dos parâmetros;
+- informações necessárias à geração do código da chamada.
+
+Para um procedimento, as informações serão semelhantes, exceto pelo tipo de retorno, que não representa um valor utilizado em expressões.
+
+Também será necessário tratar o escopo dos identificadores. Uma variável declarada dentro de uma função pode ter existência e visibilidade restritas ao corpo dessa função. Outra função poderá declarar uma variável com o mesmo nome, sem que isso implique necessariamente um conflito.
+
+Para representar esses contextos, uma solução consiste em manter uma tabela de símbolos associada a cada escopo ou utilizar uma tabela organizada em níveis. Quando o compilador entra em uma função ou procedimento, cria ou ativa o escopo correspondente. Ao terminar o processamento da declaração, encerra esse escopo, preservando as informações globais que continuam válidas.
+
+Essa organização evita que parâmetros e variáveis locais sejam confundidos com identificadores de outras unidades do programa. Além disso, permite detectar usos de variáveis fora de seu escopo e chamadas a funções ou procedimentos não declarados, conforme as regras da linguagem.
+
+### Ativação de funções e procedimentos
+
+Durante a execução, cada chamada de função ou procedimento cria uma nova ativação do subprograma. Essa ativação reúne as informações necessárias para executar o corpo do subprograma e retornar ao ponto de chamada.
+
+Uma implementação convencional utiliza um registro de ativação, também conhecido como quadro de ativação (*activation record*). Ele pode conter:
+
+- parâmetros recebidos;
+- variáveis locais;
+- endereço de retorno;
+- informações de controle da chamada;
+- espaço para o resultado da função, quando necessário.
+
+A organização exata depende da máquina virtual e da convenção de chamada adotada. Em uma máquina baseada em pilha, os registros de ativação podem ser organizados em uma pilha de chamadas, permitindo que uma função invoque outra e que chamadas recursivas mantenham dados independentes para cada ativação.
+
+Considere:
+
+```
+funcao quadrado(inteiro x): inteiro
+inicio
+    retorne x * x;
+fim
+```
+
+Quando o programa executa `quadrado(5)`, o ambiente de execução disponibiliza o parâmetro `x`, executa a multiplicação e devolve o resultado `25` ao ponto da chamada.
+
+Se a função `quadrado` for chamada novamente antes de a execução anterior terminar, cada ativação deverá preservar seu próprio valor de `x` e seu próprio endereço de retorno. Esse requisito é fundamental para permitir recursão.
+
+No compilador para a MVS, será necessário definir como os parâmetros e as variáveis locais serão organizados na memória e como o endereço de retorno será preservado. Caso a máquina virtual não ofereça diretamente essas operações, será necessário implementar uma convenção de chamada por meio das instruções disponíveis ou ampliar o conjunto de instruções da máquina.
+
+### Geração de código para chamadas
+
+A geração de código deve traduzir a chamada de uma função ou procedimento em uma sequência de operações que prepare os argumentos, transfira a execução ao subprograma e permita o retorno ao chamador.
+
+Para uma chamada como:
+
+```
+resultado = soma(10, 20);
+```
+
+o compilador deverá gerar código que, conceitualmente, realize as seguintes operações:
+
+1. Avalie os argumentos na ordem definida pela linguagem.
+2. Disponibilize os valores ou referências aos parâmetros formais.
+3. Preserve as informações necessárias para retornar ao ponto da chamada.
+4. Transfira o controle para o código da função.
+5. Execute o corpo da função e obtenha o resultado.
+6. Retorne ao chamador e disponibilize o valor retornado para completar a atribuição.
+
+O código concreto dependerá das instruções oferecidas pela MVS. Se a máquina virtual possuir instruções específicas para chamada e retorno, elas poderão ser utilizadas diretamente. Caso contrário, será necessário construir uma sequência equivalente usando desvios, pilha e posições de memória reservadas para o controle das chamadas.
+
+É importante distinguir a chamada do subprograma de sua declaração. A declaração define o corpo da função ou do procedimento, enquanto a chamada transfere a execução para esse corpo em um ponto específico do programa.
+
+Para evitar que o programa execute o corpo de uma função apenas por ele aparecer no arquivo gerado, o compilador deverá organizar os rótulos e desvios de maneira que a execução normal passe pelo programa principal e alcance cada subprograma somente quando houver uma chamada correspondente.
+
+#### Retorno de funções
+
+Uma função precisa devolver um valor compatível com o tipo declarado. O comando `retorne` pode ser utilizado para indicar o resultado:
+
+```
+funcao soma(inteiro a, inteiro b): inteiro
+inicio
+    retorne a + b;
+fim
+```
+
+O compilador deverá verificar se a expressão retornada é compatível com o tipo da função. Também deverá definir as regras para funções que terminam sem executar um comando de retorno, incluindo a possibilidade de rejeitar essas situações durante a análise semântica.
+
+Na geração de código, o resultado poderá ser colocado em uma posição da pilha, em um espaço reservado no registro de ativação ou em outro local definido pela convenção de chamada. A instrução de retorno deverá restaurar o fluxo de execução e disponibilizar o valor ao chamador.
+
+#### Retorno de procedimentos
+
+Um procedimento não precisa devolver um valor para ser utilizado em uma expressão. Seu término deve apenas permitir que a execução retorne ao ponto da chamada.
+
+Por exemplo:
+
+```
+procedimento mensagem()
+inicio
+    escreva 1;
+fim
+```
+
+Uma chamada a `mensagem()` executa o corpo do procedimento e, ao final, retorna ao comando seguinte. O compilador deverá garantir que o retorno não deixe valores indevidos na pilha e que a memória temporária utilizada durante a ativação seja liberada de acordo com a convenção adotada.
+
+### Modificações no projeto de compilador
+
+A ampliação do compilador existente exige alterações coordenadas na gramática, na análise semântica, na tabela de símbolos e na geração de código.
+
+No arquivo de especificação do Bison, será necessário incluir produções para declarações de funções e procedimentos, parâmetros formais, listas de argumentos, chamadas e comandos de retorno. As ações semânticas deverão registrar as informações das declarações, verificar as chamadas e emitir as instruções correspondentes.
+
+A tabela de símbolos deverá armazenar as informações adicionais dos subprogramas e dos seus parâmetros. A organização por escopos permitirá distinguir variáveis globais, parâmetros e variáveis locais. Para verificar uma chamada, o compilador deverá comparar os argumentos efetivos com a assinatura registrada para a função ou o procedimento.
+
+A geração de código precisará definir uma convenção de chamada. Essa convenção deverá especificar como os argumentos são transmitidos, como o endereço de retorno é armazenado, onde ficam as variáveis locais e como o resultado de uma função é devolvido.
+
+As mudanças podem ser implementadas progressivamente:
+
+1. **Declaração de procedimentos sem parâmetros:** introduzir a estrutura de declaração, o corpo e a chamada, além das instruções de transferência de controle e retorno.
+2. **Declaração de funções:** permitir o retorno de valores e a utilização de chamadas em expressões.
+3. **Parâmetros por valor:** incluir parâmetros formais e argumentos efetivos, com verificação de quantidade e tipos.
+4. **Parâmetros por referência:** implementar a transmissão de endereços e o acesso às variáveis do chamador.
+5. **Escopos e recursão:** organizar as tabelas de símbolos e os registros de ativação para permitir chamadas aninhadas e recursivas.
+
+Essa sequência permite validar cada recurso isoladamente antes de combinar todos eles em programas mais complexos.
+
+### Atividades propostas
+
+Para consolidar os conceitos, propõe-se ampliar o compilador desenvolvido nos capítulos anteriores, implementando as funcionalidades na ordem apresentada.
+
+**Atividade 1 — Procedimentos sem parâmetros.** Estenda a gramática para declarar um procedimento sem parâmetros e permitir sua chamada a partir do programa principal. Gere o código necessário para transferir a execução ao procedimento e retornar ao comando seguinte.
+
+**Atividade 2 — Funções com retorno inteiro.** Implemente funções que recebam parâmetros e retornem valores inteiros. Permita que uma chamada seja utilizada em expressões aritméticas e verifique o tipo do resultado durante a análise semântica.
+
+**Atividade 3 — Verificação de argumentos.** Amplie a tabela de símbolos para armazenar a quantidade e os tipos dos parâmetros de cada subprograma. Detecte chamadas com quantidade incorreta de argumentos ou com tipos incompatíveis.
+
+**Atividade 4 — Passagem por valor.** Implemente a transmissão dos valores dos argumentos para os parâmetros formais. Verifique, por meio de um programa de teste, que a alteração de um parâmetro local não modifica a variável original do chamador.
+
+**Atividade 5 — Passagem por referência.** Amplie a linguagem para permitir parâmetros por referência. Implemente a transmissão de endereços e verifique que as modificações realizadas no subprograma são observadas pelo chamador.
+
+**Atividade 6 — Variáveis locais e escopos.** Permita declarações locais em funções e procedimentos. Garanta que identificadores locais sejam tratados separadamente dos identificadores de outros escopos.
+
+**Atividade 7 — Recursão.** Implemente uma função recursiva, como o cálculo do fatorial. Verifique se cada ativação mantém seus parâmetros e endereço de retorno, sem interferir nas ativações anteriores.
+
+### Considerações finais
+
+A inclusão de funções, procedimentos e passagem de parâmetros representa uma evolução importante do projeto de compilador. Esses recursos ampliam a expressividade da linguagem e exigem que o compilador controle não apenas as construções sintáticas e os tipos, mas também a organização dos dados e o fluxo de execução durante as chamadas.
+
+O projeto permite integrar diversos conceitos estudados ao longo do livro: gramáticas livres de contexto, tradução dirigida por sintaxe, análise semântica, tabela de símbolos, geração de código e organização da memória. Ao implementar esses recursos, o estudante passa a compreender como abstrações presentes nas linguagens de alto nível são traduzidas para operações executáveis por uma máquina virtual.
+
+A implementação deve ser realizada de maneira incremental, definindo primeiro a sintaxe e a semântica das novas construções e, em seguida, estabelecendo a convenção de chamada e o código correspondente. Como as instruções específicas para chamadas e retornos dependem da arquitetura da MVS, essa etapa também pode exigir a extensão da máquina virtual utilizada nos projetos anteriores.
+
+Ao final, o compilador deverá ser capaz de traduzir programas estruturados em subprogramas, verificar a consistência das declarações e chamadas e gerar código que preserve o comportamento esperado durante a execução. Esse resultado constitui uma base para futuras extensões, como parâmetros opcionais, sobrecarga de funções, tipos estruturados e mecanismos mais sofisticados de gerenciamento de memória.
+
+Observação para a implementação: como os arquivos do projeto apresentados anteriormente não especificam instruções da MVS para chamada e retorno de subprogramas, o texto trata essa parte de forma conceitual, sem atribuir à máquina instruções que ainda não foram definidas. Antes de apresentar o código definitivo do compilador, será necessário estabelecer a convenção de chamada e verificar se a MVS atual oferece os mecanismos necessários ou precisa ser ampliada.

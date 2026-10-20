@@ -1,4 +1,4 @@
-# As Máquinas
+# A Máquina de Turing e as Máquinas Virtuais
 
 ![](/chapters/images/maquinas.png){fig-align="center" width=70%}
 
@@ -28,7 +28,7 @@ Ao longo do capítulo, os exemplos e simuladores serão utilizados para tornar e
 
 O objetivo, portanto, é construir gradualmente uma visão unificada da computação: partindo de um modelo matemático extremamente simples, a Máquina de Turing, e avançando até um modelo de máquina virtual suficientemente estruturado para servir como destino da geração de código de um compilador. Essa transição permitirá conectar os fundamentos teóricos da computação aos mecanismos práticos envolvidos na execução de programas.
 
-## Máquina de Turing
+## A Máquina de Turing
 
 Nos capítulos anteriores foram apresentados diferentes modelos de computação. Os autômatos finitos constituem modelos adequados para o reconhecimento de linguagens regulares e para problemas nos quais a quantidade de memória disponível é limitada. Os autômatos com pilha ampliam essa capacidade ao incorporar uma memória potencialmente ilimitada organizada segundo o princípio de que o último elemento armazenado é o primeiro a ser recuperado. Apesar dessas extensões, existem problemas que não podem ser resolvidos por esses modelos. Torna-se necessário, portanto, considerar um modelo de computação mais geral, capaz de representar uma classe muito mais ampla de processos computacionais.
 
@@ -417,7 +417,7 @@ Por fim, o usuário pode fornecer uma palavra de entrada para realizar a simula�
 ::: {.simulacao url="/p5js/mt/" height="400" image="/printscreen/mt.png" qrcode="/qrcode/mt.png"}
 :::
 
-## Decidibilidade
+### Decidibilidade
 
 A teoria da computação investiga os problemas que podem ser resolvidos por algoritmos e os limites do processamento automático de informações. Embora os computadores sejam capazes de executar uma enorme variedade de tarefas, nem todo problema formulado de maneira precisa pode ser resolvido por um algoritmo que produza uma resposta correta em tempo finito para qualquer entrada.
 
@@ -427,7 +427,7 @@ A investigação da decidibilidade possui duas vertentes complementares. A prime
 
 Conhecer os problemas indecidíveis é tão importante quanto conhecer aqueles que podem ser resolvidos. Esse conhecimento permite reconhecer os limites da automação, avaliar o que pode ser verificado por ferramentas de análise de programas e compreender por que determinadas tarefas não admitem uma solução geral. Além disso, a identificação desses limites estimula a busca por soluções alternativas, como algoritmos que funcionam apenas para classes restritas de entradas ou procedimentos que fornecem respostas em determinadas situações, sem garantir uma resposta para todas elas.
 
-### Problemas de decisão e linguagens decidíveis
+#### Problemas de decisão e linguagens decidíveis
 
 Um problema de decisão é um problema cuja resposta pode ser expressa por uma das duas possibilidades: **sim** ou **não**. Por exemplo, dado um número inteiro, verificar se ele é par constitui um problema de decisão. Na teoria de linguagens, muitos problemas podem ser formulados como perguntas sobre a pertinência de uma cadeia a uma linguagem.
 
@@ -446,7 +446,7 @@ A condição de término é essencial. Considere uma máquina que aceita todas a
 
 A decidibilidade não exige que o algoritmo seja eficiente. Um decisor pode realizar uma quantidade muito grande de operações e ainda assim decidir a linguagem, desde que termine para toda entrada. A questão da eficiência computacional é estudada principalmente pela teoria da complexidade, enquanto a decidibilidade investiga inicialmente a existência de um procedimento que sempre forneça uma resposta.
 
-#### Linguagens reconhecíveis
+##### Linguagens reconhecíveis
 
 Uma linguagem $A$ é *Turing-reconhecível* se existe uma máquina de Turing que aceita toda cadeia pertencente a $A$. Para as cadeias que não pertencem a $A$, a máquina pode rejeitar ou executar indefinidamente.
 
@@ -461,11 +461,11 @@ A diferença pode ser resumida da seguinte maneira:
 
 Essa distinção será fundamental para compreender o problema da parada, que demonstra a existência de linguagens reconhecíveis que não são decidíveis.
 
-### Decidibilidade para linguagens regulares
+#### Decidibilidade para linguagens regulares
 
 As linguagens regulares possuem propriedades que facilitam a construção de algoritmos de decisão. Uma linguagem regular pode ser representada por um autômato finito determinístico (AFD), um autômato finito não determinístico (AFN) ou uma expressão regular. Como esses formalismos possuem procedimentos efetivos de conversão e análise, vários problemas envolvendo linguagens regulares são decidíveis.
 
-#### Problema de aceitação para AFDs
+##### Problema de aceitação para AFDs
 
 Considere o problema de determinar se um autômato finito determinístico aceita uma determinada cadeia. Seja
 
@@ -488,7 +488,7 @@ A simulação termina porque um AFD realiza uma transição para cada símbolo c
 
 Esse resultado mostra que verificar a aceitação de uma cadeia por um AFD é um problema decidível. Não é necessário examinar todas as cadeias possíveis: basta simular o autômato sobre a cadeia específica fornecida.
 
-#### Problema de aceitação para AFNs
+##### Problema de aceitação para AFNs
 
 Um autômato finito não determinístico pode possuir várias transições possíveis para um mesmo símbolo e estado, além de transições vazias, que não consomem símbolos da entrada. Assim, a aceitação ocorre quando existe pelo menos um caminho de execução que termina em um estado de aceitação após consumir toda a cadeia.
 
@@ -510,7 +510,7 @@ A conversão de um AFN em um AFD é um procedimento efetivo que termina, e os do
 
 A demonstração utiliza uma estratégia recorrente na teoria da computação: transformar um problema em outro problema já conhecido como decidível. Como a conversão preserva a linguagem reconhecida, a resposta obtida para o AFD resolve o problema original.
 
-#### Problema de aceitação para expressões regulares
+##### Problema de aceitação para expressões regulares
 
 Uma expressão regular representa uma linguagem regular por meio de operações como união, concatenação e fecho de Kleene. Por isso, também é possível decidir se uma cadeia pertence à linguagem representada por uma expressão regular.
 
@@ -532,7 +532,7 @@ A conversão de uma expressão regular em um AFN termina e preserva a linguagem 
 
 Assim, os três formalismos — AFDs, AFNs e expressões regulares — permitem resolver o problema de pertinência de uma cadeia à linguagem que representam.
 
-#### Problema da vacuidade para AFDs
+##### Problema da vacuidade para AFDs
 
 Além de verificar se um autômato aceita uma cadeia específica, podemos perguntar se ele aceita alguma cadeia. Esse é o problema da vacuidade, também chamado de problema da linguagem vazia.
 
@@ -561,7 +561,7 @@ Portanto, $M_4$ decide $V_{\mathrm{AFD}}$.
 
 O algoritmo não precisa enumerar todas as cadeias possíveis. Mesmo que existam infinitas cadeias sobre o alfabeto do autômato, basta examinar a estrutura finita de seus estados e transições.
 
-#### Equivalência de AFDs
+##### Equivalência de AFDs
 
 Dois autômatos são equivalentes quando reconhecem exatamente a mesma linguagem. A equivalência pode ser expressa por
 
@@ -600,13 +600,13 @@ Como as operações de construção de $C$ são efetivas e $M_4$ é um decisor, 
 
 Esse exemplo ilustra outra técnica importante: um problema de equivalência pode ser reduzido a um problema de vacuidade. Em vez de comparar diretamente todos os elementos de duas linguagens, constrói-se uma linguagem que representa suas diferenças e verifica-se se ela é vazia.
 
-### Decidibilidade para linguagens livres de contexto
+#### Decidibilidade para linguagens livres de contexto
 
 As linguagens livres de contexto são reconhecidas por autômatos com pilha e podem ser descritas por gramáticas livres de contexto (GLCs). Embora algumas propriedades das linguagens regulares também sejam decidíveis para linguagens livres de contexto, outras apresentam dificuldades maiores.
 
 Nesta seção, consideraremos três problemas: verificar se uma gramática gera uma cadeia específica, verificar se a linguagem de uma gramática é vazia e verificar se duas gramáticas geram a mesma linguagem.
     
-#### Problema de pertinência para gramáticas livres de contexto
+##### Problema de pertinência para gramáticas livres de contexto
 
 Seja $G$ uma gramática livre de contexto e $w$ uma cadeia. O problema consiste em determinar se $G$ gera $w$, isto é, se existe uma derivação
 
@@ -639,7 +639,7 @@ Assim, $M_6$ termina para toda entrada e responde corretamente. Portanto, $A_{\m
 
 A demonstração é baseada na existência de um limite finito para a busca. A conversão para a forma normal de Chomsky restringe a estrutura das derivações e torna possível examinar sistematicamente as alternativas em um espaço finito.
 
-#### Problema da vacuidade para gramáticas livres de contexto
+##### Problema da vacuidade para gramáticas livres de contexto
 
 O problema da vacuidade para uma gramática livre de contexto consiste em verificar se ela não gera nenhuma cadeia terminal. Definimos
 
@@ -664,7 +664,7 @@ Se o símbolo inicial for marcado, existe uma derivação que produz uma cadeia 
 
 Portanto, $M_7$ decide $V_{\mathrm{GLC}}$.
 
-#### Equivalência de gramáticas livres de contexto
+##### Equivalência de gramáticas livres de contexto
 
 Duas gramáticas livres de contexto $G$ e $H$ são equivalentes quando geram exatamente a mesma linguagem:
 
@@ -684,7 +684,7 @@ Esse resultado estabelece um contraste importante entre linguagens regulares e l
 
 A existência de algoritmos para decidir a pertinência de uma cadeia e a vacuidade de uma gramática não implica que o problema de equivalência também seja decidível. Cada problema precisa ser analisado individualmente. Uma propriedade pode ser decidível enquanto outra, aparentemente relacionada, é indecidível.
 
-#### Toda linguagem livre de contexto é decidível
+##### Toda linguagem livre de contexto é decidível
 
 Embora o problema de equivalência entre gramáticas livres de contexto seja indecidível, toda linguagem livre de contexto é decidível.
 
@@ -899,6 +899,16 @@ A memória da MVS é dividida em duas regiões principais:
 As duas regiões podem ser entendidas como vetores cujas posições são identificadas por índices inteiros, a partir de zero, até um limite definido pela implementação.
 
 Além dessas regiões de memória, a MVS possui três registradores de controle: $i$, $s$ e $d$.
+
+![Ambiente de execução da máquina virtual simples (MVS)](/chapters/images/ambiente-mvs.png){#fig-ambiente-mvs width="60%"}
+
+A @fig-ambiente-mvs compara a organização da memória em um ambiente de execução de uma arquitetura real com a organização adotada pela máquina virtual MVS.
+
+No ambiente de execução real, a memória é organizada em diferentes regiões: a área de código, a área global/estática, a pilha de execução (stack) e a área de alocação dinâmica (heap). Entre a pilha e a área de heap, pode existir um espaço livre compartilhado, permitindo que ambas cresçam em direções opostas, conforme as necessidades da execução.
+
+No ambiente de execução da MVS, essa organização é simplificada. A região de programa $P$ armazena as instruções do programa a ser executado, enquanto a região de dados $M$ reúne as informações necessárias à execução. Essa região corresponde, conceitualmente, à memória utilizada pela máquina virtual para representar os dados e manter o estado de execução do programa.
+
+Diferentemente do ambiente real ilustrado, a MVS não apresenta regiões separadas para variáveis globais, pilha e heap. Sua estrutura simplificada também não prevê um mecanismo específico de alocação dinâmica de memória equivalente ao heap das arquiteturas reais.
 
 #### Registrador de instrução
 
@@ -1418,7 +1428,7 @@ No exemplo, `CRCT` insere valores na pilha, `SOMA` substitui os dois operandos p
 
 Modifique o programa inicial para experimentar operações aritméticas, entrada de dados com `LEIA`, desvios condicionais e laços de repetição. Antes de executar cada instrução, tente prever seu efeito e compare sua previsão com o comportamento observado. Assim, será possível compreender melhor a semântica das instruções e o funcionamento da MVS.
 
-::: {.simulacao url="/p5js/mvs/" height="400" image="/printscreen/mvs.png" qrcode="/qrcode/mvs.png"}
+::: {.simulacao url="/p5js/mvs/" height="600" image="/printscreen/mvs.png" qrcode="/qrcode/mvs.png"}
 :::
 
 ### Considerações finais

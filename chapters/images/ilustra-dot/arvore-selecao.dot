@@ -1,0 +1,72 @@
+digraph ArvoreDerivacao {
+    graph [
+        rankdir=TB,
+        ordering=out,
+        bgcolor="white",
+        nodesep=0.28,
+        ranksep=0.48,
+        pad=0.2,
+        splines=true,
+    ];
+    node [shape=box, style="rounded", fontname="Arial", fontsize=11, margin="0.09,0.05"];
+    edge [arrowhead=none, color="#555555"];
+
+    selecao [label="selecao", style="rounded,filled", fillcolor="#dce8f8"];
+    t_se [label="T_SE"];
+    expressao [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    t_entao [label="T_ENTAO"];
+    lista1 [label="lista-comando", style="rounded,filled", fillcolor="#e8f2df"];
+    acao1 [label="printf(\"DSVF Lx\");\lempilha(x);\l",shape=plaintext, fontcolor=red];
+    t_senao [label="T_SENAO"];
+    acao2 [label="x = desempilha();\lprintf(\"DSVS Ly\");\lempilha(y);\lprintf(\"Lx NADA\");\l",shape=plaintext, fontcolor=red];
+    lista2 [label="lista-comando", style="rounded,filled", fillcolor="#e8f2df"];
+    t_fimse [label="T_FIMSE"];
+    acao3 [label="y = desempilha();\lprintf(\"Ly NADA\");\l",shape=plaintext, fontcolor=red];
+
+    selecao -> t_se;
+    selecao -> expressao;
+    selecao -> t_entao;
+    selecao -> acao1 [style=dotted, color=red];
+    selecao -> lista1;
+    selecao -> t_senao;
+    selecao -> acao2[style=dotted, color=red];
+    selecao -> lista2;
+    selecao -> t_fimse;
+    selecao -> acao3[style=dotted, color=red];
+
+    reticencias1 [label="(...)", style="rounded,filled", fillcolor="#e8f2df"];
+    reticencias2 [label="(...)", style="rounded,filled", fillcolor="#e8f2df"];
+
+    lista1 -> reticencias1;
+    lista2 -> reticencias2;
+
+    expressao [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    op_menor [label="<"];
+    expr1 [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    termo_a [label="termo", style="rounded,filled", fillcolor="#e8f2df"];
+    acao4 [label="printf(\"CRVG A\");",shape=plaintext, fontcolor=red];
+    expr2 [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
+    termo_10 [label="termo", style="rounded,filled", fillcolor="#e8f2df"];
+    acao5 [label="printf(\"CRCT 10\");",shape=plaintext, fontcolor=red];
+    ident_a [label="T_IDENTIF"];
+    numero_10 [label="T_NUMERO"];
+    lex_a [label="A"];
+    lex_10 [label="10"];
+    acao6 [label="printf(\"CMME\");",shape=plaintext, fontcolor=red];
+
+
+    expressao -> expr1;
+    expressao -> op_menor;
+    expressao -> expr2;
+    expressao -> acao6[style=dotted, color=red];    
+    expr1 -> termo_a;
+    termo_a -> ident_a;
+    termo_a -> acao4[style=dotted, color=red];
+    ident_a -> lex_a;
+    expr2 -> termo_10;
+    termo_10 -> numero_10;
+    termo_10 -> acao5[style=dotted, color=red];
+    numero_10 -> lex_10;
+
+    { rank=same; t_se; expressao; t_entao; lista1; t_senao; lista2; t_fimse; }
+}

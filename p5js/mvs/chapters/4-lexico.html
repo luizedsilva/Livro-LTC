@@ -1,0 +1,2846 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>4&nbsp; As Linguagens Regulares e a Analise Léxica – Teoria de Linguagens e Compiladores</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 1em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/5-sintatico.html" rel="next">
+<link href="../chapters/3-compilador.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5de800ff0d570d78397ee07e50104809.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Nenhum resultado",
+    "search-matching-documents-text": "documentos correspondentes",
+    "search-copy-link-title": "Copiar link para a busca",
+    "search-hide-matches-text": "Esconder correspondências adicionais",
+    "search-more-match-text": "mais correspondência neste documento",
+    "search-more-matches-text": "mais correspondências neste documento",
+    "search-clear-button-title": "Limpar",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar",
+    "search-label": "Procurar"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/4-lexico.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Procurar" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Teoria de Linguagens e Compiladores</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Procurar"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prefácio</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/1-introducao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução à Teoria de Linguagens</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/2-fundamentos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/3-compilador.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/4-lexico.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/5-sintatico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">As Linguagens Livres de Contexto e a Análise Sintática</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/6-maquinas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">As Máquinas</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/7-semantico-geracao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">A Análise Semântica e a Geração de Código</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/8-projetos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Projetos de Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/9-sumario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Sumário</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/10-referencias.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Referências</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Índice</h2>
+   
+  <ul>
+  <li><a href="#linguagens-regulares" id="toc-linguagens-regulares" class="nav-link active" data-scroll-target="#linguagens-regulares"><span class="header-section-number">4.1</span> Linguagens Regulares</a></li>
+  <li><a href="#cadeias-e-linguagens" id="toc-cadeias-e-linguagens" class="nav-link" data-scroll-target="#cadeias-e-linguagens"><span class="header-section-number">4.2</span> Cadeias e Linguagens</a>
+  <ul class="collapse">
+  <li><a href="#alfabetos" id="toc-alfabetos" class="nav-link" data-scroll-target="#alfabetos">Alfabetos</a></li>
+  <li><a href="#cadeias" id="toc-cadeias" class="nav-link" data-scroll-target="#cadeias">Cadeias</a></li>
+  <li><a href="#comprimento-de-uma-cadeia" id="toc-comprimento-de-uma-cadeia" class="nav-link" data-scroll-target="#comprimento-de-uma-cadeia">Comprimento de uma cadeia</a></li>
+  <li><a href="#cadeia-vazia" id="toc-cadeia-vazia" class="nav-link" data-scroll-target="#cadeia-vazia">Cadeia vazia</a></li>
+  <li><a href="#prefixos-sufixos-e-subcadeias" id="toc-prefixos-sufixos-e-subcadeias" class="nav-link" data-scroll-target="#prefixos-sufixos-e-subcadeias">Prefixos, sufixos e subcadeias</a></li>
+  <li><a href="#reverso-de-uma-cadeia" id="toc-reverso-de-uma-cadeia" class="nav-link" data-scroll-target="#reverso-de-uma-cadeia">Reverso de uma cadeia</a></li>
+  <li><a href="#concatenação" id="toc-concatenação" class="nav-link" data-scroll-target="#concatenação">Concatenação</a></li>
+  <li><a href="#potência-de-uma-cadeia" id="toc-potência-de-uma-cadeia" class="nav-link" data-scroll-target="#potência-de-uma-cadeia">Potência de uma cadeia</a></li>
+  <li><a href="#conjunto-de-todas-as-cadeias" id="toc-conjunto-de-todas-as-cadeias" class="nav-link" data-scroll-target="#conjunto-de-todas-as-cadeias">Conjunto de todas as cadeias</a></li>
+  <li><a href="#quantidade-de-cadeias-de-determinado-comprimento" id="toc-quantidade-de-cadeias-de-determinado-comprimento" class="nav-link" data-scroll-target="#quantidade-de-cadeias-de-determinado-comprimento">Quantidade de cadeias de determinado comprimento</a></li>
+  <li><a href="#ordenação-lexicográfica" id="toc-ordenação-lexicográfica" class="nav-link" data-scroll-target="#ordenação-lexicográfica">Ordenação lexicográfica</a></li>
+  <li><a href="#linguagens" id="toc-linguagens" class="nav-link" data-scroll-target="#linguagens">Linguagens</a></li>
+  <li><a href="#operações-sobre-linguagens" id="toc-operações-sobre-linguagens" class="nav-link" data-scroll-target="#operações-sobre-linguagens">Operações sobre linguagens</a></li>
+  <li><a href="#concatenação-de-linguagens" id="toc-concatenação-de-linguagens" class="nav-link" data-scroll-target="#concatenação-de-linguagens">Concatenação de linguagens</a></li>
+  <li><a href="#potência-de-uma-linguagem" id="toc-potência-de-uma-linguagem" class="nav-link" data-scroll-target="#potência-de-uma-linguagem">Potência de uma linguagem</a></li>
+  <li><a href="#fechamento-de-kleene" id="toc-fechamento-de-kleene" class="nav-link" data-scroll-target="#fechamento-de-kleene">Fechamento de Kleene</a></li>
+  <li><a href="#representação-de-linguagens" id="toc-representação-de-linguagens" class="nav-link" data-scroll-target="#representação-de-linguagens">Representação de linguagens</a></li>
+  <li><a href="#linguagens-como-conjuntos" id="toc-linguagens-como-conjuntos" class="nav-link" data-scroll-target="#linguagens-como-conjuntos">Linguagens como conjuntos</a></li>
+  <li><a href="#síntese" id="toc-síntese" class="nav-link" data-scroll-target="#síntese">Síntese</a></li>
+  </ul></li>
+  <li><a href="#autômatos-finitos" id="toc-autômatos-finitos" class="nav-link" data-scroll-target="#autômatos-finitos"><span class="header-section-number">4.3</span> Autômatos Finitos</a>
+  <ul class="collapse">
+  <li><a href="#configuração-instantânea" id="toc-configuração-instantânea" class="nav-link" data-scroll-target="#configuração-instantânea">Configuração instantânea</a></li>
+  <li><a href="#autômatos-finitos-determinísticos" id="toc-autômatos-finitos-determinísticos" class="nav-link" data-scroll-target="#autômatos-finitos-determinísticos">Autômatos Finitos Determinísticos</a></li>
+  <li><a href="#autômatos-finitos-não-determinísticos" id="toc-autômatos-finitos-não-determinísticos" class="nav-link" data-scroll-target="#autômatos-finitos-não-determinísticos">Autômatos Finitos Não-Determinísticos</a></li>
+  <li><a href="#expressões-regulares" id="toc-expressões-regulares" class="nav-link" data-scroll-target="#expressões-regulares">Expressões Regulares</a></li>
+  <li><a href="#conversão-de-er-para-afn" id="toc-conversão-de-er-para-afn" class="nav-link" data-scroll-target="#conversão-de-er-para-afn">Conversão de ER para AFN</a></li>
+  <li><a href="#conversão-de-afn-para-afd" id="toc-conversão-de-afn-para-afd" class="nav-link" data-scroll-target="#conversão-de-afn-para-afd">Conversão de AFN para AFD</a></li>
+  </ul></li>
+  <li><a href="#análise-léxica" id="toc-análise-léxica" class="nav-link" data-scroll-target="#análise-léxica"><span class="header-section-number">4.4</span> Análise Léxica</a></li>
+  <li><a href="#lexflex---geradores-de-analisadores-léxicos" id="toc-lexflex---geradores-de-analisadores-léxicos" class="nav-link" data-scroll-target="#lexflex---geradores-de-analisadores-léxicos"><span class="header-section-number">4.5</span> Lex/Flex - Geradores de Analisadores Léxicos</a>
+  <ul class="collapse">
+  <li><a href="#metacaracteres-lex" id="toc-metacaracteres-lex" class="nav-link" data-scroll-target="#metacaracteres-lex">Metacaracteres Lex</a></li>
+  <li><a href="#alguns-exemplos-de-lex" id="toc-alguns-exemplos-de-lex" class="nav-link" data-scroll-target="#alguns-exemplos-de-lex">Alguns Exemplos de Lex</a></li>
+  </ul></li>
+  <li><a href="#analisador-léxico-para-linguagem-simples" id="toc-analisador-léxico-para-linguagem-simples" class="nav-link" data-scroll-target="#analisador-léxico-para-linguagem-simples"><span class="header-section-number">4.6</span> Analisador Léxico para Linguagem Simples</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../chapters/images/lexico.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<section id="linguagens-regulares" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="linguagens-regulares"><span class="header-section-number">4.1</span> Linguagens Regulares</h2>
+<p>Nesta seção são apresentados conceitos fundamentais relacionados às linguagens formais, às expressões regulares e aos autômatos finitos, estabelecendo as bases teóricas necessárias para compreender o processo de análise léxica de um compilador. Esses conceitos permitem formalizar a estrutura dos elementos que compõem uma linguagem de programação e compreender como sequências de caracteres podem ser reconhecidas e classificadas de acordo com determinadas regras.</p>
+<p>Inicialmente, são introduzidos os principais conceitos relacionados às linguagens regulares e às expressões regulares, destacando sua capacidade de representar padrões léxicos presentes nos programas-fonte. Em seguida, são estudados os autômatos finitos, modelos computacionais utilizados para reconhecer linguagens regulares e que constituem uma importante fundamentação para a implementação de analisadores léxicos. A relação entre expressões regulares e autômatos também é explorada, permitindo compreender como especificações abstratas dos elementos léxicos podem ser transformadas em mecanismos efetivos de reconhecimento.</p>
+<p>O domínio desses fundamentos é particularmente importante para o projeto de compiladores, uma vez que a análise léxica constitui a primeira etapa do processo de compilação. Nessa etapa, o programa-fonte é examinado como uma sequência de caracteres, que é agrupada em unidades léxicas denominadas tokens. Identificadores, palavras reservadas, constantes, operadores e delimitadores, entre outros elementos, podem ser especificados por meio de padrões regulares e posteriormente reconhecidos por autômatos finitos.</p>
+<p>O objetivo desta seção, portanto, não é apresentar um tratamento exaustivo da teoria das linguagens formais e dos autômatos, mas destacar os conceitos e resultados que serão necessários ao longo do desenvolvimento do projeto de um compilador. O aprofundamento desses temas pode ser encontrado em obras específicas dedicadas à teoria da computação, às linguagens formais e aos autômatos. <span class="citation" data-cites="sipser vieira gersting lewis">(<a href="#ref-lewis" role="doc-biblioref">Lewis; Papadimitriou, 2004</a>; <a href="#ref-gersting" role="doc-biblioref">L.Gersting, 2004</a>; <a href="#ref-sipser" role="doc-biblioref">Sipser, 2012</a>; <a href="#ref-vieira" role="doc-biblioref">Vieira, 2006</a>)</span>.</p>
+</section>
+<section id="cadeias-e-linguagens" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="cadeias-e-linguagens"><span class="header-section-number">4.2</span> Cadeias e Linguagens</h2>
+<p>Cadeias de caracteres são estruturas fundamentais da Ciência da Computação. Textos, identificadores, números representados como sequências de dígitos, programas e arquivos podem ser vistos como sequências finitas de símbolos. Para entender essas estruturas, é necessário estabelecer inicialmente um conjunto de símbolos que podem ser utilizados na construção das cadeias.</p>
+<section id="alfabetos" class="level3">
+<h3 class="anchored" data-anchor-id="alfabetos">Alfabetos</h3>
+<p>Um <strong>alfabeto</strong> é um conjunto finito e não vazio de símbolos. Um alfabeto é normalmente representado pelas letras gregas <span class="math inline">\(\Sigma\)</span> ou <span class="math inline">\(\Gamma\)</span>. Os elementos de um alfabeto são chamados de <strong>símbolos</strong>.</p>
+<p>A definição do alfabeto depende da aplicação. Por exemplo, podemos considerar o alfabeto binário</p>
+<p><span class="math display">\[
+\Sigma_1=\{0,1\},
+\]</span></p>
+<p>o alfabeto formado pelas letras minúsculas do português</p>
+<p><span class="math display">\[
+\Sigma_2=
+\{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z\},
+\]</span></p>
+<p>ou ainda um alfabeto contendo letras e dígitos:</p>
+<p><span class="math display">\[
+\Gamma=\{a,b,c,0,1\}.
+\]</span></p>
+<p>É importante observar que um símbolo é considerado um elemento indivisível do alfabeto. Por exemplo, se</p>
+<p><span class="math display">\[
+\Sigma=\{0,1\},
+\]</span></p>
+<p>então <span class="math inline">\(0\)</span> e <span class="math inline">\(1\)</span> são símbolos. Já a sequência <span class="math inline">\(01\)</span> não é um símbolo desse alfabeto; ela é uma <strong>cadeia</strong> formada por dois símbolos.</p>
+<p>Um alfabeto não precisa ser constituído necessariamente por caracteres individuais. Em uma determinada aplicação, cada símbolo pode ser representado por uma palavra, um número ou qualquer outro objeto que seja considerado uma unidade indivisível. O que importa é que o alfabeto seja um conjunto bem definido de símbolos que possam ser utilizados na construção das cadeias.</p>
+</section>
+<section id="cadeias" class="level3">
+<h3 class="anchored" data-anchor-id="cadeias">Cadeias</h3>
+<p>Uma <strong>cadeia</strong>, também denominada <strong>palavra</strong>, sobre um alfabeto <span class="math inline">\(\Sigma\)</span> é uma sequência finita de símbolos pertencentes a <span class="math inline">\(\Sigma\)</span>.</p>
+<p>Por exemplo, considerando o alfabeto</p>
+<p><span class="math display">\[
+\Sigma=\{0,1\},
+\]</span></p>
+<p>a sequência</p>
+<p><span class="math display">\[
+001001
+\]</span></p>
+<p>é uma cadeia sobre <span class="math inline">\(\Sigma\)</span>. Da mesma forma, considerando o alfabeto das letras minúsculas, a sequência</p>
+<p><span class="math display">\[
+computacao
+\]</span></p>
+<p>é uma cadeia sobre esse alfabeto.</p>
+<p>Se uma cadeia <span class="math inline">\(w\)</span> possui <span class="math inline">\(n\)</span> símbolos, podemos escrevê-la como</p>
+<p><span class="math display">\[
+w=w_1w_2w_3\cdots w_n,
+\]</span></p>
+<p>em que</p>
+<p><span class="math display">\[
+w_i\in\Sigma
+\]</span></p>
+<p>para <span class="math inline">\(1\leq i\leq n\)</span>.</p>
+<p>A ordem dos símbolos é importante. Em geral,</p>
+<p><span class="math display">\[
+w_1w_2\neq w_2w_1.
+\]</span></p>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+abc\neq bac.
+\]</span></p>
+<p>Embora as duas cadeias contenham os mesmos símbolos, elas são cadeias diferentes porque a ordem dos símbolos é diferente.</p>
+</section>
+<section id="comprimento-de-uma-cadeia" class="level3">
+<h3 class="anchored" data-anchor-id="comprimento-de-uma-cadeia">Comprimento de uma cadeia</h3>
+<p>O <strong>comprimento</strong> de uma cadeia <span class="math inline">\(w\)</span>, representado por <span class="math inline">\(|w|\)</span>, corresponde ao número de símbolos que aparecem na cadeia.</p>
+<p>Por exemplo, para</p>
+<p><span class="math display">\[
+w=01001,
+\]</span></p>
+<p>temos</p>
+<p><span class="math display">\[
+|w|=5.
+\]</span></p>
+<p>De maneira geral, se</p>
+<p><span class="math display">\[
+w=w_1w_2\cdots w_n,
+\]</span></p>
+<p>então</p>
+<p><span class="math display">\[
+|w|=n.
+\]</span></p>
+<p>O comprimento é uma propriedade fundamental das cadeias. Duas cadeias podem possuir o mesmo comprimento sem serem iguais. Por exemplo,</p>
+<p><span class="math display">\[
+|010|=|101|=3,
+\]</span></p>
+<p>mas</p>
+<p><span class="math display">\[
+010\neq101.
+\]</span></p>
+<p>Também podemos comparar o comprimento de cadeias diferentes. Se <span class="math inline">\(x=abc\)</span> e <span class="math inline">\(y=defgh\)</span>, então</p>
+<p><span class="math display">\[
+|x|=3
+\qquad\text{e}\qquad
+|y|=5.
+\]</span></p>
+<p>O comprimento será utilizado frequentemente para definir propriedades e operações sobre cadeias.</p>
+</section>
+<section id="cadeia-vazia" class="level3">
+<h3 class="anchored" data-anchor-id="cadeia-vazia">Cadeia vazia</h3>
+<p>Uma cadeia que não contém nenhum símbolo é denominada <strong>cadeia vazia</strong>. Ela é representada normalmente por</p>
+<p><span class="math display">\[
+\varepsilon.
+\]</span></p>
+<p>Em algumas referências, também pode ser utilizada a notação <span class="math inline">\(\lambda\)</span>.</p>
+<p>Por definição,</p>
+<p><span class="math display">\[
+|\varepsilon|=0.
+\]</span></p>
+<p>A cadeia vazia é uma cadeia especial porque, embora não contenha símbolos, faz parte do conjunto de todas as cadeias que podem ser construídas sobre um alfabeto.</p>
+<p>A cadeia vazia desempenha, para a operação de concatenação, um papel semelhante ao número zero na adição ou ao número um na multiplicação. Para qualquer cadeia <span class="math inline">\(w\)</span>,</p>
+<p><span class="math display">\[
+w\varepsilon=\varepsilon w=w.
+\]</span></p>
+<p>Assim, a concatenação de uma cadeia com a cadeia vazia não altera a cadeia original.</p>
+</section>
+<section id="prefixos-sufixos-e-subcadeias" class="level3">
+<h3 class="anchored" data-anchor-id="prefixos-sufixos-e-subcadeias">Prefixos, sufixos e subcadeias</h3>
+<p>Uma cadeia pode conter outras cadeias em sua estrutura. Considere, por exemplo,</p>
+<p><span class="math display">\[
+w=luizeduardo.
+\]</span></p>
+<p>A cadeia <span class="math inline">\(edu\)</span> aparece dentro de <span class="math inline">\(w\)</span>. Dizemos que <span class="math inline">\(edu\)</span> é uma <strong>subcadeia</strong> de <span class="math inline">\(w\)</span>.</p>
+<p>É importante distinguir diferentes formas de ocorrência de uma cadeia dentro de outra.</p>
+<p>Uma cadeia <span class="math inline">\(x\)</span> é um <strong>prefixo</strong> de <span class="math inline">\(w\)</span> quando existe uma cadeia <span class="math inline">\(y\)</span> tal que</p>
+<p><span class="math display">\[
+w=xy.
+\]</span></p>
+<p>Por exemplo, os prefixos de</p>
+<p><span class="math display">\[
+w=abc
+\]</span></p>
+<p>são</p>
+<p><span class="math display">\[
+\varepsilon,\quad a,\quad ab,\quad abc.
+\]</span></p>
+<p>Uma cadeia <span class="math inline">\(x\)</span> é um <strong>sufixo</strong> de <span class="math inline">\(w\)</span> quando existe uma cadeia <span class="math inline">\(y\)</span> tal que</p>
+<p><span class="math display">\[
+w=yx.
+\]</span></p>
+<p>Assim, os sufixos de <span class="math inline">\(abc\)</span> são</p>
+<p><span class="math display">\[
+\varepsilon,\quad c,\quad bc,\quad abc.
+\]</span></p>
+<p>Uma cadeia <span class="math inline">\(x\)</span> é uma <strong>subcadeia</strong> de <span class="math inline">\(w\)</span> quando ocorre de forma consecutiva dentro de <span class="math inline">\(w\)</span>. Por exemplo, <span class="math inline">\(bc\)</span> é uma subcadeia de <span class="math inline">\(abcde\)</span>.</p>
+<p>A distinção entre prefixo, sufixo e subcadeia será importante em diferentes algoritmos e propriedades envolvendo cadeias.</p>
+</section>
+<section id="reverso-de-uma-cadeia" class="level3">
+<h3 class="anchored" data-anchor-id="reverso-de-uma-cadeia">Reverso de uma cadeia</h3>
+<p>O <strong>reverso</strong> de uma cadeia <span class="math inline">\(w\)</span> é obtido invertendo a ordem de seus símbolos. O reverso de <span class="math inline">\(w\)</span> é representado por</p>
+<p><span class="math display">\[
+w^R.
+\]</span></p>
+<p>Se</p>
+<p><span class="math display">\[
+w=w_1w_2\cdots w_n,
+\]</span></p>
+<p>então</p>
+<p><span class="math display">\[
+w^R=w_nw_{n-1}\cdots w_2w_1.
+\]</span></p>
+<p>Por exemplo, se</p>
+<p><span class="math display">\[
+w=abcde,
+\]</span></p>
+<p>então</p>
+<p><span class="math display">\[
+w^R=edcba.
+\]</span></p>
+<p>Outro exemplo é</p>
+<p><span class="math display">\[
+(00101)^R=10100.
+\]</span></p>
+<p>Uma cadeia que é igual ao seu próprio reverso é denominada <strong>palíndromo</strong>. Portanto, uma cadeia <span class="math inline">\(w\)</span> é um palíndromo quando</p>
+<p><span class="math display">\[
+w=w^R.
+\]</span></p>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+aba
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+radar
+\]</span></p>
+<p>são palíndromos.</p>
+</section>
+<section id="concatenação" class="level3">
+<h3 class="anchored" data-anchor-id="concatenação">Concatenação</h3>
+<p>Uma das operações mais importantes sobre cadeias é a <strong>concatenação</strong>. A concatenação de duas cadeias consiste em colocar os símbolos da segunda cadeia imediatamente após os símbolos da primeira.</p>
+<p>Se</p>
+<p><span class="math display">\[
+x=x_1x_2\cdots x_n
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+y=y_1y_2\cdots y_m,
+\]</span></p>
+<p>a concatenação de <span class="math inline">\(x\)</span> e <span class="math inline">\(y\)</span>, representada por <span class="math inline">\(xy\)</span>, é dada por</p>
+<p><span class="math display">\[
+xy=x_1x_2\cdots x_ny_1y_2\cdots y_m.
+\]</span></p>
+<p>Por exemplo, se</p>
+<p><span class="math display">\[
+x=abc
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+y=def,
+\]</span></p>
+<p>então</p>
+<p><span class="math display">\[
+xy=abcdef.
+\]</span></p>
+<p>Observe que a concatenação não é, em geral, comutativa. Ou seja,</p>
+<p><span class="math display">\[
+xy\neq yx
+\]</span></p>
+<p>na maioria dos casos. No exemplo anterior,</p>
+<p><span class="math display">\[
+xy=abcdef
+\]</span></p>
+<p>enquanto</p>
+<p><span class="math display">\[
+yx=defabc.
+\]</span></p>
+<p>Uma propriedade importante da concatenação é a associatividade:</p>
+<p><span class="math display">\[
+(xy)z=x(yz).
+\]</span></p>
+<p>Isso significa que, ao concatenar três cadeias, a forma como agrupamos as operações não altera o resultado.</p>
+<p>A cadeia vazia é o elemento neutro da concatenação:</p>
+<p><span class="math display">\[
+w\varepsilon=\varepsilon w=w.
+\]</span></p>
+</section>
+<section id="potência-de-uma-cadeia" class="level3">
+<h3 class="anchored" data-anchor-id="potência-de-uma-cadeia">Potência de uma cadeia</h3>
+<p>A concatenação de uma cadeia consigo mesma pode ser representada utilizando uma potência.</p>
+<p>Para uma cadeia <span class="math inline">\(w\)</span> e um inteiro <span class="math inline">\(k\geq 1\)</span>, definimos</p>
+<p><span class="math display">\[
+w^k=
+\underbrace{ww\cdots w}_{k\text{ vezes}}.
+\]</span></p>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+(ab)^3=ababab.
+\]</span></p>
+<p>Também definimos</p>
+<p><span class="math display">\[
+w^0=\varepsilon.
+\]</span></p>
+<p>Assim,</p>
+<p><span class="math display">\[
+(ab)^0=\varepsilon,
+\]</span></p>
+<p><span class="math display">\[
+(ab)^1=ab,
+\]</span></p>
+<p><span class="math display">\[
+(ab)^2=abab
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+(ab)^3=ababab.
+\]</span></p>
+<p>A definição de <span class="math inline">\(w^0\)</span> é necessária para manter as propriedades usuais da potenciação e está diretamente relacionada ao papel da cadeia vazia como elemento neutro da concatenação.</p>
+</section>
+<section id="conjunto-de-todas-as-cadeias" class="level3">
+<h3 class="anchored" data-anchor-id="conjunto-de-todas-as-cadeias">Conjunto de todas as cadeias</h3>
+<p>A partir de um alfabeto <span class="math inline">\(\Sigma\)</span>, podemos construir cadeias de comprimento <span class="math inline">\(0\)</span>, <span class="math inline">\(1\)</span>, <span class="math inline">\(2\)</span>, <span class="math inline">\(3\)</span> e assim por diante. O conjunto formado por <strong>todas as cadeias finitas possíveis sobre</strong> <span class="math inline">\(\Sigma\)</span> é denominado <span class="math inline">\(\Sigma^*\)</span>.</p>
+<p>Formalmente,</p>
+<p><span class="math display">\[
+\Sigma^*=
+\bigcup_{n\geq0}\Sigma^n.
+\]</span></p>
+<p>Como</p>
+<p><span class="math display">\[
+\Sigma^0=\{\varepsilon\},
+\]</span></p>
+<p>podemos escrever</p>
+<p><span class="math display">\[
+\Sigma^*=
+\{\varepsilon\}
+\cup
+\Sigma
+\cup
+\Sigma^2
+\cup
+\Sigma^3
+\cup\cdots.
+\]</span></p>
+<p>Por exemplo, para o alfabeto binário</p>
+<p><span class="math display">\[
+\Sigma=\{0,1\},
+\]</span></p>
+<p>temos</p>
+<p><span class="math display">\[
+\Sigma^*=
+\{
+\varepsilon,
+0,
+1,
+00,
+01,
+10,
+11,
+000,
+001,
+010,
+011,
+100,
+101,
+110,
+111,
+\ldots
+\}.
+\]</span></p>
+<p>O conjunto <span class="math inline">\(\Sigma^*\)</span> é infinito sempre que <span class="math inline">\(\Sigma\)</span> possui pelo menos um símbolo, pois podemos construir cadeias de comprimento arbitrariamente grande.</p>
+<p>Também é utilizado o conjunto</p>
+<p><span class="math display">\[
+\Sigma^+
+\]</span></p>
+<p>para representar o conjunto de todas as cadeias <strong>não vazias</strong> sobre <span class="math inline">\(\Sigma\)</span>. Portanto,</p>
+<p><span class="math display">\[
+\Sigma^+=\bigcup_{n\geq1}\Sigma^n.
+\]</span></p>
+<p>Existe uma relação simples entre esses dois conjuntos:</p>
+<p><span class="math display">\[
+\Sigma^*=\Sigma^+\cup\{\varepsilon\}.
+\]</span></p>
+<p>Consequentemente,</p>
+<p><span class="math display">\[
+\Sigma^+=\Sigma^*-\{\varepsilon\}.
+\]</span></p>
+<p>Essa distinção será importante porque algumas definições permitem a cadeia vazia, enquanto outras consideram somente cadeias não vazias.</p>
+</section>
+<section id="quantidade-de-cadeias-de-determinado-comprimento" class="level3">
+<h3 class="anchored" data-anchor-id="quantidade-de-cadeias-de-determinado-comprimento">Quantidade de cadeias de determinado comprimento</h3>
+<p>Se um alfabeto <span class="math inline">\(\Sigma\)</span> possui <span class="math inline">\(k\)</span> símbolos, então o número de cadeias de comprimento <span class="math inline">\(n\)</span> que podem ser construídas sobre esse alfabeto é</p>
+<p><span class="math display">\[
+|\Sigma^n|=k^n.
+\]</span></p>
+<p>Por exemplo, para o alfabeto binário</p>
+<p><span class="math display">\[
+\Sigma=\{0,1\},
+\]</span></p>
+<p>existem</p>
+<p><span class="math display">\[
+2^3=8
+\]</span></p>
+<p>cadeias de comprimento <span class="math inline">\(3\)</span>:</p>
+<p><span class="math display">\[
+000,\quad001,\quad010,\quad011,
+\]</span></p>
+<p><span class="math display">\[
+100,\quad101,\quad110,\quad111.
+\]</span></p>
+<p>Para cadeias de comprimento <span class="math inline">\(4\)</span>, existem</p>
+<p><span class="math display">\[
+2^4=16
+\]</span></p>
+<p>possibilidades.</p>
+<p>Esse resultado é uma consequência direta do princípio multiplicativo. Para cada uma das <span class="math inline">\(n\)</span> posições da cadeia existem <span class="math inline">\(k\)</span> possibilidades de escolha.</p>
+</section>
+<section id="ordenação-lexicográfica" class="level3">
+<h3 class="anchored" data-anchor-id="ordenação-lexicográfica">Ordenação lexicográfica</h3>
+<p>As cadeias podem ser organizadas de acordo com uma ordem. Uma das formas mais utilizadas é a <strong>ordenação lexicográfica</strong>, também conhecida como ordem de dicionário.</p>
+<p>Para estabelecer uma ordem lexicográfica, primeiro é necessário definir uma ordem entre os símbolos do alfabeto. Considere, por exemplo,</p>
+<p><span class="math display">\[
+0&lt;1.
+\]</span></p>
+<p>As cadeias podem então ser organizadas considerando inicialmente o primeiro símbolo em que duas cadeias diferem.</p>
+<p>No caso do alfabeto binário, uma enumeração das cadeias em ordem lexicográfica, agrupando-as pelo comprimento, é</p>
+<p><span class="math display">\[
+\varepsilon,\quad
+0,\quad
+1,\quad
+00,\quad
+01,\quad
+10,\quad
+11,\quad
+000,\quad
+001,\quad
+010,\quad
+011,\quad
+100,\ldots
+\]</span></p>
+<p>É importante observar que diferentes convenções podem ser utilizadas para organizar cadeias. A ordem lexicográfica propriamente dita e a ordem por comprimento seguida de ordem lexicográfica não são necessariamente a mesma coisa.</p>
+<p>Na <strong>ordem lexicográfica</strong>, por exemplo, uma cadeia pode ser considerada menor que outra simplesmente porque o primeiro símbolo em que elas diferem é menor, independentemente do comprimento. Já a ordenação por comprimento e, dentro de cada comprimento, lexicograficamente, é frequentemente utilizada para enumerar <span class="math inline">\(\Sigma^*\)</span> em Computação.</p>
+</section>
+<section id="linguagens" class="level3">
+<h3 class="anchored" data-anchor-id="linguagens">Linguagens</h3>
+<p>Uma <strong>linguagem</strong> sobre um alfabeto <span class="math inline">\(\Sigma\)</span> é qualquer conjunto de cadeias pertencentes a <span class="math inline">\(\Sigma^*\)</span>. Formalmente,</p>
+<p><span class="math display">\[
+L\subseteq\Sigma^*.
+\]</span></p>
+<p>Essa definição é bastante geral. Uma linguagem pode ser finita ou infinita e pode possuir qualquer conjunto de cadeias que satisfaça a condição de ser um subconjunto de <span class="math inline">\(\Sigma^*\)</span>.</p>
+<p>Por exemplo, considerando</p>
+<p><span class="math display">\[
+\Sigma=\{0,1\},
+\]</span></p>
+<p>podemos definir a linguagem</p>
+<p><span class="math display">\[
+L=\{0,1,00,11\}.
+\]</span></p>
+<p>Nesse caso, <span class="math inline">\(L\)</span> é uma linguagem finita.</p>
+<p>Também podemos definir a linguagem</p>
+<p><span class="math display">\[
+L=\{w\in\{0,1\}^*\mid w\text{ contém pelo menos um }1\}.
+\]</span></p>
+<p>Essa linguagem é infinita, pois existem cadeias de comprimento arbitrariamente grande contendo pelo menos um símbolo <span class="math inline">\(1\)</span>.</p>
+<p>Outro exemplo é</p>
+<p><span class="math display">\[
+L=\{0^n1^n\mid n\geq0\}.
+\]</span></p>
+<p>Essa linguagem contém as cadeias</p>
+<p><span class="math display">\[
+\varepsilon,\quad
+01,\quad
+0011,\quad
+000111,\quad
+00001111,\ldots
+\]</span></p>
+<p>e possui infinitas cadeias.</p>
+<p>Uma linguagem também pode ser vazia. A <strong>linguagem vazia</strong>, representada por</p>
+<p><span class="math display">\[
+\varnothing,
+\]</span></p>
+<p>é a linguagem que não contém nenhuma cadeia.</p>
+<p>É importante distinguir a linguagem vazia da linguagem que contém apenas a cadeia vazia:</p>
+<p><span class="math display">\[
+\varnothing
+\neq
+\{\varepsilon\}.
+\]</span></p>
+<p>A primeira possui zero cadeias, enquanto a segunda possui exatamente uma cadeia.</p>
+</section>
+<section id="operações-sobre-linguagens" class="level3">
+<h3 class="anchored" data-anchor-id="operações-sobre-linguagens">Operações sobre linguagens</h3>
+<p>Como linguagens são conjuntos de cadeias, podemos aplicar a elas operações de conjuntos. Além disso, podemos definir operações específicas utilizando as operações sobre cadeias.</p>
+<p>Se <span class="math inline">\(L_1\)</span> e <span class="math inline">\(L_2\)</span> são linguagens sobre um mesmo alfabeto <span class="math inline">\(\Sigma\)</span>, a <strong>união</strong> das linguagens é definida por</p>
+<p><span class="math display">\[
+L_1\cup L_2=
+\{w\mid w\in L_1\text{ ou }w\in L_2\}.
+\]</span></p>
+<p>A <strong>interseção</strong> é definida por</p>
+<p><span class="math display">\[
+L_1\cap L_2=
+\{w\mid w\in L_1\text{ e }w\in L_2\}.
+\]</span></p>
+<p>A <strong>diferença</strong> entre duas linguagens é dada por</p>
+<p><span class="math display">\[
+L_1-L_2=
+\{w\mid w\in L_1\text{ e }w\notin L_2\}.
+\]</span></p>
+<p>O <strong>complemento</strong> de uma linguagem <span class="math inline">\(L\)</span> em relação a <span class="math inline">\(\Sigma^*\)</span> é</p>
+<p><span class="math display">\[
+\overline{L}
+=
+\Sigma^*-L.
+\]</span></p>
+<p>O complemento depende do alfabeto considerado. Por isso, ao escrever <span class="math inline">\(\overline{L}\)</span>, é necessário saber qual é o universo de cadeias em relação ao qual o complemento está sendo definido.</p>
+</section>
+<section id="concatenação-de-linguagens" class="level3">
+<h3 class="anchored" data-anchor-id="concatenação-de-linguagens">Concatenação de linguagens</h3>
+<p>A operação de concatenação também pode ser estendida de cadeias para linguagens.</p>
+<p>Sejam <span class="math inline">\(L_1\)</span> e <span class="math inline">\(L_2\)</span> duas linguagens. A concatenação <span class="math inline">\(L_1L_2\)</span> é definida por</p>
+<p><span class="math display">\[
+L_1L_2=
+\{xy\mid x\in L_1,\ y\in L_2\}.
+\]</span></p>
+<p>Isso significa que construímos uma nova linguagem concatenando cada cadeia de <span class="math inline">\(L_1\)</span> com cada cadeia de <span class="math inline">\(L_2\)</span>.</p>
+<p>Por exemplo, sejam</p>
+<p><span class="math display">\[
+L_1=\{a,b\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+L_2=\{0,1\}.
+\]</span></p>
+<p>Então,</p>
+<p><span class="math display">\[
+L_1L_2=
+\{a0,a1,b0,b1\}.
+\]</span></p>
+<p>A concatenação de linguagens é associativa:</p>
+<p><span class="math display">\[
+(L_1L_2)L_3=L_1(L_2L_3),
+\]</span></p>
+<p>mas, em geral, não é comutativa:</p>
+<p><span class="math display">\[
+L_1L_2\neq L_2L_1.
+\]</span></p>
+<p>A linguagem</p>
+<p><span class="math display">\[
+\{\varepsilon\}
+\]</span></p>
+<p>funciona como elemento neutro para a concatenação de linguagens, pois</p>
+<p><span class="math display">\[
+L\{\varepsilon\}
+=
+\{\varepsilon\}L
+=
+L.
+\]</span></p>
+<p>Por outro lado,</p>
+<p><span class="math display">\[
+L\varnothing
+=
+\varnothing L
+=
+\varnothing.
+\]</span></p>
+</section>
+<section id="potência-de-uma-linguagem" class="level3">
+<h3 class="anchored" data-anchor-id="potência-de-uma-linguagem">Potência de uma linguagem</h3>
+<p>Assim como ocorre com cadeias, podemos definir potências de linguagens.</p>
+<p>Para uma linguagem <span class="math inline">\(L\)</span>, definimos</p>
+<p><span class="math display">\[
+L^0=\{\varepsilon\}
+\]</span></p>
+<p>e, para <span class="math inline">\(n\geq1\)</span>,</p>
+<p><span class="math display">\[
+L^n=
+\underbrace{LL\cdots L}_{n\text{ vezes}}.
+\]</span></p>
+<p>Por exemplo, se</p>
+<p><span class="math display">\[
+L=\{a,b\},
+\]</span></p>
+<p>então</p>
+<p><span class="math display">\[
+L^2=
+\{aa,ab,ba,bb\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+L^3=
+\{aaa,aab,aba,abb,baa,bab,bba,bbb\}.
+\]</span></p>
+<p>A partir dessas definições, podemos caracterizar <span class="math inline">\(\Sigma^*\)</span> como</p>
+<p><span class="math display">\[
+\Sigma^*
+=
+\{\varepsilon\}
+\cup
+\Sigma
+\cup
+\Sigma^2
+\cup
+\Sigma^3
+\cup\cdots.
+\]</span></p>
+<p>Isso mostra que <span class="math inline">\(\Sigma^*\)</span> pode ser interpretado como o conjunto de todas as concatenações finitas de símbolos do alfabeto.</p>
+</section>
+<section id="fechamento-de-kleene" class="level3">
+<h3 class="anchored" data-anchor-id="fechamento-de-kleene">Fechamento de Kleene</h3>
+<p>A operação</p>
+<p><span class="math display">\[
+L^*=
+\bigcup_{n\geq0}L^n
+\]</span></p>
+<p>é denominada <strong>fechamento de Kleene</strong>, ou <strong>estrela de Kleene</strong>, de uma linguagem <span class="math inline">\(L\)</span>.</p>
+<p>De maneira semelhante, define-se o <strong>fechamento positivo</strong> por</p>
+<p><span class="math display">\[
+L^+=
+\bigcup_{n\geq1}L^n.
+\]</span></p>
+<p>Portanto,</p>
+<p><span class="math display">\[
+L^*=L^+\cup\{\varepsilon\}.
+\]</span></p>
+<p>Quando <span class="math inline">\(L=\Sigma\)</span>, temos</p>
+<p><span class="math display">\[
+\Sigma^*=
+\{\varepsilon\}
+\cup
+\Sigma
+\cup
+\Sigma^2
+\cup
+\Sigma^3
+\cup\cdots,
+\]</span></p>
+<p>que corresponde exatamente ao conjunto de todas as cadeias finitas construídas a partir dos símbolos de <span class="math inline">\(\Sigma\)</span>.</p>
+<p>O fechamento de Kleene é uma operação fundamental para descrever conjuntos potencialmente infinitos de cadeias de maneira compacta.</p>
+</section>
+<section id="representação-de-linguagens" class="level3">
+<h3 class="anchored" data-anchor-id="representação-de-linguagens">Representação de linguagens</h3>
+<p>Uma linguagem pode ser especificada de diferentes maneiras. Para linguagens finitas, podemos simplesmente listar suas cadeias. Por exemplo,</p>
+<p><span class="math display">\[
+L=\{a,ab,aba,bba\}.
+\]</span></p>
+<p>Para linguagens infinitas, geralmente utilizamos uma propriedade, uma expressão ou uma regra que determine quais cadeias pertencem à linguagem.</p>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+L=\{w\in\{0,1\}^*\mid |w|\text{ é par}\}
+\]</span></p>
+<p>representa o conjunto de todas as cadeias binárias de comprimento par.</p>
+<p>Outra forma de especificar a mesma ideia é observar que as cadeias podem ser agrupadas em blocos de dois símbolos:</p>
+<p><span class="math display">\[
+L=\{00,01,10,11\}^*.
+\]</span></p>
+<p>As diferentes formas de representação tornam-se especialmente importantes quando estudamos expressões regulares, autômatos e gramáticas, pois esses formalismos fornecem diferentes maneiras de descrever conjuntos de cadeias.</p>
+</section>
+<section id="linguagens-como-conjuntos" class="level3">
+<h3 class="anchored" data-anchor-id="linguagens-como-conjuntos">Linguagens como conjuntos</h3>
+<p>A definição</p>
+<p><span class="math display">\[
+L\subseteq\Sigma^*
+\]</span></p>
+<p>é particularmente importante porque estabelece que uma linguagem é, essencialmente, um <strong>conjunto de cadeias</strong>. Consequentemente, todas as propriedades fundamentais dos conjuntos podem ser utilizadas no estudo das linguagens.</p>
+<p>Para uma cadeia <span class="math inline">\(w\)</span>, podemos perguntar se</p>
+<p><span class="math display">\[
+w\in L
+\]</span></p>
+<p>ou se</p>
+<p><span class="math display">\[
+w\notin L.
+\]</span></p>
+<p>Também podemos comparar linguagens utilizando igualdade. Duas linguagens <span class="math inline">\(L_1\)</span> e <span class="math inline">\(L_2\)</span> são iguais quando possuem exatamente as mesmas cadeias:</p>
+<p><span class="math display">\[
+L_1=L_2
+\iff
+\forall w,\quad
+w\in L_1\Longleftrightarrow w\in L_2.
+\]</span></p>
+<p>Essa definição é importante porque diferentes descrições podem representar exatamente a mesma linguagem. Uma determinada linguagem pode, por exemplo, ser descrita por uma lista de cadeias, uma propriedade, uma expressão regular, um autômato ou uma gramática. Embora as representações sejam diferentes, elas podem definir o mesmo conjunto de cadeias.</p>
+</section>
+<section id="síntese" class="level3">
+<h3 class="anchored" data-anchor-id="síntese">Síntese</h3>
+<p>Os conceitos apresentados nesta seção formam a base para o estudo matemático de sequências de símbolos. Um <strong>alfabeto</strong> é um conjunto finito e não vazio de símbolos. Uma <strong>cadeia</strong> é uma sequência finita de símbolos de um alfabeto e seu comprimento é representado por <span class="math inline">\(|w|\)</span>. A cadeia que não contém símbolos é denominada cadeia vazia e representada por <span class="math inline">\(\varepsilon\)</span>.</p>
+<p>Sobre as cadeias podemos definir diversas operações e propriedades, como concatenação, reversão, potência, prefixos, sufixos e subcadeias. A partir de um alfabeto <span class="math inline">\(\Sigma\)</span>, o conjunto <span class="math inline">\(\Sigma^*\)</span> representa todas as cadeias finitas que podem ser construídas com seus símbolos, incluindo a cadeia vazia, enquanto <span class="math inline">\(\Sigma^+\)</span> representa apenas as cadeias não vazias.</p>
+<p>Uma <strong>linguagem</strong> é um subconjunto de <span class="math inline">\(\Sigma^*\)</span>:</p>
+<p><span class="math display">\[
+\boxed{L\subseteq\Sigma^*}.
+\]</span></p>
+<p>As linguagens podem ser finitas ou infinitas e podem ser descritas por propriedades, listas, expressões ou diferentes formalismos. Sobre elas podem ser definidas operações como união, interseção, complemento, concatenação e fechamento de Kleene.</p>
+<p>A relação entre alfabetos, cadeias e linguagens pode ser resumida pela seguinte sequência:</p>
+<p><span class="math display">\[
+\boxed{
+\Sigma
+\longrightarrow
+\Sigma^*
+\longrightarrow
+L\subseteq\Sigma^*
+}
+\]</span></p>
+<p>em que <span class="math inline">\(\Sigma\)</span> fornece os símbolos básicos, <span class="math inline">\(\Sigma^*\)</span> contém todas as cadeias que podem ser construídas a partir desses símbolos e <span class="math inline">\(L\)</span> seleciona um subconjunto dessas cadeias. Essa estrutura será utilizada como fundamento para as definições e construções apresentadas nas próximas partes do livro.</p>
+</section>
+</section>
+<section id="autômatos-finitos" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="autômatos-finitos"><span class="header-section-number">4.3</span> Autômatos Finitos</h2>
+<p>Os <strong>autômatos finitos</strong> são modelos matemáticos utilizados para representar e estudar sistemas cujo comportamento pode ser descrito por um número finito de situações ou <strong>estados</strong>. Esses modelos constituem uma das estruturas fundamentais da Teoria de Linguagens Formais e possuem diversas aplicações na Computação, particularmente na construção de <strong>analisadores léxicos</strong> de compiladores.</p>
+<p>Um autômato finito pode ser entendido como uma máquina abstrata que lê uma palavra, símbolo por símbolo, e, de acordo com o símbolo lido e com o seu estado atual, muda para outro estado. Ao final da leitura da palavra, o autômato determina se ela deve ser <strong>aceita</strong> ou <strong>rejeitada</strong>.</p>
+<p>A máquina é denominada <em>finita</em> porque possui uma quantidade finita de estados. Cada estado pode representar uma determinada situação da computação. As mudanças entre os estados são realizadas por meio de <strong>transições</strong>, que são determinadas pelos símbolos da palavra que está sendo processada.</p>
+<p>Uma representação gráfica de um autômato finito é apresentada na <a href="#fig-afd1" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-afd1</span></a>. Nessa representação, os <strong>estados</strong> são representados por círculos e as <strong>transições</strong> por setas orientadas entre os estados. O rótulo associado a uma seta indica o símbolo que deve ser lido para que aquela transição seja realizada.</p>
+<p>O estado inicial é indicado por uma seta que não possui estado de origem. Os estados de aceitação, também denominados <strong>estados finais</strong>, são representados por dois círculos concêntricos.</p>
+<div id="fig-afd1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-afd1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afd1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:30.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-afd1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.1: Autômato de Estados Finitos Determinístico.
+</figcaption>
+</figure>
+</div>
+<p>O autômato da <a href="#fig-afd1" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-afd1</span></a> possui dois estados, <span class="math inline">\(q_0\)</span> e <span class="math inline">\(q_1\)</span>, sendo <span class="math inline">\(q_0\)</span> o estado inicial e <span class="math inline">\(q_1\)</span> um estado final. As setas indicam como o autômato deve mudar de estado à medida que os símbolos da palavra são lidos.</p>
+<p>Por exemplo, quando o autômato está no estado <span class="math inline">\(q_0\)</span> e lê o símbolo <span class="math inline">\(0\)</span>, permanece em <span class="math inline">\(q_0\)</span>. Quando está em <span class="math inline">\(q_0\)</span> e lê o símbolo <span class="math inline">\(1\)</span>, realiza uma transição para <span class="math inline">\(q_1\)</span>. A partir de <span class="math inline">\(q_1\)</span>, as transições dependem dos símbolos definidos no autômato.</p>
+<p>Essa representação permite visualizar o comportamento da máquina, mas, para descrever formalmente uma computação, é necessário definir o que significa o autômato estar em determinado estado enquanto ainda existem símbolos a serem processados.</p>
+<section id="configuração-instantânea" class="level3">
+<h3 class="anchored" data-anchor-id="configuração-instantânea">Configuração instantânea</h3>
+<p>Para representar uma computação, podemos utilizar o conceito de <strong>configuração instantânea</strong>. Uma configuração instantânea descreve a situação do autômato em um determinado instante da computação e é representada pelo par</p>
+<p><span class="math display">\[
+[e,w],
+\]</span></p>
+<p>em que:</p>
+<ul>
+<li><span class="math inline">\(e\)</span> representa o <strong>estado atual</strong> do autômato;</li>
+<li><span class="math inline">\(w\)</span> representa a parte da palavra que ainda não foi processada.</li>
+</ul>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+[q_0,001]
+\]</span></p>
+<p>indica que o autômato está no estado <span class="math inline">\(q_0\)</span> e que ainda precisa processar a palavra <span class="math inline">\(001\)</span>.</p>
+<p>À medida que os símbolos são lidos, a configuração é modificada. Para representar essa transformação, utiliza-se a relação</p>
+<p><span class="math display">\[
+\vdash,
+\]</span></p>
+<p>denominada <strong>relação de transição</strong> ou <strong>relação de computação</strong>.</p>
+<p>Suponha que exista no autômato uma transição de <span class="math inline">\(q_0\)</span> para <span class="math inline">\(q_1\)</span> associada ao símbolo <span class="math inline">\(a\)</span>. Nesse caso, podemos representar a computação por</p>
+<p><span class="math display">\[
+[q_0,aw]\vdash[q_1,w].
+\]</span></p>
+<p>A expressão indica que o autômato estava no estado <span class="math inline">\(q_0\)</span>, tinha como próximo símbolo a ser lido o símbolo <span class="math inline">\(a\)</span> e, após processá-lo, passou para o estado <span class="math inline">\(q_1\)</span>. A parte <span class="math inline">\(w\)</span> permanece como a porção da palavra que ainda não foi processada.</p>
+<p>Portanto, cada passo da computação consome exatamente um símbolo da palavra e produz uma nova configuração.</p>
+<section id="computação-de-uma-palavra" class="level4">
+<h4 class="anchored" data-anchor-id="computação-de-uma-palavra">Computação de uma palavra</h4>
+<p>Considere novamente o autômato apresentado na <a href="#fig-afd1" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-afd1</span></a> e a palavra</p>
+<p><span class="math display">\[
+w=001.
+\]</span></p>
+<p>A computação pode ser representada por uma sequência de configurações instantâneas:</p>
+<p><span class="math display">\[
+[q_0,001]
+\vdash
+[q_0,01]
+\vdash
+[q_0,1]
+\vdash
+[q_1,\varepsilon].
+\]</span></p>
+<p>No primeiro passo, o autômato está em <span class="math inline">\(q_0\)</span> e lê o primeiro símbolo, que é <span class="math inline">\(0\)</span>. De acordo com a transição correspondente, permanece em <span class="math inline">\(q_0\)</span>. A palavra restante passa a ser <span class="math inline">\(01\)</span>.</p>
+<p>No segundo passo, o autômato lê novamente o símbolo <span class="math inline">\(0\)</span> e permanece em <span class="math inline">\(q_0\)</span>. A palavra restante passa a ser <span class="math inline">\(1\)</span>.</p>
+<p>Finalmente, o autômato lê o símbolo <span class="math inline">\(1\)</span> e realiza a transição para o estado <span class="math inline">\(q_1\)</span>. Nesse momento, todos os símbolos da palavra foram processados.</p>
+<p>Os símbolos <span class="math inline">\(\lambda\)</span> ou <span class="math inline">\(\varepsilon\)</span> são utilizados para representar a <strong>palavra vazia</strong>. Neste livro, será utilizada preferencialmente a notação <span class="math inline">\(\varepsilon\)</span>, embora <span class="math inline">\(\lambda\)</span> também seja encontrada na literatura.</p>
+<p>Assim,</p>
+<p><span class="math display">\[
+\lambda=\varepsilon
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+|\varepsilon|=0.
+\]</span></p>
+<p>Quando a computação termina, a configuração</p>
+<p><span class="math display">\[
+[q_1,\varepsilon]
+\]</span></p>
+<p>indica que o autômato está no estado <span class="math inline">\(q_1\)</span> e não existem mais símbolos para serem processados.</p>
+</section>
+<section id="aceitação-de-uma-palavra" class="level4">
+<h4 class="anchored" data-anchor-id="aceitação-de-uma-palavra">Aceitação de uma palavra</h4>
+<p>Uma palavra é <strong>aceita</strong> por um autômato finito quando a computação começa no estado inicial, todos os símbolos da palavra são processados e o autômato termina em um estado final.</p>
+<p>No exemplo anterior, como <span class="math inline">\(q_0\)</span> é o estado inicial e <span class="math inline">\(q_1\)</span> é um estado final, a palavra <span class="math inline">\(001\)</span> é aceita pelo autômato.</p>
+<p>Por outro lado, se após o processamento do último símbolo o autômato terminar em um estado que não seja final, a palavra será rejeitada.</p>
+<p>É importante observar que o fato de o autômato passar por um estado final durante a computação não é suficiente para aceitar uma palavra. O autômato deve <strong>terminar a leitura de toda a palavra em um estado final</strong>.</p>
+</section>
+<section id="computação-completa" class="level4">
+<h4 class="anchored" data-anchor-id="computação-completa">Computação completa</h4>
+<p>Para representar vários passos de uma computação, utilizamos a relação <span class="math inline">\(\vdash^*\)</span>, denominada <strong>fecho reflexivo e transitivo</strong> da relação <span class="math inline">\(\vdash\)</span>.</p>
+<p>Assim,</p>
+<p><span class="math display">\[
+[e,w]\vdash^*[e',w']
+\]</span></p>
+<p>significa que é possível transformar a configuração <span class="math inline">\([e,w]\)</span> na configuração <span class="math inline">\([e',w']\)</span> após <strong>zero ou mais passos</strong> de computação.</p>
+<p>O uso do asterisco é importante porque permite representar também uma computação que não realiza nenhum passo. Dessa forma,</p>
+<p><span class="math display">\[
+[e,w]\vdash^*[e,w].
+\]</span></p>
+<p>No caso de uma palavra ser processada completamente, temos uma computação da forma</p>
+<p><span class="math display">\[
+[i,w]\vdash^*[f,\epsilon],
+\]</span></p>
+<p>em que <span class="math inline">\(i\)</span> é o estado inicial e <span class="math inline">\(f\)</span> é um estado final.</p>
+</section>
+<section id="linguagem-reconhecida-por-um-autômato" class="level4">
+<h4 class="anchored" data-anchor-id="linguagem-reconhecida-por-um-autômato">Linguagem reconhecida por um autômato</h4>
+<p>Um autômato finito não reconhece apenas uma palavra. Ao ser utilizado sobre todas as palavras possíveis do alfabeto <span class="math inline">\(\Sigma\)</span>, ele determina um conjunto de palavras que são aceitas. Esse conjunto é denominado <strong>linguagem reconhecida</strong> ou <strong>linguagem aceita</strong> pelo autômato.</p>
+<p>Seja <span class="math inline">\(A\)</span> um autômato finito definido sobre o alfabeto <span class="math inline">\(\Sigma\)</span>. A linguagem reconhecida por <span class="math inline">\(A\)</span> é denotada por <span class="math inline">\(L(A)\)</span> e pode ser definida formalmente por</p>
+<p><span class="math display">\[
+L(A)=
+\{w\in\Sigma^*
+\mid
+[i,w]\vdash^*[f,\epsilon],
+\text{ para algum } f\in F
+\}.
+\]</span></p>
+<p>Nessa definição:</p>
+<ul>
+<li><span class="math inline">\(L(A)\)</span> é a linguagem reconhecida pelo autômato <span class="math inline">\(A\)</span>;</li>
+<li><span class="math inline">\(w\)</span> é uma palavra pertencente ao alfabeto <span class="math inline">\(\Sigma^*\)</span>;</li>
+<li><span class="math inline">\(i\)</span> é o estado inicial do autômato;</li>
+<li><span class="math inline">\(F\)</span> é o conjunto de estados finais;</li>
+<li><span class="math inline">\(f\)</span> é um estado final, isto é, <span class="math inline">\(f\in F\)</span>;</li>
+<li><span class="math inline">\(\epsilon\)</span> representa a palavra vazia;</li>
+<li><span class="math inline">\(\vdash^*\)</span> representa zero ou mais passos da computação.</li>
+</ul>
+<p>A expressão</p>
+<p><span class="math display">\[
+[i,w]\vdash^*[f,\epsilon]
+\]</span></p>
+<p>significa, portanto, que o autômato começa no estado inicial <span class="math inline">\(i\)</span>, processa completamente a palavra <span class="math inline">\(w\)</span> e termina em algum estado final <span class="math inline">\(f\)</span>.</p>
+</section>
+</section>
+<section id="autômatos-finitos-determinísticos" class="level3">
+<h3 class="anchored" data-anchor-id="autômatos-finitos-determinísticos">Autômatos Finitos Determinísticos</h3>
+<p>Os <strong>Autômatos Finitos Determinísticos (AFDs)</strong> constituem um dos modelos mais simples de máquinas abstratas utilizadas para reconhecer linguagens formais. Um AFD processa uma palavra símbolo por símbolo, mantendo, a cada instante, um único estado corrente. Para cada combinação de estado e símbolo de entrada existe <strong>exatamente uma transição possível</strong>.</p>
+<p>A palavra <em>determinístico</em> está relacionada justamente a essa característica. Dado o estado atual do autômato e o próximo símbolo da palavra, o próximo estado é determinado de maneira única. Portanto, não existe escolha entre diferentes caminhos possíveis durante a computação.</p>
+<p>Essa propriedade torna os AFDs particularmente adequados para implementação em programas de computador. O processamento de uma palavra pode ser realizado simplesmente consultando uma tabela que associa cada par formado por um estado e um símbolo de entrada ao próximo estado.</p>
+<section id="definição-formal" class="level4">
+<h4 class="anchored" data-anchor-id="definição-formal">Definição formal</h4>
+<p>O Autômato Finito Determinístico (AFD) é matematicamente definido como uma quíntupla.</p>
+<div id="def-afd" class="theorem definition">
+<p><span class="theorem-title"><strong>Definição 4.1</strong></span> Um <strong>Autômato Finito Determinístico (AFD)</strong> é uma quíntupla</p>
+<p><span class="math display">\[
+A=(Q,\Sigma,\delta,i,F),
+\]</span></p>
+<p>onde:</p>
+<ul>
+<li><span class="math inline">\(Q\)</span> é um conjunto finito de <strong>estados</strong> do autômato;</li>
+<li><span class="math inline">\(\Sigma\)</span> é o <strong>alfabeto de entrada</strong>;</li>
+<li><span class="math inline">\(\delta:Q\times\Sigma\rightarrow Q\)</span> é a <strong>função de transição</strong>;</li>
+<li><span class="math inline">\(i\in Q\)</span> é o <strong>estado inicial</strong>;</li>
+<li><span class="math inline">\(F\subseteq Q\)</span> é o conjunto de <strong>estados finais</strong>.</li>
+</ul>
+</div>
+<p>Cada componente da quíntupla possui uma função específica na definição do comportamento do autômato.</p>
+<p>O conjunto <span class="math inline">\(E\)</span> contém todos os estados possíveis da máquina. Como se trata de um autômato finito, esse conjunto deve possuir uma quantidade finita de elementos. Por exemplo,</p>
+<p><span class="math display">\[
+Q=\{q_0,q_1,q_2\}.
+\]</span></p>
+<p>O conjunto <span class="math inline">\(\Sigma\)</span> corresponde ao alfabeto utilizado como entrada. Se o autômato reconhece palavras constituídas pelos símbolos <span class="math inline">\(0\)</span> e <span class="math inline">\(1\)</span>, podemos ter</p>
+<p><span class="math display">\[
+\Sigma=\{0,1\}.
+\]</span></p>
+<p>A função <span class="math inline">\(\delta\)</span> determina como o autômato muda de estado. Como</p>
+<p><span class="math display">\[
+\delta:Q\times\Sigma\rightarrow Q,
+\]</span></p>
+<p>para cada estado <span class="math inline">\(q\in E\)</span> e cada símbolo <span class="math inline">\(a\in\Sigma\)</span>, existe exatamente um estado <span class="math inline">\(p\in E\)</span> tal que</p>
+<p><span class="math display">\[
+\delta(q,a)=p.
+\]</span></p>
+<p>Essa é justamente a característica que diferencia o AFD de modelos não determinísticos: <strong>cada par (estado, símbolo) possui uma única transição definida</strong>.</p>
+<p>O estado <span class="math inline">\(i\)</span> representa o estado em que a computação começa. Finalmente, o conjunto <span class="math inline">\(F\)</span> contém os estados que representam uma computação de aceitação. Uma palavra será aceita quando, depois de todos os seus símbolos serem processados, o autômato estiver em algum estado pertencente a <span class="math inline">\(F\)</span>.</p>
+</section>
+<section id="exemplo-de-um-afd" class="level4">
+<h4 class="anchored" data-anchor-id="exemplo-de-um-afd">Exemplo de um AFD</h4>
+<p>Usando a definição anterior, podemos descrever formalmente a máquina apresentada na <a href="#fig-afd1" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-afd1</span></a> como</p>
+<p><span class="math display">\[
+A_1=
+(\{q_0,q_1\},
+\{0,1\},
+\delta,
+q_0,
+\{q_1\}).
+\]</span></p>
+<p>Nesse caso,</p>
+<p><span class="math display">\[
+Q=\{q_0,q_1\},
+\]</span></p>
+<p>é o conjunto de estados;</p>
+<p><span class="math display">\[
+\Sigma=\{0,1\},
+\]</span></p>
+<p>é o alfabeto de entrada;</p>
+<p><span class="math display">\[
+i=q_0
+\]</span></p>
+<p>é o estado inicial; e</p>
+<p><span class="math display">\[
+F=\{q_1\}
+\]</span></p>
+<p>é o conjunto de estados finais.</p>
+<p>A função de transição <span class="math inline">\(\delta\)</span> pode ser representada por uma tabela. Nas linhas são apresentados os estados e nas colunas os símbolos do alfabeto.</p>
+<div id="tbl-transicao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-transicao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabela&nbsp;4.1: Função de transição <span class="math inline">\(\delta\)</span>
+</figcaption>
+<div aria-describedby="tbl-transicao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(\delta\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(0\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(q_1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(q_1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(q_1\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>A tabela deve ser interpretada da seguinte maneira. Para determinar o próximo estado, basta localizar a linha correspondente ao estado atual e a coluna correspondente ao símbolo que está sendo lido.</p>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+\delta(q_0,0)=q_0
+\]</span></p>
+<p>indica que, estando no estado <span class="math inline">\(q_0\)</span> e lendo o símbolo <span class="math inline">\(0\)</span>, o autômato permanece em <span class="math inline">\(q_0\)</span>.</p>
+<p>Da mesma forma,</p>
+<p><span class="math display">\[
+\delta(q_0,1)=q_1
+\]</span></p>
+<p>indica que, estando em <span class="math inline">\(q_0\)</span> e lendo o símbolo <span class="math inline">\(1\)</span>, o autômato passa para <span class="math inline">\(q_1\)</span>.</p>
+<p>Podemos ainda observar que</p>
+<p><span class="math display">\[
+\delta(q_1,0)=q_0
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\delta(q_1,1)=q_1.
+\]</span></p>
+<p>A tabela contém uma entrada para cada combinação entre estado e símbolo do alfabeto. Essa propriedade é uma consequência direta da definição de um AFD: a função</p>
+<p><span class="math display">\[
+\delta:Q\times\Sigma\rightarrow Q
+\]</span></p>
+<p>é uma função <strong>total</strong>. Portanto, não pode existir um par <span class="math inline">\((q,a)\)</span> para o qual <span class="math inline">\(\delta(q,a)\)</span> não esteja definido.</p>
+</section>
+<section id="função-de-transição-estendida" class="level4">
+<h4 class="anchored" data-anchor-id="função-de-transição-estendida">Função de transição estendida</h4>
+<p>A função <span class="math inline">\(\delta\)</span> permite determinar apenas o próximo estado do autômato após a leitura de <strong>um único símbolo</strong>. Entretanto, durante a computação de uma palavra, precisamos determinar o estado alcançado após a leitura de toda a palavra.</p>
+<p>Para isso, definimos a <strong>função de transição estendida</strong>, normalmente representada por <span class="math inline">\(\hat{\delta}\)</span>.</p>
+<div id="def-transicao-estendida" class="theorem definition">
+<p><span class="theorem-title"><strong>Definição 4.2</strong></span> Seja um AFD <span class="math inline">\(A = (Q,\Sigma,\delta,i,F)\)</span>. A função de transição estendida para <span class="math inline">\(A\)</span>, <span class="math inline">\(\hat{\delta} : Q \times \Sigma^* \rightarrow Q\)</span>, definida recursivamente como:</p>
+<ul>
+<li><p><span class="math inline">\(\hat{\delta}(q,\varepsilon) = q\)</span></p></li>
+<li><p><span class="math inline">\(\hat{\delta}(q,ay) = \hat{\delta}(\delta(q,a),y)\)</span>, para todo <span class="math inline">\(q \in Q\)</span>, <span class="math inline">\(a \in \Sigma\)</span> e <span class="math inline">\(y \in \Sigma^*\)</span></p></li>
+</ul>
+</div>
+<p>A primeira regra estabelece o caso base da definição. Se a palavra a ser processada é vazia, o autômato permanece no estado em que se encontra:</p>
+<p><span class="math display">\[
+\hat{\delta}(q,\varepsilon)=q.
+\]</span></p>
+<p>A segunda regra determina como processar uma palavra não vazia. Se a palavra é formada por um primeiro símbolo <span class="math inline">\(a\)</span> seguido da palavra <span class="math inline">\(y\)</span>, primeiro aplicamos <span class="math inline">\(\delta\)</span> para processar <span class="math inline">\(a\)</span> e obter o novo estado. Em seguida, aplicamos recursivamente <span class="math inline">\(\hat{\delta}\)</span> para processar os símbolos restantes.</p>
+<p>Em outras palavras, enquanto <span class="math inline">\(\delta\)</span> processa <strong>um símbolo</strong>, <span class="math inline">\(\hat{\delta}\)</span> permite processar <strong>uma palavra inteira</strong>.</p>
+<p>Essa distinção pode ser resumida por:</p>
+<p><span class="math display">\[
+\delta:Q\times\Sigma\rightarrow Q
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\hat{\delta}:Q\times\Sigma^*\rightarrow Q.
+\]</span></p>
+<p>Observe que o domínio da primeira função utiliza <span class="math inline">\(\Sigma\)</span>, enquanto o domínio da segunda utiliza <span class="math inline">\(\Sigma^*\)</span>.</p>
+</section>
+<section id="exemplo-de-computação-utilizando-hatdelta" class="level4">
+<h4 class="anchored" data-anchor-id="exemplo-de-computação-utilizando-hatdelta">Exemplo de computação utilizando <span class="math inline">\(\hat{\delta}\)</span></h4>
+<p>Considere novamente o autômato <span class="math inline">\(A_1\)</span> e a palavra</p>
+<p><span class="math display">\[
+w=001.
+\]</span></p>
+<p>A aplicação da função de transição estendida pode ser desenvolvida passo a passo:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\hat{\delta}(q_0,001)
+&amp;=\hat{\delta}(\delta(q_0,0),01)\\
+&amp;=\hat{\delta}(q_0,01)\\
+&amp;=\hat{\delta}(\delta(q_0,0),1)\\
+&amp;=\hat{\delta}(q_0,1)\\
+&amp;=\hat{\delta}(\delta(q_0,1),\epsilon)\\
+&amp;=\hat{\delta}(q_1,\epsilon)\\
+&amp;=q_1.
+\end{aligned}
+\]</span></p>
+<p>Portanto,</p>
+<p><span class="math display">\[
+\boxed{\hat{\delta}(q_0,001)=q_1}.
+\]</span></p>
+<p>Como <span class="math inline">\(q_1\in F\)</span>, concluímos que a palavra <span class="math inline">\(001\)</span> é aceita pelo autômato <span class="math inline">\(A_1\)</span>.</p>
+<p>Esse resultado também pode ser expresso utilizando a relação entre configurações instantâneas:</p>
+<p><span class="math display">\[
+[q_0,001]
+\vdash
+[q_0,01]
+\vdash
+[q_0,1]
+\vdash
+[q_1,\epsilon].
+\]</span></p>
+<p>As duas formas de representação descrevem a mesma computação. A primeira utiliza a função de transição estendida e a segunda explicita cada configuração intermediária do autômato.</p>
+</section>
+<section id="critério-de-aceitação" class="level4">
+<h4 class="anchored" data-anchor-id="critério-de-aceitação">Critério de aceitação</h4>
+<p>A função de transição estendida permite definir a linguagem reconhecida por um AFD de maneira particularmente simples.</p>
+<p>Seja</p>
+<p><span class="math display">\[
+A=(Q,\Sigma,\delta,i,F).
+\]</span></p>
+<p>A palavra <span class="math inline">\(w\in\Sigma^*\)</span> é aceita por <span class="math inline">\(A\)</span> se, e somente se,</p>
+<p><span class="math display">\[
+\hat{\delta}(i,w)\in F.
+\]</span></p>
+<p>Consequentemente, a linguagem reconhecida por <span class="math inline">\(A\)</span> é dada por</p>
+<p><span class="math display">\[
+L(A)=
+\{w\in\Sigma^*
+\mid
+\hat{\delta}(i,w)\in F
+\}.
+\]</span></p>
+<p>Essa definição é equivalente à definição baseada nas configurações instantâneas apresentada anteriormente. A diferença está apenas na forma de representar a computação.</p>
+<p>Para o autômato <span class="math inline">\(A_1\)</span>, por exemplo,</p>
+<p><span class="math display">\[
+\hat{\delta}(q_0,001)=q_1
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+q_1\in F.
+\]</span></p>
+<p>Logo,</p>
+<p><span class="math display">\[
+001\in L(A_1).
+\]</span></p>
+<p>Por outro lado, para a palavra <span class="math inline">\(000\)</span> temos</p>
+<p><span class="math display">\[
+\hat{\delta}(q_0,000)=q_0.
+\]</span></p>
+<p>Como</p>
+<p><span class="math display">\[
+q_0\notin F,
+\]</span></p>
+<p>temos</p>
+<p><span class="math display">\[
+000\notin L(A_1).
+\]</span></p>
+</section>
+<section id="implementação-da-computação" class="level4">
+<h4 class="anchored" data-anchor-id="implementação-da-computação">Implementação da computação</h4>
+<p>A definição matemática de um AFD possui uma correspondência direta com sua implementação computacional. Para simular o autômato, basta manter uma variável contendo o <strong>estado atual</strong> e, para cada símbolo da palavra de entrada, consultar a função de transição.</p>
+<p>A tabela apresentada na <a href="#tbl-transicao" class="quarto-xref">Tabela&nbsp;<span class="quarto-unresolved-ref">tbl-transicao</span></a> pode ser implementada diretamente como uma matriz. As linhas representam os estados e as colunas representam os símbolos do alfabeto.</p>
+<p>Uma versão simplificada do algoritmo pode ser descrita pelo seguinte código exemplo:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">// definição do automato</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// M = (Q, Sigma, T, q_0, F)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> <span class="op">*</span>estados <span class="op">=</span> <span class="st">"01"</span><span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> <span class="op">*</span>alfabeto <span class="op">=</span> <span class="st">"01"</span><span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> T<span class="op">[</span><span class="dv">2</span><span class="op">][</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>               <span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">};</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> inicial <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> <span class="op">*</span>finais <span class="op">=</span> <span class="st">"1"</span><span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> pertence<span class="op">(</span><span class="dt">int</span> s<span class="op">,</span> <span class="dt">char</span> <span class="op">*</span>c<span class="op">)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i<span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span>i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> c<span class="op">[</span>i<span class="op">];</span> i<span class="op">++)</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>s <span class="op">==</span> c<span class="op">[</span>i<span class="op">]</span> <span class="op">-</span> <span class="ch">'0'</span><span class="op">)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> entrada<span class="op">[</span><span class="dv">20</span><span class="op">];</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">do</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">"Cadeia de entrada (usando o alfabeto: </span><span class="sc">%s</span><span class="st">): "</span><span class="op">,</span> alfabeto<span class="op">);</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        scanf<span class="op">(</span><span class="st">"</span><span class="sc">%s</span><span class="st">"</span><span class="op">,</span> entrada<span class="op">);</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">"|</span><span class="sc">%s</span><span class="st">|</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> entrada<span class="op">);</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>entrada<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">!=</span> <span class="ch">'.'</span><span class="op">)</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>            <span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            <span class="dt">int</span> estado <span class="op">=</span> inicial<span class="op">;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">while</span> <span class="op">(</span>entrada<span class="op">[</span>i<span class="op">])</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>                estado <span class="op">=</span> T<span class="op">[</span>estado<span class="op">][</span>entrada<span class="op">[</span>i<span class="op">]</span> <span class="op">-</span> <span class="ch">'a'</span><span class="op">];</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>                i<span class="op">++;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>pertence<span class="op">(</span>estado<span class="op">,</span> finais<span class="op">))</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>                puts<span class="op">(</span><span class="st">"aceita!"</span><span class="op">);</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>                puts<span class="op">(</span><span class="st">"rejeita"</span><span class="op">);</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> <span class="cf">while</span> <span class="op">(</span>entrada<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">!=</span> <span class="ch">'.'</span><span class="op">);</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Para a palavra <span class="math inline">\(w=001\)</span>, o algoritmo executa três iterações:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Passo</th>
+<th style="text-align: center;">Estado atual</th>
+<th style="text-align: center;">Símbolo</th>
+<th style="text-align: center;">Próximo estado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(q_1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Ao final do processamento, o estado atual é <span class="math inline">\(q_1\)</span>. Como <span class="math inline">\(q_1\)</span> pertence ao conjunto de estados finais,</p>
+<p><span class="math display">\[
+q_1\in F,
+\]</span></p>
+<p>a palavra é aceita.</p>
+<p>Essa implementação evidencia uma das principais vantagens dos AFDs: <strong>o reconhecimento de uma palavra pode ser realizado de maneira extremamente simples, processando cada símbolo uma única vez</strong>.</p>
+<p>Se a palavra possui comprimento <span class="math inline">\(n\)</span>, o algoritmo realiza exatamente <span class="math inline">\(n\)</span> consultas à função de transição. Assim, considerando que a consulta à tabela de transição seja realizada em tempo constante, o reconhecimento de uma palavra possui complexidade temporal</p>
+<p><span class="math display">\[
+O(n),
+\]</span></p>
+<p>em que <span class="math inline">\(n=|w|\)</span>.</p>
+<p>Essa característica explica, em parte, a importância dos autômatos finitos na implementação de analisadores léxicos. Uma vez construído o AFD correspondente a um determinado padrão léxico, a sequência de caracteres pode ser processada de forma eficiente, realizando uma transição para cada símbolo lido.</p>
+<p>Nos exemplos computacionais apresentados neste livro, a função <span class="math inline">\(\delta\)</span> será frequentemente representada por uma tabela ou por uma estrutura de dados equivalente. Dessa forma, a definição matemática do AFD pode ser diretamente transformada em um algoritmo de simulação.</p>
+</section>
+</section>
+<section id="autômatos-finitos-não-determinísticos" class="level3">
+<h3 class="anchored" data-anchor-id="autômatos-finitos-não-determinísticos">Autômatos Finitos Não-Determinísticos</h3>
+<p>Um outro formalismo utilizado na representação de linguagens regulares é o <strong>Autômato Finito Não-Determinístico (AFN)</strong>. Embora o AFN não aumente o poder de especificação dos Autômatos Finitos Determinísticos (AFDs), ele pode tornar mais simples e natural a definição de algumas máquinas.</p>
+<p>O <strong>não determinismo</strong> manifesta-se pela possibilidade de, a partir de um mesmo estado e para um mesmo símbolo da entrada, existirem <strong>mais de uma transição possível</strong>. Além disso, um AFN pode realizar <strong>transições <span class="math inline">\(\varepsilon\)</span></strong>, que permitem a mudança de estado sem consumir nenhum símbolo da cadeia de entrada.</p>
+<p>Algumas definições de AFN também permitem a existência de <strong>mais de um estado inicial</strong>. Essa possibilidade, entretanto, não será considerada na definição de AFN adotada neste livro, pois ela não é necessária para caracterizar o não determinismo nem altera o poder de reconhecimento do modelo.</p>
+<div id="def-afn" class="theorem definition">
+<p><span class="theorem-title"><strong>Definição 4.3</strong></span> Um AFN é uma quíntupla <span class="math inline">\((Q,\Sigma,\)</span> <span class="math inline">\(\delta,i,F)\)</span>, onde:</p>
+<ul>
+<li><p><span class="math inline">\(Q\)</span> é o conjunto finito dos estados do autômato;</p></li>
+<li><p><span class="math inline">\(\Sigma\)</span> é um alfabeto;</p></li>
+<li><p><span class="math inline">\(\delta:Q\times\Sigma_\varepsilon \rightarrow P(Q)\)</span> é a função de transição;</p></li>
+<li><p><span class="math inline">\(i \in Q\)</span> é o estado inicial;</p></li>
+<li><p><span class="math inline">\(F \subseteq Q\)</span> é o conjunto de estados finais.</p></li>
+</ul>
+</div>
+<div id="fig-afn1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-afn1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afn1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-afn1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.2: Autômato Finito Não-Determinístico
+</figcaption>
+</figure>
+</div>
+<section id="computação-em-um-afn" class="level4">
+<h4 class="anchored" data-anchor-id="computação-em-um-afn">Computação em um AFN</h4>
+<p>A computação de um Autômato Finito Não Determinístico (AFN) consiste em acompanhar os possíveis estados em que o autômato pode se encontrar à medida que os símbolos da cadeia de entrada são processados. Diferentemente de um AFD, para um determinado estado e símbolo pode existir mais de um estado possível para o próximo passo. Além disso, o AFN pode realizar transições espontâneas, representadas por <span class="math inline">\(\varepsilon\)</span>, sem consumir nenhum símbolo da cadeia de entrada.</p>
+<p>Considere o AFN apresentado anteriormente, cuja tabela de transição é:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Estado</th>
+<th style="text-align: center;"><span class="math inline">\(a\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(b\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\varepsilon\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(q_0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\varnothing\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\{q_1\}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\{q_2\}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(q_1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\{q_1,q_2\}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\{q_2\}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\varnothing\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(q_2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\{q_0\}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\varnothing\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\varnothing\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>O estado <span class="math inline">\(q_0\)</span> é o estado inicial e também é um estado final.</p>
+<p>Observe, por exemplo, que</p>
+<p><span class="math display">\[
+\delta(q_1,a)=\{q_1,q_2\}.
+\]</span></p>
+<p>Isso significa que, estando em <span class="math inline">\(q_1\)</span> e lendo o símbolo <span class="math inline">\(a\)</span>, o autômato pode permanecer em <span class="math inline">\(q_1\)</span> ou pode ir para <span class="math inline">\(q_2\)</span>. Essa possibilidade de escolha caracteriza o comportamento não determinístico do AFN.</p>
+<p>Além disso,</p>
+<p><span class="math display">\[
+\delta(q_0,\varepsilon)=\{q_2\},
+\]</span></p>
+<p>o que significa que o autômato pode passar de <span class="math inline">\(q_0\)</span> para <span class="math inline">\(q_2\)</span> sem consumir nenhum símbolo da entrada.</p>
+</section>
+<section id="exemplo-de-computação" class="level4">
+<h4 class="anchored" data-anchor-id="exemplo-de-computação">Exemplo de computação</h4>
+<p>Considere a cadeia</p>
+<p><span class="math display">\[
+w=bba.
+\]</span></p>
+<p>Vamos acompanhar uma possível computação do AFN.</p>
+<p>Inicialmente, o autômato encontra-se em <span class="math inline">\(q_0\)</span>. Como existe uma transição <span class="math inline">\(\varepsilon\)</span> de <span class="math inline">\(q_0\)</span> para <span class="math inline">\(q_2\)</span>, antes mesmo de consumir qualquer símbolo o autômato também pode estar em <span class="math inline">\(q_2\)</span>. Portanto, a <span class="math inline">\(\varepsilon\)</span>-fecho do estado inicial é</p>
+<p><span class="math display">\[
+\varepsilon\text{-fecho}(q_0)=\{q_0,q_2\}.
+\]</span></p>
+<p>Agora, o primeiro símbolo da cadeia é <span class="math inline">\(b\)</span>. A partir dos estados <span class="math inline">\(\{q_0,q_2\}\)</span>, temos:</p>
+<p><span class="math display">\[
+\delta(q_0,b)=\{q_1\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\delta(q_2,b)=\varnothing.
+\]</span></p>
+<p>Logo, após consumir o primeiro símbolo <span class="math inline">\(b\)</span>, o conjunto de estados possíveis é</p>
+<p><span class="math display">\[
+\{q_1\}.
+\]</span></p>
+<p>O segundo símbolo também é <span class="math inline">\(b\)</span>. Como</p>
+<p><span class="math display">\[
+\delta(q_1,b)=\{q_2\},
+\]</span></p>
+<p>temos:</p>
+<p><span class="math display">\[
+\{q_1\}
+\xrightarrow{b}
+\{q_2\}.
+\]</span></p>
+<p>Finalmente, resta consumir o símbolo <span class="math inline">\(a\)</span>. Como</p>
+<p><span class="math display">\[
+\delta(q_2,a)=\{q_0\},
+\]</span></p>
+<p>obtemos:</p>
+<p><span class="math display">\[
+\{q_2\}
+\xrightarrow{a}
+\{q_0\}.
+\]</span></p>
+<p>Como <span class="math inline">\(q_0\)</span> é um estado final, a cadeia <span class="math inline">\(bba\)</span> é aceita pelo AFN.</p>
+<p>Podemos representar essa computação por:</p>
+<p><span class="math display">\[
+q_0
+\xrightarrow{b}
+q_1
+\xrightarrow{b}
+q_2
+\xrightarrow{a}
+q_0.
+\]</span></p>
+<p>Como a computação termina em um estado final, concluímos que</p>
+<p><span class="math display">\[
+bba \in L(M),
+\]</span></p>
+<p>onde <span class="math inline">\(L(M)\)</span> representa a linguagem reconhecida pelo autômato <span class="math inline">\(M\)</span>.</p>
+<p>As múltiplas computações possíveis no AFN também podem ser representada numa árvore:</p>
+<div id="fig-computa-anf" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-computa-anf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/computa-afn.png" class="img-fluid figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-computa-anf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.3: Múltiplas computações do AFN
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="não-determinismo-e-múltiplas-computações" class="level4">
+<h4 class="anchored" data-anchor-id="não-determinismo-e-múltiplas-computações">Não determinismo e múltiplas computações</h4>
+<p>Uma característica importante do AFN é que uma mesma cadeia pode produzir diferentes caminhos de computação. Considere, por exemplo, o estado <span class="math inline">\(q_1\)</span> e o símbolo <span class="math inline">\(a\)</span>:</p>
+<p><span class="math display">\[
+\delta(q_1,a)=\{q_1,q_2\}.
+\]</span></p>
+<p>Assim, ao ler <span class="math inline">\(a\)</span> em <span class="math inline">\(q_1\)</span>, existem duas possibilidades:</p>
+<p><span class="math display">\[
+q_1\xrightarrow{a}q_1
+\qquad\text{ou}\qquad
+q_1\xrightarrow{a}q_2.
+\]</span></p>
+<p>Portanto, uma cadeia é aceita por um AFN quando <strong>existe pelo menos uma computação que consome toda a cadeia e termina em um estado final</strong>.</p>
+<p>Não é necessário que todas as possíveis computações terminem em estados finais. Basta que uma delas seja bem-sucedida.</p>
+</section>
+<section id="a-função-de-transição-e-as-transições-inexistentes" class="level4">
+<h4 class="anchored" data-anchor-id="a-função-de-transição-e-as-transições-inexistentes">A função de transição e as transições inexistentes</h4>
+<p>Na representação gráfica de um AFN, normalmente desenhamos apenas as transições que realmente existem. Por exemplo, não há no autômato uma transição de <span class="math inline">\(q_0\)</span> com o símbolo <span class="math inline">\(a\)</span>. Por isso, na tabela aparece:</p>
+<p><span class="math display">\[
+\delta(q_0,a)=\varnothing.
+\]</span></p>
+<p>De maneira semelhante,</p>
+<p><span class="math display">\[
+\delta(q_2,b)=\varnothing.
+\]</span></p>
+<p>Isso significa que não existe uma transição possível para aquele par estado/símbolo.</p>
+<p>Nesse sentido, quando consideramos apenas as transições explicitamente representadas no diagrama, podemos dizer que a função de transição é <strong>parcial</strong>: alguns pares <span class="math inline">\((q,x)\)</span> não possuem uma transição associada.</p>
+<p>Entretanto, existe uma importante observação formal. A função de transição de um AFN pode ser definida como</p>
+<p><span class="math display">\[
+\delta:Q\times(\Sigma\cup\{\varepsilon\})
+\longrightarrow\mathcal{P}(Q),
+\]</span></p>
+<p>onde <span class="math inline">\(\mathcal{P}(Q)\)</span> é o conjunto das partes de <span class="math inline">\(Q\)</span>.</p>
+<p>Nessa definição, <span class="math inline">\(\delta\)</span> é uma função <strong>total</strong>, pois todo par <span class="math inline">\((q,x)\)</span> possui um resultado. Quando não existe uma transição, o resultado é simplesmente o conjunto vazio:</p>
+<p><span class="math display">\[
+\delta(q,x)=\varnothing.
+\]</span></p>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+\delta(q_0,a)=\varnothing
+\]</span></p>
+<p>não significa que a função deixou de estar definida. Significa que, a partir de <span class="math inline">\(q_0\)</span>, não existe nenhum estado possível ao consumir <span class="math inline">\(a\)</span>.</p>
+<p>Assim, é possível adotar duas formas de interpretação:</p>
+<ul>
+<li><strong>representação gráfica:</strong> apenas as transições existentes são representadas, podendo-se dizer que a relação de transição é parcial;</li>
+<li><strong>definição formal:</strong> a função <span class="math inline">\(\delta\)</span> é total e retorna <span class="math inline">\(\varnothing\)</span> para os pares para os quais não existe uma transição.</li>
+</ul>
+<p>Essa segunda definição é particularmente conveniente porque permite tratar uniformemente todos os pares estado/símbolo e será utilizada na construção de algoritmos para AFNs e na conversão de AFNs em AFDs.</p>
+</section>
+</section>
+<section id="expressões-regulares" class="level3">
+<h3 class="anchored" data-anchor-id="expressões-regulares">Expressões Regulares</h3>
+<p>Um outro formalismo que pode ser utilizado para definição de linguagens são as Expressões Regulares (ER). Assim como as expressões aritméticas tem operadores (soma, multiplicação, divisão, …) que são utilizados para expressar valores numéricos, as <strong>expressões regulares</strong> usam os operadores de concatenação, união (representado pelo símbolo +) e fecho de Kleene (representado pelo símbolo *) para definir linguagens regulares.</p>
+<div id="def-operacoes-regulares" class="theorem definition">
+<p><span class="theorem-title"><strong>Definição 4.4</strong></span> Sejam <span class="math inline">\(A\)</span> e <span class="math inline">\(B\)</span> linguagens. As operações regulares de União, Concatenação e Fecho de Kleene são definidas da seguinte forma:</p>
+<ul>
+<li><p>União: <span class="math inline">\(A \cup B = \{x | x \in A\)</span> ou <span class="math inline">\(x \in B\}\)</span>.</p></li>
+<li><p>Concatenação: <span class="math inline">\(AB = \{xy | x \in A\)</span> e <span class="math inline">\(y \in B\}\)</span>.</p></li>
+<li><p>Fecho de Kleene: <span class="math inline">\(A^*= \{x_1x_2...x_k | k \geq 0\)</span> e <span class="math inline">\(x_i \in A\}\)</span>.</p></li>
+</ul>
+</div>
+<div id="def-expressao-regular" class="theorem definition">
+<p><span class="theorem-title"><strong>Definição 4.5</strong></span> Uma ER sobre uma alfabeto <span class="math inline">\(\Sigma\)</span> é definida recursivamente como:</p>
+<ol type="1">
+<li><p><span class="math inline">\(\emptyset\)</span>, <span class="math inline">\(\lambda\)</span> e <span class="math inline">\(a\)</span> para qualquer <span class="math inline">\(a \in \Sigma\)</span> são expressões regulares; tais que ER’s denotam, respectivamente, os conjuntos <span class="math inline">\(\emptyset\)</span>, <span class="math inline">\(\{\lambda\}\)</span> e <span class="math inline">\(\{a\}\)</span></p></li>
+<li><p>Se <span class="math inline">\(r\)</span> e <span class="math inline">\(s\)</span> são expressões regulares, então também são expressões regulares <span class="math inline">\((r+s)\)</span>, <span class="math inline">\((rs)\)</span> e <span class="math inline">\(r^*\)</span>; tais ER’s denotam, respectivamente, <span class="math inline">\(L(r) \cup L(s)\)</span>, <span class="math inline">\(L(r)L(s)\)</span> e <span class="math inline">\(L(r)^*\)</span>.</p></li>
+</ol>
+</div>
+<p>Alguns exemplos de ER considerando o alfabeto <span class="math inline">\(\Sigma = \{a, b\}\)</span>:</p>
+<ol type="1">
+<li><p>a*ba* = {<span class="math inline">\(w \in \Sigma^* | w\)</span> contém um único b}</p></li>
+<li><p>(a + <span class="math inline">\(\lambda\)</span>)b = {<span class="math inline">\(w \in \Sigma^* | w\)</span> começa com a ou nada seguido de b}</p></li>
+<li><p>a*b = {<span class="math inline">\(w \in \Sigma^* | w\)</span> contém zero ou mais a´s finalizado por b}</p></li>
+<li><p>a(a+b)*a+a = {<span class="math inline">\(w \in \Sigma^* | w\)</span> começa e termina com a}</p></li>
+</ol>
+</section>
+<section id="conversão-de-er-para-afn" class="level3">
+<h3 class="anchored" data-anchor-id="conversão-de-er-para-afn">Conversão de ER para AFN</h3>
+<p>A classe de Linguagens Regulares é fechada com relação as operações de União, Concatenação e fecho de Kleene <span class="citation" data-cites="vieira sipser">(<a href="#ref-sipser" role="doc-biblioref">Sipser, 2012</a>; <a href="#ref-vieira" role="doc-biblioref">Vieira, 2006</a>)</span>. A demonstração pode ser feita a partir construção de AFNs para essas operações, conforme ilustrado na <a href="#fig-uniao" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-uniao</span></a>, <a href="#fig-concatenacao" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-concatenacao</span></a> e <a href="#fig-kleene" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-kleene</span></a>.</p>
+<div id="fig-uniao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-uniao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/uniao-vieira.png" class="img-fluid figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-uniao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.4: Construção de uma AFN <span class="math inline">\(A\)</span> para reconhecer <span class="math inline">\(A_1 \cup A_2\)</span>
+</figcaption>
+</figure>
+</div>
+<div id="fig-concatenacao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-concatenacao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/concatena-vieira.png" class="img-fluid figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-concatenacao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.5: Construção de uma AFN <span class="math inline">\(A\)</span> para reconhecer <span class="math inline">\(A_1A_2\)</span>
+</figcaption>
+</figure>
+</div>
+<div id="fig-kleene" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-kleene-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/kleene-vieira.png" class="img-fluid figure-img" style="width:40.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-kleene-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.6: Construção de uma AFN <span class="math inline">\(A\)</span> para reconhecer <span class="math inline">\(A_1^*\)</span>
+</figcaption>
+</figure>
+</div>
+<p>Usamos essa propriedade para transformar as Expressões Regulares em Autômatos Finitos Não-Determinísticos.</p>
+</section>
+<section id="conversão-de-afn-para-afd" class="level3">
+<h3 class="anchored" data-anchor-id="conversão-de-afn-para-afd">Conversão de AFN para AFD</h3>
+<p>Para todo Autômato Finito Não-Determinístico existe um Autômato Finito Determinístico correspondente <span class="citation" data-cites="vieira lewis sipser">(<a href="#ref-lewis" role="doc-biblioref">Lewis; Papadimitriou, 2004</a>; <a href="#ref-sipser" role="doc-biblioref">Sipser, 2012</a>; <a href="#ref-vieira" role="doc-biblioref">Vieira, 2006</a>)</span>. A demonstração pode ser realizada através da simulação da execução em paralelo da computação do AFN.</p>
+<p>Basicamente, ao invés de mudar para um único estado a cada transição, no AFN poderemos nos deslocar para um conjunto de estados possíveis, dada o não-determinismo de algumas transições.</p>
+<p>Como visto anteriormente, um conjunto com <span class="math inline">\(k\)</span> elementos possui <span class="math inline">\(2^k\)</span> subconjuntos. Assim, para um conjunto de estados</p>
+<p><span class="math display">\[
+Q=\{1,2,3\},
+\]</span></p>
+<p>o conjunto das partes de <span class="math inline">\(Q\)</span>, denotado por <span class="math inline">\(\mathcal{P}(Q)\)</span>, é</p>
+<p><span class="math display">\[
+\mathcal{P}(Q)=
+\{\emptyset,\{1\},\{2\},\{3\},\{1,2\},\{1,3\},\{2,3\},\{1,2,3\}\}.
+\]</span></p>
+<p>Na construção de um AFD equivalente a um AFN, cada estado do AFD representa um <strong>conjunto de estados do AFN</strong>. Portanto, se o AFN possui <span class="math inline">\(k\)</span> estados, o AFD resultante poderá possuir, no máximo, <span class="math inline">\(2^k\)</span> estados, correspondentes aos elementos de <span class="math inline">\(\mathcal{P}(Q)\)</span>.</p>
+<p>Embora esse número possa parecer elevado, na prática nem todos os subconjuntos de <span class="math inline">\(Q\)</span> precisam ser alcançados durante a construção do AFD. Além disso, durante a simulação de uma cadeia de entrada, apenas os conjuntos de estados efetivamente alcançáveis são considerados.</p>
+<section id="varepsilon-fecho" class="level4">
+<h4 class="anchored" data-anchor-id="varepsilon-fecho"><span class="math inline">\(\varepsilon\)</span>-fecho</h4>
+<p>As transições <span class="math inline">\(\varepsilon\)</span> permitem que um AFN mude de estado sem consumir um símbolo da cadeia de entrada. Para determinar todos os estados que podem ser alcançados dessa maneira, utiliza-se o conceito de <strong><span class="math inline">\(\varepsilon\)</span>-fecho</strong>.</p>
+<p>Seja</p>
+<p><span class="math display">\[
+M=(Q,\Sigma,\delta,q_0,F)
+\]</span></p>
+<p>um AFN, em que a função de transição é dada por</p>
+<p><span class="math display">\[
+\delta:Q\times(\Sigma\cup\{\varepsilon\})\rightarrow\mathcal{P}(Q).
+\]</span></p>
+<p>Para um estado <span class="math inline">\(q\in Q\)</span>, define-se o <strong><span class="math inline">\(\varepsilon\)</span>-fecho de <span class="math inline">\(q\)</span></strong> como o conjunto de estados que podem ser alcançados a partir de <span class="math inline">\(q\)</span> utilizando <strong>zero ou mais transições <span class="math inline">\(\varepsilon\)</span></strong>:</p>
+<p><span class="math display">\[
+\varepsilon\text{-fecho}(q)
+=
+\{p\in Q\mid q\overset{\varepsilon^*}{\longrightarrow}p\}.
+\]</span></p>
+<p>O uso de <strong>zero ou mais</strong> transições é importante: o próprio estado <span class="math inline">\(q\)</span> pertence ao seu <span class="math inline">\(\varepsilon\)</span>-fecho, pois é possível permanecer em <span class="math inline">\(q\)</span> sem realizar nenhuma transição.</p>
+<p>De forma mais geral, para um conjunto de estados <span class="math inline">\(R\subseteq Q\)</span>, define-se:</p>
+<p><span class="math display">\[
+\varepsilon\text{-fecho}(R)
+=
+\bigcup_{q\in R}\varepsilon\text{-fecho}(q).
+\]</span></p>
+<p>Equivalentemente,</p>
+<p><span class="math display">\[
+\varepsilon\text{-fecho}(R)
+=
+\{p\in Q\mid
+\exists q\in R\text{ tal que }
+q\overset{\varepsilon^*}{\longrightarrow}p
+\}.
+\]</span></p>
+<p>Portanto, o <span class="math inline">\(\varepsilon\)</span>-fecho de um conjunto <span class="math inline">\(R\)</span> contém todos os estados que podem ser alcançados a partir de <strong>qualquer estado de <span class="math inline">\(R\)</span></strong>, utilizando apenas transições <span class="math inline">\(\varepsilon\)</span>, incluindo os próprios estados de <span class="math inline">\(R\)</span>.</p>
+<p>Esse conceito é fundamental na construção do AFD equivalente a um AFN, pois, ao processar um símbolo da entrada, é necessário considerar não apenas os estados alcançados diretamente pelo símbolo, mas também todos os estados que podem ser alcançados posteriormente por meio de transições <span class="math inline">\(\varepsilon\)</span>.</p>
+<p>Através de <span class="math inline">\(P(Q)\)</span> e <span class="math inline">\(\varepsilon\text{-fecho}(R)\)</span> podemos construir o AFD <span class="math inline">\(M = \{Q', \Sigma, \delta', i', F'\}\)</span> equivalente ao AFN <span class="math inline">\(N = \{Q, \Sigma, \delta, i, F\}\)</span> da seguinte forma:</p>
+<ul>
+<li><p><span class="math inline">\(Q' \subseteq P(Q)\)</span>.</p></li>
+<li><p>Para <span class="math inline">\(R \in Q'\)</span>, <span class="math inline">\(\delta'(R,a) = \bigcup_{r \in R}\varepsilon\text{-fecho}(\delta(r,a))\)</span></p></li>
+<li><p><span class="math inline">\(i = \varepsilon\text{-fecho}(\{i\})\)</span>.</p></li>
+<li><p><span class="math inline">\(F' = \{R \in Q' | R\)</span> contém um estado de aceitação do <span class="math inline">\(AFN \}\)</span></p></li>
+</ul>
+<p>Para exemplificar todo o processo de conversão de uma expressão regular para um autômato finito não-determinístico e desse para um autômato finito determinístico, faremos uma tradução para <span class="math inline">\(ER = 0^*1+0\)</span>:</p>
+<ol type="1">
+<li><p>A tradução da <span class="math inline">\(ER = 0\)</span> para o AFN está representada <a href="#fig-zero" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-zero</span></a>;</p>
+<div id="fig-zero" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-zero-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afn-zero.png" class="img-fluid figure-img" style="width:35.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-zero-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.7: AFN correspondente a <span class="math inline">\(ER = 0\)</span>
+</figcaption>
+</figure>
+</div></li>
+<li><p>A tradução da <span class="math inline">\(ER = 1\)</span> para o AFN está representada na <a href="#fig-um" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-um</span></a>;</p>
+<div id="fig-um" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-um-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afn-um.png" class="img-fluid figure-img" style="width:40.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-um-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.8: AFN correspondente a <span class="math inline">\(ER = 1\)</span>
+</figcaption>
+</figure>
+</div></li>
+<li><p>A tradução da <span class="math inline">\(ER = 0^*\)</span> para o AFN está representada na <a href="#fig-zeroestrela" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-zeroestrela</span></a>;</p>
+<div id="fig-zeroestrela" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-zeroestrela-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afn-zero-estrela.png" class="img-fluid figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-zeroestrela-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.9: AFN correspondente a <span class="math inline">\(ER = 0^*\)</span>
+</figcaption>
+</figure>
+</div></li>
+<li><p>A tradução da <span class="math inline">\(ER = 0^*1\)</span> para o AFN está representada na <a href="#fig-zeroestrelaum" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-zeroestrelaum</span></a>;</p>
+<div id="fig-zeroestrelaum" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-zeroestrelaum-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afn-zero-estrela-um.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-zeroestrelaum-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.10: AFN correspondente a <span class="math inline">\(ER = 0^*1\)</span>
+</figcaption>
+</figure>
+</div></li>
+<li><p>A tradução da <span class="math inline">\(ER = 0^*1+0\)</span> para o AFN está representada na <a href="#fig-zeroestrelaumouzero" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-zeroestrelaumouzero</span></a>;</p>
+<div id="fig-zeroestrelaumouzero" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-zeroestrelaumouzero-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afn-zero-estrela-um-ou-zero.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-zeroestrelaumouzero-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.11: AFN correspondente a <span class="math inline">\(ER = 0^*1+0\)</span>
+</figcaption>
+</figure>
+</div></li>
+<li><p>A tradução do AFN = <span class="math inline">\((\{q_0,q_1,q_2,q_3,q_4,q_5,q_6,q_7,q_8,q_9,q_{10},q_{11}\}, \{0,1\}, \delta,q_0,\{q_1\})\)</span> da <a href="#fig-zeroestrelaumouzero" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-zeroestrelaumouzero</span></a> para o AFD = <span class="math inline">\((\{q_0', q_1', q_2', q_3'\}, \{0,1\}, \delta', q_0', \{q_1', q_2'\})\)</span> correspondente da <a href="#fig-afd" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-afd</span></a> é realizada conforme os passos seguintes. Primeiro o estado inicial para AFD correspondente é calculado como: <span class="math display">\[q_0' = \varepsilon\text{-fecho}(q_0) = \{q_0, q_2, q_4, q_6, q_{10}, q_7, q_8\}\]</span> A função de transição <span class="math inline">\(\delta'\)</span> é calculada até a idempotência, da seguinte forma:</p>
+<p>$</p>
+<span class="math display">\[\begin{array}{ll}
+        \delta'(q_0', 0) =  &amp; \bigcup_{q \in q_0'}\varepsilon\text{-fecho}(\delta(q,0)) = \\
+            &amp;  \varepsilon\text{-fecho}(\delta(q_4,0)) \cup \varepsilon\text{-fecho}(\delta(q_{10},0)) = \\
+            &amp; \{q_5, q_1\} \cup \{q_{11},q_7,q_6,q_{10},q_8\} = \\
+            &amp; \{q_5,q_7,q_{10},q_1,q_8,q_6,q_{11}\} = q_1'\\
+        \delta'(q_0', 1) = &amp; \bigcup_{q \in q_0'}\varepsilon\text{-fecho}(\delta(q,1)) = \\
+            &amp; \varepsilon\text{-fecho}(\delta(q_8,1)) = \\
+            &amp; \{q_9,q_3,q_1\} = q_2' \\
+        \delta'(q_1', 0) = &amp; \bigcup_{q \in q_1'}\varepsilon\text{-fecho}(\delta(q,0)) = \\
+            &amp; \varepsilon\text{-fecho}(\delta(q_{10},0))  = \\
+            &amp; \{q_{11},q_7,q_8,q_6,q_{10}\} = q_3' \\
+        \delta'(q_1', 1) = &amp; \bigcup_{q \in q_1'}\varepsilon\text{-fecho}(\delta(q,1)) = \\
+            &amp; \varepsilon\text{-fecho}(\delta(q_8,1)) = \\
+            &amp; \{q_9,q_3,q_1\} = q_2' \\
+        \delta'(q_3', 0) = &amp; \bigcup_{q \in q_3'}\varepsilon\text{-fecho}(\delta(q,0)) = \\
+            &amp; \varepsilon\text{-fecho}(\delta(q_{10},0)) = \\
+            &amp; \{q_{11},q_7,q_8,q_6,q_{10}\} = q_3' \\
+        \delta'(q_3', 1) = &amp; \bigcup_{q \in q_3'}\varepsilon\text{-fecho}(\delta(q,1)) = \\
+            &amp; \varepsilon\text{-fecho}(\delta(q_8,1)) = \\
+            &amp; \{q_9,q_3,q_1\} = q_2' \\
+        \end{array}\]</span>
+<p>$</p>
+<p>E o conjunto de estados finais <span class="math inline">\(F = \{q_1', q_2'\}\)</span>, pois são os estados do AFD que contém o estado final <span class="math inline">\(q_1\)</span> do AFN.</p>
+<div id="fig-afd" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-afd-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/afd.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-afd-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.12: AFD equivalente ao AFN da Figura <a href="#fig-zeroestrelaumouzero" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-zeroestrelaumouzero</span></a>
+</figcaption>
+</figure>
+</div></li>
+</ol>
+<p>O resultado desse processo todo é um autômato finito determinístico correspondente a expressão regular informada.</p>
+<p>Todo esse processo pode ser automatizado, executado através de ferramentas que representam essas estruturas (autômatos, expressões regulares) e implementam os algoritmos conforme descritos. São esses algoritmos que estão implementados em ferramentas de geração de analisadores léxicos, como Lex e Flex. A partir de um arquivo de especificação que contém as expressões regulares que pretende-se reconhecer, Lex/Flex traduzem as expressões em autômatos e desse em código em linguagem C, que implementam a programa de reconhecimento dos lexemas.</p>
+<p>No exemplo ilustrativo em sequência estão implementados esses algoritmos. Você pode entrar com a expressão regular para converter para o autômato finito não determinístico, usando as construções sugeridas por <span class="citation" data-cites="sipser">Sipser (<a href="#ref-sipser" role="doc-biblioref">2012</a>)</span>. Pode-se ainda calcular o autômato finito determinístico e o caso mínimo deste AFD. A busca de padrões num texto está disponível na última aba desta simulação.</p>
+<div class="simulacao-container"><iframe src="https://luizedsilva.github.io/Livro-LTC/p5js/er-af/" width="100%" height="400" style="border:none;"></iframe></div>
+</section>
+</section>
+</section>
+<section id="análise-léxica" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="análise-léxica"><span class="header-section-number">4.4</span> Análise Léxica</h2>
+<p>A análise léxica constitui a primeira etapa do processo de compilação e tem como principal responsabilidade transformar o programa-fonte, originalmente representado como uma sequência de caracteres, em uma sequência de unidades léxicas denominadas <em>tokens</em>. Para realizar essa tarefa, o analisador léxico percorre o texto do programa, normalmente da esquerda para a direita, identificando os diferentes elementos que possuem significado para as etapas posteriores da compilação. Dessa forma, a análise léxica estabelece a primeira forma de interpretação estruturada do programa-fonte.</p>
+<p>Os elementos reconhecidos pelo analisador léxico são denominados <strong>símbolos léxicos</strong> ou <strong>lexemas</strong>. Entre eles encontram-se palavras reservadas, operadores, identificadores, constantes literais, constantes numéricas e delimitadores, entre outros elementos definidos pela linguagem de programação. Também fazem parte do texto de entrada elementos que, embora possam ser importantes para a organização e documentação do programa, não necessariamente participam das demais fases da compilação, como comentários, espaços em branco, tabulações e, em determinadas linguagens, caracteres utilizados para formatação e indentação.</p>
+<p>Durante o processo de reconhecimento, o analisador léxico identifica cada lexema e associa a ele um <em>token</em>, que representa sua categoria léxica. Por exemplo, ao encontrar a sequência de caracteres <code>while</code>, o analisador pode reconhecê-la como uma palavra reservada e produzir um <em>token</em> <code>T_WHILE</code>. Da mesma forma, uma sequência de caracteres que corresponda a um identificador pode produzir um <em>token</em> <code>T_IDENTIF</code>, enquanto uma sequência numérica pode ser classificada como um <em>token</em> correspondente a um número inteiro ou real. O <em>token</em> funciona, portanto, como uma representação abstrata do elemento encontrado no programa-fonte, permitindo que as etapas seguintes trabalhem com categorias léxicas em vez de manipular diretamente cada caractere do texto.</p>
+<p>É importante distinguir o <em>token</em> do <strong>lexema</strong> que lhe deu origem. O lexema corresponde à sequência concreta de caracteres encontrada no programa-fonte, enquanto o <em>token</em> representa a categoria a que essa sequência pertence. Assim, em uma instrução como</p>
+<pre class="text"><code>soma := a + 10;</code></pre>
+<p>as sequências <code>soma</code>, <code>a</code> e <code>10</code> são lexemas encontrados no texto, enquanto seus respectivos <em>tokens</em> podem ser classificados como identificadores e constante numérica. O operador <code>:=</code>, o operador <code>+</code> e o delimitador <code>;</code> também são reconhecidos e representados por seus respectivos <em>tokens</em>. Essa separação entre a representação concreta e sua categoria léxica simplifica o trabalho das fases posteriores do compilador.</p>
+<p>Nem todos os elementos encontrados durante a leitura do programa precisam ser transformados em <em>tokens</em>. Comentários, espaços em branco e tabulações, por exemplo, normalmente são utilizados para facilitar a leitura, a organização e a documentação do código-fonte, mas são descartados pelo analisador léxico quando não possuem significado para a sintaxe da linguagem. Essa regra, entretanto, depende das características da linguagem de programação. Em algumas linguagens, por exemplo, a indentação possui significado sintático e, nesse caso, o analisador léxico deve produzir informações que permitam às etapas posteriores considerar as mudanças de nível de indentação.</p>
+<p>Outro aspecto importante da análise léxica é sua interação com a <strong>tabela de símbolos</strong>. Os identificadores reconhecidos pelo analisador léxico podem estar associados a informações que serão utilizadas durante as demais fases da compilação. Quando um identificador é encontrado, o compilador pode verificar sua existência na tabela de símbolos e, quando necessário, cadastrá-lo. A tabela de símbolos mantém informações sobre entidades presentes no programa, como identificadores de variáveis, procedimentos, funções e outros elementos definidos pela linguagem. Embora a construção e o gerenciamento completo dessa tabela envolvam outras fases do compilador, o reconhecimento dos identificadores durante a análise léxica constitui uma das primeiras oportunidades de interação com essa estrutura.</p>
+<p>Como resultado de seu processamento, o analisador léxico produz uma sequência de <em>tokens</em> que constitui a entrada para o <strong>analisador sintático</strong>. Enquanto a análise léxica procura identificar e classificar os elementos individuais que compõem o programa, a análise sintática utiliza a sequência de <em>tokens</em> para verificar se esses elementos estão organizados de acordo com as regras gramaticais da linguagem. Os <em>tokens</em> são, portanto, a interface entre essas duas fases do compilador.</p>
+<p>Considere, por exemplo, uma instrução simplificada como:</p>
+<pre class="text"><code>a := b + 10;</code></pre>
+<p>O analisador léxico pode produzir uma sequência semelhante a:</p>
+<pre class="text"><code>T_IDENTIF  T_ATRIB  T_IDENTIF  T_SOMA  T_INTEIRO  T_PONTO_VIRGULA</code></pre>
+<p>A análise sintática não precisa mais trabalhar diretamente com os caracteres <code>a</code>, <code>:</code>, <code>=</code>, <code>b</code>, <code>+</code>, <code>1</code>, <code>0</code> e <code>;</code>. Ela recebe a sequência de <em>tokens</em> e verifica se essa sequência pode ser derivada de acordo com as produções da gramática da linguagem. Essa divisão de responsabilidades torna o processo de compilação mais organizado e permite que cada fase utilize mecanismos formais apropriados ao problema que deve resolver.</p>
+<p>Para especificar os elementos que devem ser reconhecidos na análise léxica, utilizam-se <strong>linguagens regulares</strong>. Palavras reservadas, identificadores, números, operadores e diversos outros elementos léxicos podem ser descritos por meio de padrões regulares. As <strong>expressões regulares</strong> fornecem uma notação conveniente para representar esses padrões e constituem uma das principais formas de especificação utilizadas na construção de analisadores léxicos.</p>
+<p>A relação entre expressões regulares e <strong>autômatos finitos</strong> é particularmente importante para a implementação do analisador léxico. Uma expressão regular pode ser utilizada para especificar uma linguagem regular e, a partir dela, pode-se construir um autômato finito capaz de reconhecer as sequências de caracteres pertencentes a essa linguagem. Assim, existe uma relação direta entre a especificação declarativa dos elementos léxicos e o mecanismo computacional responsável por reconhecê-los.</p>
+<p>Essa relação é explorada por ferramentas de geração automática de analisadores léxicos, como o <em>Flex</em>. Nessa abordagem, o programador especifica os padrões correspondentes aos diferentes <em>tokens</em>, normalmente utilizando expressões regulares, e associa a cada padrão uma ação a ser executada quando ele for reconhecido. A ferramenta utiliza essas especificações para gerar um programa capaz de realizar o reconhecimento dos elementos léxicos do programa-fonte. Dessa forma, o desenvolvedor não precisa implementar manualmente todas as estruturas necessárias para percorrer o texto e reconhecer cada padrão.</p>
+<p>De maneira semelhante, a construção do <strong>analisador sintático</strong> pode ser automatizada a partir de uma especificação formal da sintaxe da linguagem. Nesse caso, em vez de linguagens regulares e expressões regulares, são utilizadas <strong>gramáticas livres de contexto (GLC)</strong> para descrever as estruturas sintáticas que podem ser formadas a partir dos <em>tokens</em>. Ferramentas como o <em>Bison</em> recebem uma especificação gramatical e geram um analisador sintático capaz de reconhecer as estruturas válidas da linguagem e identificar construções que não estejam de acordo com sua gramática.</p>
+<p>A diferença entre essas duas etapas está, portanto, relacionada ao tipo de estrutura que cada uma procura reconhecer. A análise léxica identifica unidades elementares do programa, como identificadores, números, palavras reservadas e operadores, utilizando principalmente mecanismos associados às linguagens regulares e aos autômatos finitos. A análise sintática, por sua vez, trabalha sobre a sequência de <em>tokens</em> produzida pelo analisador léxico e procura reconhecer estruturas mais complexas, descritas por uma gramática livre de contexto.</p>
+<p>Essa divisão pode ser representada de forma simplificada pelo seguinte fluxo:</p>
+<pre class="text"><code>Programa-fonte
+      │
+      ▼
+Analisador léxico
+      │
+      │  reconhecimento de lexemas
+      │  por padrões regulares
+      ▼
+Sequência de tokens
+      │
+      ▼
+Analisador sintático
+      │
+      │  reconhecimento segundo
+      │  uma gramática livre de contexto
+      ▼
+Estrutura sintática</code></pre>
+<p>Na próxima seção será apresentada a ferramenta Flex, amplamente utilizada na construção de analisadores léxicos. A partir das expressões regulares utilizadas para especificar os padrões léxicos da linguagem, o Flex implementa os mecanismos necessários para realizar sua conversão em autômatos finitos determinísticos, responsáveis pelo reconhecimento eficiente dos tokens no programa-fonte. Essa ferramenta será utilizada no desenvolvimento da primeira etapa do compilador apresentado neste livro, permitindo implementar de forma sistemática o analisador léxico e estabelecer a interface entre o programa-fonte e as etapas posteriores do processo de compilação.</p>
+</section>
+<section id="lexflex---geradores-de-analisadores-léxicos" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="lexflex---geradores-de-analisadores-léxicos"><span class="header-section-number">4.5</span> Lex/Flex - Geradores de Analisadores Léxicos</h2>
+<p>A primeira fase do compilador deve ler o arquivo fonte e converter sequência de caracteres em <em>tokens</em>. A construção dessa rotina não é tão complicada de se implementar, no entanto, existem ferramentas que podem ser utilizadas para automatizar essa fase da tradução. Lex é uma ferramenta usada para geração de analisadores léxicos. Especifica-se padrões léxicos para lex usando expressões regulares. E para cada símbolo encontrado associa-se uma ação que pode ser, por exemplo, retornar a codificação numérica (<em>token</em>) do símbolo encontrado.</p>
+<p>A ferramenta lex funciona basicamente implementando os algoritmos de Conversão de Expressões Regulares em Automatos Finitos Não-Determisticos e esses para Autômatos Finitos Determinístico, conforme apresentado anteriormente. Essa tradução transforma as expressões regulares num código em linguagem C que implementa um autômato de estados finitos para reconhecimento dos símbolos léxicos. O próximo estado é determinado pela indexação numa tabela de estados gerada pelo computador usando o próximo caracter de entrada e o estado corrente.</p>
+<section id="metacaracteres-lex" class="level3">
+<h3 class="anchored" data-anchor-id="metacaracteres-lex">Metacaracteres Lex</h3>
+<p>Alguns carateres tem um significado especial nas expressões regulares escritas para Lex. Os principais são apresentados na Tabela <a href="@tbl-metacaracteres" data-reference-type="ref" data-reference="tab:metacaracteres">1.2</a>.</p>
+<div id="tbl-metacaracteres" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-metacaracteres-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabela&nbsp;4.2: Metacaracteres de Lex
+</figcaption>
+<div aria-describedby="tbl-metacaracteres-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Metacaracter</strong></th>
+<th style="text-align: left;"><strong>Correspondência</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">x</td>
+<td style="text-align: left;">caracter ‘x’, exceto nova linha</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">.</td>
+<td style="text-align: left;">Qualquer caracter exceto nova linha</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(\ n\)</span> Nova linh</td>
+<td style="text-align: left;">a</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">*</td>
+<td style="text-align: left;">Zero ou mais cópias da expressão precedente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">+</td>
+<td style="text-align: left;">Uma ou mais cópias da expressão precedente</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">?</td>
+<td style="text-align: left;">Zero ou uma cópia da expressão precedente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">^</td>
+<td style="text-align: left;">Início da linha</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">$</td>
+<td style="text-align: left;">Fim da linha</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">a b</td>
+<td style="text-align: left;">Alternativa “a ou b”</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">(ab)+</td>
+<td style="text-align: left;">Uma ou mais cópias de ab (agrupamento)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">“a+b”</td>
+<td style="text-align: left;">Literal “a+b”</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: left;">Classe de caracteres. Nesse caso, a, b ou c.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Alguns exemplos de correspondências entre expressões regulares para Lex e os símbolos que são reconhecidos estão representados na Tabela <a href="@tbl-exemplosLex" data-reference-type="ref" data-reference="tab:exemplosLex">1.3</a>.</p>
+<div id="tbl-exemplosLex" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-exemplosLex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabela&nbsp;4.3: Exemplos de Expressões Regulares para Lex
+</figcaption>
+<div aria-describedby="tbl-exemplosLex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Expressão Regular</strong></th>
+<th style="text-align: left;"><strong>Símbolos Reconhecidos</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">abc</td>
+<td style="text-align: left;">abc</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">abc*</td>
+<td style="text-align: left;">ab, abc, abcc, abccc, …</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">abc+</td>
+<td style="text-align: left;">abc, abcc, abccc, …</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">a(bc)+</td>
+<td style="text-align: left;">abc, abcbc, abcbcbc, …</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">a(bc)?</td>
+<td style="text-align: left;">a, abc</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: left;">a ou b ou c</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: left;">qualquer letra no intervalo a até z.</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: left;">a ou - ou z</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: left;">qualquer símbolo exceto a ou b.</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: left;">a ou ^ou b</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: left;">a ou ou b</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">ab</td>
+<td style="text-align: left;">a ou b</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>As expressões regulares em lex são compostas de metacaracteres (Tabela <a href="@tbl-metacaracteres" data-reference-type="ref" data-reference="tab:metacaracteres">1.2</a>). Os exemplos de casamento de padrões são mostrados na Tabela <a href="@tbl-exemplosLex" data-reference-type="ref" data-reference="tab:exemplosLex">1.3</a>. Com uma classe de caracteres, os caracteres normais perdem seu significado. Os dois caracteres usados em classes de caracteres (entre colchetes) são o hífen (“-”) e o circunflexo (“^”). Quando usado entre dois caracteres o hífen significa o intervalo de caracteres. O circunflexo, quando usado como o primeiro caracter, nega a expressão. Se dois padrões reconhecem o mesmo string, o casamento mais longo é utilizado. No caso de dois casamentos de padrões com o mesmo comprimento, então o primeiro padrão listado é usado.</p>
+<p>O arquivo de entrada para Lex tem o seguinte formato:</p>
+<pre><code>... definicoes ...
+%%
+... regras ...
+%%
+... subrotinas ... </code></pre>
+<p>O arquivo de entrada Lex é dividido em três seções, com %% dividindo as seções. Vamos ilustrar isto com um exemplo. O primeiro exemplo é o menor arquivo de entrada Lex possível:</p>
+<pre><code>%%</code></pre>
+<p>A entrada é copiada para a saída, um caracter por vez. O primeiro %% é obrigatório, iniciando a seção de regras. Se nenhuma regra é especificada então a ação padrão é reconhecer tudo e copiar para a saída. Os arquivos de entrada e saída padrão são stdin e stdout, respectivamente. Aqui o mesmo exemplo, com os valores default explicitamente codificados:</p>
+<pre><code>%%
+    /* match everything except newline */
+.   ECHO;
+    /* match newline */
+\n  ECHO;
+
+%%
+
+int yywrap(void) {
+    return 1;
+}
+
+int main(void) {
+    yylex();
+    return 0;
+}</code></pre>
+<p>Dois padrões foram especificados na seção de regras. Cada padrão tem que começar na primeira coluna do arquivo texto. Estes são seguidos por caracter em branco (espaço, tabulação ou nova linha) e uma ação opcional associada com o padrão. A ação pode ser um único comando C ou múltiplos comandos delimitados por chaves. Qualquer comando que não começa na primeira coluna é copiado como está para o arquivo C gerado. Podemos usar comentários no arquivo lex. Neste exemplo há dois padrões “.” e “$$n”, com a ação ECHO associada com cada padrão. Várias macros e variáveis são pré-definidas por lex. ECHO é uma macro que escreve o código reconhecido pelo padrão léxico. Esta é a ação default para qualquer string não reconhecido. Normalmente, ECHO é definido como:</p>
+<pre><code>#define ECHO fwrite(yytext, yyleng, 1, yyout)</code></pre>
+<p>A variável yytext é um ponteiro para o string reconhecido (terminado por NULL), e yyleng é o tamanho do string reconhecido. A variável yyout é o arquivo de saída, e o default é stdout. A função yywrap é chamada por lex quando a entrada é esgotada. Retorna um se terminou, ou 0 se mais processamento é necessário. Todo programa C completo precisa de uma função main. Neste exemplos, nós simplesmente chamamos yylex, o ponto de entrada principal para lex. Algumas implementações de lex incluem cópias de main e yywrap na biblioteca, eliminando a necessidade de codificá-las explicitamente.</p>
+<p>Algumas das funções, macros e variáveis pré-definidas no arquivo gerado por Lex estão listados na Tabela <a href="@tbl-variaveisLex" data-reference-type="ref" data-reference="tab:variaveisLex">1.4</a>.</p>
+<div id="tbl-variaveisLex" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-variaveisLex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabela&nbsp;4.4: Variáveis, Macros e Funções geradas por Lex
+</figcaption>
+<div aria-describedby="tbl-variaveisLex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Nome</strong></th>
+<th style="text-align: center;"><strong>Função</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">int yylex(void)</td>
+<td style="text-align: center;">Função principal do analisador que retorna o próximo token.</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">char *yytext</td>
+<td style="text-align: center;">Ponteiro para o padrão léxico (string) reconhecido.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">yyleng</td>
+<td style="text-align: center;">Tamanho do string reconhecido.</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">yylval</td>
+<td style="text-align: center;">Valor associado com o token.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">int yywrap(void)</td>
+<td style="text-align: center;">wrapup, retorna 1 se acabou, 0 se não acabou.</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">FILE *yyout</td>
+<td style="text-align: center;">Arquivo de saída.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">FILE *yyin</td>
+<td style="text-align: center;">Arquivo de entrada.</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">INITIAL</td>
+<td style="text-align: center;">Condição inicial.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">BEGIN condition</td>
+<td style="text-align: center;">Troca a condição inicial.</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">ECHO</td>
+<td style="text-align: center;">Escreve o string reconhecido.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="alguns-exemplos-de-lex" class="level3">
+<h3 class="anchored" data-anchor-id="alguns-exemplos-de-lex">Alguns Exemplos de Lex</h3>
+<p>O primeiro exemplo apresenta um arquivo de especificação lex que gera um programa que não faz nada. Todas as entradas são reconhecidas mas não existe nenhuma ação associada com qualquer padrão, tal que nada será apresentado na saída.</p>
+<pre><code>%%
+.
+\n</code></pre>
+<p>O seguinte exemplo numera cada linha do arquivo. Algumas implementações de lex predefinem e calculam a variável yylineno. O arquivo de entrada para lex é yyin, e o arquivo de entrada default é stdin.</p>
+<pre><code>%{
+    int yylineno;
+%}
+%%
+^(.*)\n    printf("%4d\t%s", ++yylineno, yytext);
+%%
+int main(int argc, char *argv[]) {
+    yyin = fopen(argv[1], "r");
+    yylex();
+    fclose(yyin);
+}</code></pre>
+<p>A seção de definições é composta de substituições, códigos e estados iniciais. O código na seção de definições é copiado como está para o topo do arquivo C gerado e precisa ser delimitado com os marcadores “%{” and “%}”. As substituições simplificam as regras para casamento de padrões. Por exemplo, podemos definir dígitos e letras como segue:</p>
+<pre><code>digit     [0-9]
+letter    [A-Za-z]
+%{
+    int count;
+%}
+%%
+    /* match identifier */
+{letter}({letter}|{digit})*    count++;
+%%
+int main(void) {
+    yylex();
+    printf("number of identifiers = %d\n", count);
+    return 0;
+}</code></pre>
+<p>Espaços em branco precisam separar o termo definido e a expressão associada. As referências para as substituições nas regras devem estar delimitadas por chaves ({letter}) para diferenciá-las de literais. Quando o padrão léxico é reconhecido nas regras, o código C associado é executado. Aqui um exemplo de analisador que conta o número de caracteres, palavras e linhas no arquivo (similar ao comando Unix wc):</p>
+<pre><code>%{
+    int nchar, nword, nline;
+%}
+%%
+\n         { nline++; nchar++; }
+[^ \t\n]+  { nword++, nchar += yyleng; }
+.          { nchar++; }
+%%
+int main(void) {
+    yylex();
+    printf("%d\t%d\t%d\n", nchar, nword, nline);
+    return 0;
+}</code></pre>
+</section>
+</section>
+<section id="analisador-léxico-para-linguagem-simples" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="analisador-léxico-para-linguagem-simples"><span class="header-section-number">4.6</span> Analisador Léxico para Linguagem Simples</h2>
+<p>A linguagem Simples<span class="math inline">\(^\circledR\)</span>, na sua versão inicial, é composta dos seguintes símbolos léxicos:</p>
+<ul>
+<li><p><u><strong>Palavras Reservadas</strong></u>: programa, inicio, fimprograma, leia, escreva, se, entao, senao, fimse, enquanto, faca, fimenquanto.</p></li>
+<li><p><u><strong>Operadores</strong></u>: +, -, *, div, <span class="math inline">\(&gt;\)</span>, <span class="math inline">\(&lt;\)</span>, +, e, ou, nao, <u><span class="math inline">\(&lt;\)</span><span class="math inline">\(-\)</span></u>, <u>(</u>, <u>)</u></p></li>
+<li><p><u><strong>tipos</strong></u>: inteiro, logico</p></li>
+<li><p><u><strong>constantes</strong></u>: V, F</p></li>
+<li><p><u><strong>identificadores</strong></u>: (letra)(letradigito)*</p></li>
+<li><p><u><strong>números</strong></u>: (digito)+</p></li>
+</ul>
+<p>Utilizando a ferramenta flex pode-se construir um classificador do código da linguagem Simples. Esse classificador é uma versão básica do analisador léxico que recebe como entrada um código de Simples e apresenta na saída uma tabela onde todos os símbolos léxicos encontrados no código são classificados. Dado o seguinte código Simples:</p>
+<p>morekeywords=programa, inicio, fimprograma, leia, escreva, se, entao, senao, fimse, enquanto, faca, fimenquanto, inteiro, logico, V, F, e, ou, nao, div, sensitive=false, morecomment=[l]//, morecomment=[s]/**/, morestring=[b]“,</p>
+<pre><code>programa teste
+  inteiro A B
+inicio
+  A &lt;- 5
+  leia B
+  B &lt;- A * B
+  escreva B
+fimprograma</code></pre>
+<p>Obtem-se como saída a seguinte tabela:</p>
+<pre><code>   programa: palavra reservada
+      teste: identificador
+    inteiro: palavra reservada
+          A: identificador
+          B: identificador
+     inicio: palavra reservada
+          A: identificador
+         &lt;-: operador de atribuicao
+          5: numero
+       leia: palavra reservada
+          B: identificador
+          B: identificador
+         &lt;-: operador de atribuicao
+          A: identificador
+          *: operador aritmetico multiplicacao
+          B: identificador
+    escreva: palavra reservada
+          B: identificador
+fimprograma: palavra reservada</code></pre>
+<p>O arquivo de especificação Lex que implementa esse classificador de símbolos da linguagem Simples é:</p>
+<pre><code>identificador  [a-zA-Z]([a-zA-Z0-9])*
+numero         [0-9]+
+espaco         [ \t]+
+novalinha      [\n]
+
+%%
+
+programa    printf("%11s: palavra reservada\n", yytext);
+inicio      printf("%11s: palavra reservada\n", yytext);
+fimprograma printf("%11s: palavra reservada\n", yytext);
+
+leia        printf("%11s: palavra reservada\n", yytext);
+escreva     printf("%11s: palavra reservada\n", yytext);
+
+se      printf("%11s: palavra reservada\n", yytext);
+entao       printf("%11s: palavra reservada\n", yytext);
+senao       printf("%11s: palavra reservada\n", yytext);
+fimse       printf("%11s: palavra reservada\n", yytext);
+
+enquanto    printf("%11s: palavra reservada\n", yytext);
+faca        printf("%11s: palavra reservada\n", yytext);
+fimenquanto printf("%11s: palavra reservada\n", yytext);
+
+"+"     printf("%11s: operador aritmetico soma\n", yytext);
+"-"     printf("%11s: operador aritmetico subtracao\n", yytext);
+"*"     printf("%11s: operador aritmetico multiplicacao\n", yytext);
+div     printf("%11s: operador aritmetico divisao\n", yytext);
+
+"&gt;"     printf("%11s: operador relacional maior\n", yytext);
+"&lt;"     printf("%11s: operador relacional menor\n", yytext);
+"="     printf("%11s: operador relacional igual\n", yytext);
+
+e       printf("%11s: operador logico conjuncao\n", yytext);
+ou      printf("%11s: operador logico disjuncao\n", yytext);
+nao     printf("%11s: operador logico negacao\n", yytext);
+
+"&lt;-"        printf("%11s: operador de atribuicao\n", yytext);
+"("     printf("%11s: simbolo abre parenteses\n", yytext);
+")"     printf("%11s: simbolo fecha parenteses\n", yytext);
+
+inteiro     printf("%11s: palavra reservada\n", yytext);
+logico      printf("%11s: palavra reservada\n", yytext);
+V       printf("%11s: constante logica de verdade\n", yytext);
+F       printf("%11s: constante logica de falsidade\n", yytext);
+
+{identificador} printf("%11s: identificador\n", yytext);
+{numero}    printf("%11s: numero\n", yytext);
+{espaco}        /* nao faz nada */
+{novalinha}     /* nao faz nada */
+.       printf("%11s: ERRO - SIMBOLO NAO RECONHECIDO!\n", yytext);
+
+%%
+
+int yywrap(void) { return 1; }
+
+int main (void) {
+   yylex();
+   return 0;
+}</code></pre>
+<p>A exclusão dos comentários tem um tratamento especial na sintaxe Lex/Flex. A marca de início de comentário, normalmente representada por uma sequência de símbolos como /* e (*, determina uma configuração especial para o autômato. A partir dessa sequência, o analisador léxico deve descartar todos os símbolos, exceto a marca de fim de linha que é utilizada na contagem de linhas do arquivo fonte. Essa contagem é necessária para que as rotinas de tratamento de erro possam indicar a linha correta do erro. E quando o autômato identifica a sequência que fecha o comentário (/* ou *)), o autômato deve retornar ao seu estado normal. A <a href="#fig-af-coment" class="quarto-xref">Figura&nbsp;<span class="quarto-unresolved-ref">fig-af-coment</span></a> representa o autômato para o tratamento de comentário de linhas. O autômato vai para o estado X quando encontra a marca de início de comentário. Nesse estado, o autômato consome os símbolos da entrada, quando encontra a sequência que marca o fim do comentário, o autômato volta ao estado inicial de aceitação.</p>
+<div id="fig-af-coment" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-af-coment-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/automato-comentario.png" class="img-fluid figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-af-coment-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4.13: Comentário para autômatos de estados finitos
+</figcaption>
+</figure>
+</div>
+<p>O novo arquivo de especificação Flex que inclui o tratamento para comentário de linha (//), comentário de múltiplas linhas (/* … */) e a contagem do número das linhas no arquivo fonte é:</p>
+<pre><code>identificador [a-zA-Z]([a-zA-Z0-9])*
+numero [0-9]+
+espaco [ \t]+
+novalinha [\n]
+
+%x coment
+
+%{
+    int nlin = 1;
+%}
+
+%%
+programa      printf("%3d|%11s: reservada\n", nlin, yytext);
+inicio        printf("%3d|%11s: reservada\n", nlin, yytext);
+fimprograma   printf("%3d|%11s: reservada\n", nlin, yytext);
+leia          printf("%3d|%11s: reservada\n", nlin, yytext);
+escreva       printf("%3d|%11s: reservada\n", nlin, yytext);
+se            printf("%3d|%11s: reservada\n", nlin, yytext);
+entao         printf("%3d|%11s: reservada\n", nlin, yytext);
+senao         printf("%3d|%11s: reservada\n", nlin, yytext);
+fimse         printf("%3d|%11s: reservada\n", nlin, yytext);
+enquanto      printf("%3d|%11s: reservada\n", nlin, yytext);
+fimenquanto   printf("%3d|%11s: reservada\n", nlin, yytext);
+inteiro       printf("%3d|%11s: reservada (tipo)\n", nlin, yytext);
+logico        printf("%3d|%11s: reservada (tipo)\n", nlin, yytext);
+
+"+"          printf("%3d|%11s: soma\n", nlin, yytext);
+"-"          printf("%3d|%11s: subtracao\n", nlin, yytext);
+"*"          printf("%3d|%11s: multiplicacao\n", nlin, yytext);
+"&lt;-"         printf("%3d|%11s: atribuicao\n", nlin, yytext);
+div          printf("%3d|%11s: divisao\n", nlin, yytext);
+"&gt;"          printf("%3d|%11s: maior\n", nlin, yytext);
+"&lt;"          printf("%3d|%11s: menor\n", nlin, yytext);
+"="          printf("%3d|%11s: igual\n", nlin, yytext);
+e            printf("%3d|%11s: e logico\n", nlin, yytext);
+ou           printf("%3d|%11s: ou logico\n", nlin, yytext);
+nao          printf("%3d|%11s: negacao\n", nlin, yytext);
+"("          printf("%3d|%11s: abre\n", nlin, yytext);
+")"          printf("%3d|%11s: fecha\n", nlin, yytext);
+
+"V"          printf("%3d|%11s: constante\n", nlin, yytext);
+"F"          printf("%3d|%11s: constante\n", nlin, yytext);
+
+"//".*          ;
+"/*"            BEGIN(coment);
+&lt;coment&gt;"*/"    BEGIN(INITIAL);
+&lt;coment&gt;.       ; 
+&lt;coment&gt;\n      nlin++;
+
+{identificador}   printf("%3d|%11s: identificador\n", nlin, yytext);
+{numero}          printf("%3d|%11s: numero\n", nlin, yytext);
+{espaco}          ;
+{novalinha}       nlin++;
+
+%%
+int yywrap() { return 1; }
+int main () {
+    yylex();
+    return 0;
+}</code></pre>
+<p>Para o arquivo Simples de entrada:</p>
+<pre><code>/*----------------------
+Programa exemplo em linguagem simples
+--------------------*/
+programa um
+  inteiro a b  // declaracao das variaveis
+inicio
+  leia a  // leitura de a
+  leia b  // leitura de b
+  enquanto a &lt; b faca
+     escreva a 
+     a &lt;- a + 1
+  fimenquanto
+fimprograma</code></pre>
+<p>A saída produzida como resultado do classificador de símbolos (analisador léxico simplificado) é:</p>
+<pre><code>  4|   programa: reservada
+  4|         um: identificador
+  5|    inteiro: reservada (tipo)
+  5|          a: identificador
+  5|          b: identificador
+  6|     inicio: reservada
+  7|       leia: reservada
+  7|          a: identificador
+  8|       leia: reservada
+  8|          b: identificador
+  9|   enquanto: reservada
+  9|          a: identificador
+  9|          &lt;: menor
+  9|          b: identificador
+  9|       faca: identificador
+ 10|    escreva: reservada
+ 10|          a: identificador
+ 11|          a: identificador
+ 11|         &lt;-: atribuicao
+ 11|          a: identificador
+ 11|          +: soma
+ 11|          1: numero
+ 12|fimenquanto: reservada
+ 13|fimprograma: reservada</code></pre>
+
+
+<div id="refs" class="references csl-bib-body" data-entry-spacing="1" role="list">
+<div id="ref-lewis" class="csl-entry" role="listitem">
+LEWIS, Harry R.; PAPADIMITRIOU, Christos H. <strong>Elementos da Teoria da Computação</strong>. Porto Alegre: Bookman, 2004.
+</div>
+<div id="ref-gersting" class="csl-entry" role="listitem">
+L.GERSTING, J. <strong>Fudamentos matemáticos para a Ciência da Computação: um tratamento moderno de matemática discreta</strong>. Rio de Janeiro: LTC, 2004.
+</div>
+<div id="ref-sipser" class="csl-entry" role="listitem">
+SIPSER, Michel. <strong>Introdução a Teoria da Computação</strong>. São Paulo: Cengage Learning, 2012.
+</div>
+<div id="ref-vieira" class="csl-entry" role="listitem">
+VIEIRA, Newton José. <strong>Introdução aos fundamentos da computação</strong>. São Paulo: Pioneira Thompson Learning, 2006.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiada");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiada");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/3-compilador.html" class="pagination-link" aria-label="Introdução aos Compiladores">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/5-sintatico.html" class="pagination-link" aria-label="As Linguagens Livres de Contexto e a Análise Sintática">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">As Linguagens Livres de Contexto e a Análise Sintática</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

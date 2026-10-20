@@ -1,0 +1,13 @@
+digraph AFD2 {
+    rankdir=LR;
+    node [shape=circle, fontsize=14];
+    edge [fontsize=12];
+    inicio [shape=point, label=""];
+    p0 [label="p0"];
+    p1 [shape=doublecircle, label="p1"];
+    inicio -> p0;
+    p0 -> p0 [label="a"];
+    p0 -> p1 [label="b"];
+    p1 -> p0 [label="a"];
+    p1 -> p1 [label="b"];
+}

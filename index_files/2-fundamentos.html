@@ -1,0 +1,2533 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>2&nbsp; Fundamentos Matemáticos – Teoria de Linguagens e Compiladores</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/3-compilador.html" rel="next">
+<link href="../chapters/1-introducao.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5de800ff0d570d78397ee07e50104809.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Nenhum resultado",
+    "search-matching-documents-text": "documentos correspondentes",
+    "search-copy-link-title": "Copiar link para a busca",
+    "search-hide-matches-text": "Esconder correspondências adicionais",
+    "search-more-match-text": "mais correspondência neste documento",
+    "search-more-matches-text": "mais correspondências neste documento",
+    "search-clear-button-title": "Limpar",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar",
+    "search-label": "Procurar"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/2-fundamentos.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Procurar" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Teoria de Linguagens e Compiladores</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Procurar"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prefácio</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/1-introducao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução à Teoria de Linguagens</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/2-fundamentos.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/3-compilador.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/4-lexico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">As Linguagens Regulares e a Analise Léxica</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/5-sintatico.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">As Linguagens Livres de Contexto e a Análise Sintática</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/6-maquinas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">A Máquina de Turing e as Máquinas Virtuais</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/7-semantico-geracao.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">A Análise Semântica e a Geração de Código</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/8-projetos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Projetos de Compiladores</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/9-sumario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Sumário</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/10-referencias.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Referências</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Índice</h2>
+   
+  <ul>
+  <li><a href="#conjuntos" id="toc-conjuntos" class="nav-link active" data-scroll-target="#conjuntos"><span class="header-section-number">2.1</span> Conjuntos</a>
+  <ul class="collapse">
+  <li><a href="#subconjuntos" id="toc-subconjuntos" class="nav-link" data-scroll-target="#subconjuntos">Subconjuntos</a></li>
+  <li><a href="#operações-com-conjuntos" id="toc-operações-com-conjuntos" class="nav-link" data-scroll-target="#operações-com-conjuntos">Operações com Conjuntos</a></li>
+  </ul></li>
+  <li><a href="#sequências-e-uplas" id="toc-sequências-e-uplas" class="nav-link" data-scroll-target="#sequências-e-uplas"><span class="header-section-number">2.2</span> Sequências e Uplas</a>
+  <ul class="collapse">
+  <li><a href="#conjunto-das-partes" id="toc-conjunto-das-partes" class="nav-link" data-scroll-target="#conjunto-das-partes">Conjunto das partes</a></li>
+  <li><a href="#produto-cartesiano" id="toc-produto-cartesiano" class="nav-link" data-scroll-target="#produto-cartesiano">Produto cartesiano</a></li>
+  </ul></li>
+  <li><a href="#funções-e-relações" id="toc-funções-e-relações" class="nav-link" data-scroll-target="#funções-e-relações"><span class="header-section-number">2.3</span> Funções e Relações</a>
+  <ul class="collapse">
+  <li><a href="#funções" id="toc-funções" class="nav-link" data-scroll-target="#funções">Funções</a></li>
+  <li><a href="#predicados" id="toc-predicados" class="nav-link" data-scroll-target="#predicados">Predicados</a></li>
+  <li><a href="#relações-de-equivalência" id="toc-relações-de-equivalência" class="nav-link" data-scroll-target="#relações-de-equivalência">Relações de equivalência</a></li>
+  <li><a href="#funções-predicados-e-relações-uma-visão-integrada" id="toc-funções-predicados-e-relações-uma-visão-integrada" class="nav-link" data-scroll-target="#funções-predicados-e-relações-uma-visão-integrada">Funções, predicados e relações: uma visão integrada</a></li>
+  </ul></li>
+  <li><a href="#grafos" id="toc-grafos" class="nav-link" data-scroll-target="#grafos"><span class="header-section-number">2.4</span> Grafos</a>
+  <ul class="collapse">
+  <li><a href="#grafos-não-direcionados" id="toc-grafos-não-direcionados" class="nav-link" data-scroll-target="#grafos-não-direcionados">Grafos não direcionados</a></li>
+  <li><a href="#grau-de-um-vértice" id="toc-grau-de-um-vértice" class="nav-link" data-scroll-target="#grau-de-um-vértice">Grau de um vértice</a></li>
+  <li><a href="#grafos-simples" id="toc-grafos-simples" class="nav-link" data-scroll-target="#grafos-simples">Grafos simples</a></li>
+  <li><a href="#grafos-como-modelos" id="toc-grafos-como-modelos" class="nav-link" data-scroll-target="#grafos-como-modelos">Grafos como modelos</a></li>
+  <li><a href="#subgrafos" id="toc-subgrafos" class="nav-link" data-scroll-target="#subgrafos">Subgrafos</a></li>
+  <li><a href="#caminhos" id="toc-caminhos" class="nav-link" data-scroll-target="#caminhos">Caminhos</a></li>
+  <li><a href="#ciclos" id="toc-ciclos" class="nav-link" data-scroll-target="#ciclos">Ciclos</a></li>
+  <li><a href="#conectividade" id="toc-conectividade" class="nav-link" data-scroll-target="#conectividade">Conectividade</a></li>
+  <li><a href="#árvores" id="toc-árvores" class="nav-link" data-scroll-target="#árvores">Árvores</a></li>
+  <li><a href="#grafos-direcionados" id="toc-grafos-direcionados" class="nav-link" data-scroll-target="#grafos-direcionados">Grafos direcionados</a></li>
+  <li><a href="#grau-de-entrada-e-grau-de-saída" id="toc-grau-de-entrada-e-grau-de-saída" class="nav-link" data-scroll-target="#grau-de-entrada-e-grau-de-saída">Grau de entrada e grau de saída</a></li>
+  <li><a href="#caminhos-direcionados" id="toc-caminhos-direcionados" class="nav-link" data-scroll-target="#caminhos-direcionados">Caminhos direcionados</a></li>
+  <li><a href="#conectividade-forte" id="toc-conectividade-forte" class="nav-link" data-scroll-target="#conectividade-forte">Conectividade forte</a></li>
+  <li><a href="#grafos-e-relações" id="toc-grafos-e-relações" class="nav-link" data-scroll-target="#grafos-e-relações">Grafos e relações</a></li>
+  </ul></li>
+  <li><a href="#lógica-booleana" id="toc-lógica-booleana" class="nav-link" data-scroll-target="#lógica-booleana"><span class="header-section-number">2.5</span> Lógica Booleana</a>
+  <ul class="collapse">
+  <li><a href="#proposições" id="toc-proposições" class="nav-link" data-scroll-target="#proposições">Proposições</a></li>
+  <li><a href="#operações-lógicas" id="toc-operações-lógicas" class="nav-link" data-scroll-target="#operações-lógicas">Operações lógicas</a></li>
+  <li><a href="#expressões-booleanas" id="toc-expressões-booleanas" class="nav-link" data-scroll-target="#expressões-booleanas">Expressões booleanas</a></li>
+  <li><a href="#tabelas-verdade" id="toc-tabelas-verdade" class="nav-link" data-scroll-target="#tabelas-verdade">Tabelas-verdade</a></li>
+  <li><a href="#tautologias-e-contradições" id="toc-tautologias-e-contradições" class="nav-link" data-scroll-target="#tautologias-e-contradições">Tautologias e contradições</a></li>
+  <li><a href="#equivalências-booleanas" id="toc-equivalências-booleanas" class="nav-link" data-scroll-target="#equivalências-booleanas">Equivalências booleanas</a></li>
+  <li><a href="#leis-de-de-morgan" id="toc-leis-de-de-morgan" class="nav-link" data-scroll-target="#leis-de-de-morgan">Leis de De Morgan</a></li>
+  <li><a href="#leis-distributivas" id="toc-leis-distributivas" class="nav-link" data-scroll-target="#leis-distributivas">Leis distributivas</a></li>
+  <li><a href="#outras-leis-importantes" id="toc-outras-leis-importantes" class="nav-link" data-scroll-target="#outras-leis-importantes">Outras leis importantes</a></li>
+  <li><a href="#conjuntos-completos-de-operadores" id="toc-conjuntos-completos-de-operadores" class="nav-link" data-scroll-target="#conjuntos-completos-de-operadores">Conjuntos completos de operadores</a></li>
+  <li><a href="#álgebra-booleana" id="toc-álgebra-booleana" class="nav-link" data-scroll-target="#álgebra-booleana">Álgebra Booleana</a></li>
+  <li><a href="#síntese" id="toc-síntese" class="nav-link" data-scroll-target="#síntese">Síntese</a></li>
+  </ul></li>
+  <li><a href="#definições-teoremas-e-provas" id="toc-definições-teoremas-e-provas" class="nav-link" data-scroll-target="#definições-teoremas-e-provas"><span class="header-section-number">2.6</span> Definições, Teoremas e Provas</a>
+  <ul class="collapse">
+  <li><a href="#definições" id="toc-definições" class="nav-link" data-scroll-target="#definições">Definições</a></li>
+  <li><a href="#enunciados-matemáticos" id="toc-enunciados-matemáticos" class="nav-link" data-scroll-target="#enunciados-matemáticos">Enunciados matemáticos</a></li>
+  <li><a href="#provas" id="toc-provas" class="nav-link" data-scroll-target="#provas">Provas</a></li>
+  <li><a href="#teoremas-lemas-e-corolários" id="toc-teoremas-lemas-e-corolários" class="nav-link" data-scroll-target="#teoremas-lemas-e-corolários">Teoremas, lemas e corolários</a></li>
+  <li><a href="#conjecturas" id="toc-conjecturas" class="nav-link" data-scroll-target="#conjecturas">Conjecturas</a></li>
+  <li><a href="#prova-direta" id="toc-prova-direta" class="nav-link" data-scroll-target="#prova-direta">Prova direta</a></li>
+  <li><a href="#prova-por-construção" id="toc-prova-por-construção" class="nav-link" data-scroll-target="#prova-por-construção">Prova por construção</a></li>
+  <li><a href="#prova-por-contradição" id="toc-prova-por-contradição" class="nav-link" data-scroll-target="#prova-por-contradição">Prova por contradição</a></li>
+  <li><a href="#prova-por-indução-matemática" id="toc-prova-por-indução-matemática" class="nav-link" data-scroll-target="#prova-por-indução-matemática">Prova por indução matemática</a></li>
+  <li><a href="#escolha-do-método-de-prova" id="toc-escolha-do-método-de-prova" class="nav-link" data-scroll-target="#escolha-do-método-de-prova">Escolha do método de prova</a></li>
+  <li><a href="#provas-e-contraexemplos" id="toc-provas-e-contraexemplos" class="nav-link" data-scroll-target="#provas-e-contraexemplos">Provas e contraexemplos</a></li>
+  <li><a href="#a-estrutura-de-uma-demonstração" id="toc-a-estrutura-de-uma-demonstração" class="nav-link" data-scroll-target="#a-estrutura-de-uma-demonstração">A estrutura de uma demonstração</a></li>
+  <li><a href="#síntese-1" id="toc-síntese-1" class="nav-link" data-scroll-target="#síntese-1">Síntese</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fundamentos Matemáticos</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../chapters/images/fundamentos.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<p>O estudo da <strong>Teoria de Linguagens e Autômatos</strong> utiliza uma série de conceitos matemáticos que permitem descrever, de maneira precisa e formal, os objetos computacionais e as relações existentes entre eles. Embora muitos desses conceitos sejam elementares e façam parte da formação matemática básica, é importante apresentá-los e estabelecer sua notação antes de iniciar as definições formais da teoria.</p>
+<p>Essa formalização é particularmente importante porque, ao longo do estudo, serão utilizados conceitos matemáticos para definir <strong>alfabetos, palavras, linguagens, autômatos, funções de transição e relações</strong>. Além disso, diversas propriedades dos modelos computacionais serão demonstradas matematicamente. Para que essas definições e demonstrações possam ser compreendidas sem ambiguidades, é necessário estabelecer previamente o significado dos principais objetos e operações matemáticas utilizados.</p>
+<p>Entre os conceitos fundamentais, os <strong>conjuntos</strong> ocupam uma posição central. Praticamente todos os objetos da Teoria de Linguagens podem ser definidos a partir deles ou representados como conjuntos. Um alfabeto, por exemplo, pode ser entendido como um conjunto finito de símbolos, enquanto uma linguagem pode ser definida como um conjunto de palavras. Da mesma forma, os estados de um autômato e suas transições podem ser organizados e manipulados utilizando operações sobre conjuntos.</p>
+<section id="conjuntos" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="conjuntos"><span class="header-section-number">2.1</span> Conjuntos</h2>
+<p>Um <strong>conjunto</strong> é uma coleção de objetos que são tratados como uma única entidade. Esses objetos são denominados <strong>elementos</strong> do conjunto. Os elementos podem ser de diferentes naturezas: números, símbolos, palavras, estados de um autômato ou até mesmo outros conjuntos.</p>
+<p>Por exemplo, podemos considerar o conjunto formado pelos números 2, 4 e 12:</p>
+<p><span class="math display">\[
+A = \{2,4,12\}
+\]</span></p>
+<p>Também é possível definir um conjunto por meio de uma propriedade que caracteriza seus elementos. Essa forma de representação é particularmente útil quando o conjunto possui muitos elementos ou é infinito. Por exemplo, o conjunto dos números pares pode ser definido por:</p>
+<p><span class="math display">\[
+pares = \{n \mid n = 2m,; m \in \mathbb{N}\}
+\]</span></p>
+<p>A expressão significa que o conjunto é formado por todos os elementos <span class="math inline">\(n\)</span> que podem ser escritos como duas vezes algum número natural <span class="math inline">\(m\)</span>.</p>
+<p>Para indicar que um elemento pertence a um conjunto, utiliza-se o símbolo <span class="math inline">\(\in\)</span>. Por exemplo:</p>
+<p><span class="math display">\[
+7 \in \{1,7,34\}
+\]</span></p>
+<p>Essa expressão deve ser lida como “7 pertence ao conjunto <span class="math inline">\({1,7,34}\)</span>”. Quando um elemento não pertence a um conjunto, utiliza-se o símbolo <span class="math inline">\(\notin\)</span>. Assim, podemos escrever:</p>
+<p><span class="math display">\[
+5 \notin \{1,7,34\}
+\]</span></p>
+<p>Essa notação de pertencimento será utilizada frequentemente na Teoria de Linguagens. Por exemplo, quando definirmos um alfabeto <span class="math inline">\(\Sigma\)</span>, poderemos escrever <span class="math inline">\(a \in \Sigma\)</span> para indicar que o símbolo <span class="math inline">\(a\)</span> pertence ao alfabeto.</p>
+<section id="subconjuntos" class="level3">
+<h3 class="anchored" data-anchor-id="subconjuntos">Subconjuntos</h3>
+<p>Além de analisar a relação entre um elemento e um conjunto, é possível analisar a relação entre dois conjuntos. Dizemos que um conjunto <span class="math inline">\(A\)</span> é <strong>subconjunto</strong> de um conjunto <span class="math inline">\(B\)</span> quando todos os elementos de <span class="math inline">\(A\)</span> também pertencem a <span class="math inline">\(B\)</span>. Essa relação é representada por:</p>
+<p><span class="math display">\[
+A \subseteq B
+\]</span></p>
+<p>Quando, além disso, <span class="math inline">\(A\)</span> possui menos elementos que <span class="math inline">\(B\)</span>, isto é, existe pelo menos um elemento de <span class="math inline">\(B\)</span> que não pertence a <span class="math inline">\(A\)</span>, utilizamos a notação:</p>
+<p><span class="math display">\[
+A \subsetneq B
+\]</span></p>
+<p>para indicar que <span class="math inline">\(A\)</span> é um <strong>subconjunto próprio</strong> de <span class="math inline">\(B\)</span>.</p>
+<p>É importante observar que, em um conjunto, a ordem em que os elementos são apresentados não possui significado. Da mesma forma, a repetição de um elemento não altera o conjunto. Assim:</p>
+<p><span class="math display">\[
+\{1,2,3\} = \{3,2,1\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\{1\} = \{1,1\}
+\]</span></p>
+<p>Quando a quantidade de ocorrências de cada elemento é relevante, não estamos mais trabalhando com conjuntos no sentido tradicional, mas com uma estrutura denominada <strong>multiconjunto</strong>.</p>
+<p>Os conjuntos também podem ser finitos ou infinitos. Um conjunto finito possui uma quantidade limitada de elementos. Já um conjunto infinito possui uma quantidade ilimitada de elementos. Os números naturais, por exemplo, formam um conjunto infinito:</p>
+<p><span class="math display">\[
+\mathbb{N} = \{0,1,2,3,\ldots\}
+\]</span></p>
+<p>Da mesma forma, o conjunto dos números inteiros é infinito:</p>
+<p><span class="math display">\[
+\mathbb{Z} = \{\ldots,-2,-1,0,1,2,\ldots\}
+\]</span></p>
+<p>A distinção entre conjuntos finitos e infinitos será importante posteriormente, especialmente quando forem discutidas propriedades dos alfabetos, das linguagens e dos diferentes modelos de autômatos.</p>
+</section>
+<section id="operações-com-conjuntos" class="level3">
+<h3 class="anchored" data-anchor-id="operações-com-conjuntos">Operações com Conjuntos</h3>
+<p>Além das relações de pertencimento e inclusão, os conjuntos podem ser combinados por meio de diferentes operações. Essas operações permitem construir novos conjuntos a partir de conjuntos existentes e serão utilizadas posteriormente na definição e manipulação de linguagens formais.</p>
+<section id="união" class="level4">
+<h4 class="anchored" data-anchor-id="união">União</h4>
+<div id="fig-uniao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-uniao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/uniao.png" class="img-fluid figure-img" style="width:30.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-uniao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.1: Representação da união de conjuntos
+</figcaption>
+</figure>
+</div>
+<p>A <strong>união</strong> de dois conjuntos <span class="math inline">\(A\)</span> e <span class="math inline">\(B\)</span> é formada por todos os elementos que pertencem a pelo menos um dos conjuntos. A união é representada pelo símbolo <span class="math inline">\(\cup\)</span>:</p>
+<p><span class="math display">\[
+A \cup B = \{x \mid x \in A \textrm{ ou } x \in B\}
+\]</span></p>
+<p>Por exemplo, considerando:</p>
+<p><span class="math display">\[
+A = \{1,2,3\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+B = \{3,4,5\}
+\]</span></p>
+<p>temos:</p>
+<p><span class="math display">\[
+A \cup B = \{1,2,3,4,5\}
+\]</span></p>
+<p>Observe que o elemento 3 aparece apenas uma vez no resultado, pois conjuntos não consideram repetições.</p>
+<p>A operação de união possui especial importância na Teoria de Linguagens, pois será utilizada posteriormente na definição da <strong>união de linguagens</strong> e estará diretamente relacionada à operação de união de autômatos.</p>
+</section>
+<section id="interseção" class="level4">
+<h4 class="anchored" data-anchor-id="interseção">Interseção</h4>
+<div id="fig-intersecao" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-intersecao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/intersecao.png" class="img-fluid figure-img" style="width:30.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-intersecao-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.2: Representação da interseção entre conjuntos
+</figcaption>
+</figure>
+</div>
+<p>A <strong>interseção</strong> de dois conjuntos contém os elementos que pertencem simultaneamente aos dois conjuntos. A operação é representada pelo símbolo <span class="math inline">\(\cap\)</span>:</p>
+<p><span class="math display">\[
+A \cap B = \{x \mid x \in A \textrm{ e } x \in B\}
+\]</span></p>
+<p>Por exemplo, para:</p>
+<p><span class="math display">\[
+A = \{1,2,3\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+B = \{3,4,5\}
+\]</span></p>
+<p>temos:</p>
+<p><span class="math display">\[
+A \cap B = \{3\}
+\]</span></p>
+<p>A interseção permite representar uma condição em que um elemento precisa satisfazer simultaneamente duas propriedades. Esse conceito será importante posteriormente na construção de linguagens que representam condições combinadas.</p>
+</section>
+<section id="diferença" class="level4">
+<h4 class="anchored" data-anchor-id="diferença">Diferença</h4>
+<div id="fig-diferenca" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-diferenca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/diferenca.png" class="img-fluid figure-img" style="width:30.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diferenca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.3: Representação da diferença de conjuntos
+</figcaption>
+</figure>
+</div>
+<p>A <strong>diferença</strong> entre dois conjuntos <span class="math inline">\(A\)</span> e <span class="math inline">\(B\)</span> é formada pelos elementos que pertencem a <span class="math inline">\(A\)</span>, mas não pertencem a <span class="math inline">\(B\)</span>. A operação pode ser representada por <span class="math inline">\(A-B\)</span>:</p>
+<p><span class="math display">\[
+A - B = \{x \mid x \in A \textrm{ e } x \notin B\}
+\]</span></p>
+<p>Por exemplo:</p>
+<p><span class="math display">\[
+A = \{1,2,3,4\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+B = \{3,4,5\}
+\]</span></p>
+<p>resultam em:</p>
+<p><span class="math display">\[
+A-B = \{1,2\}
+\]</span></p>
+<p>A diferença é uma operação útil para expressar a remoção de elementos de um conjunto e será retomada posteriormente em diferentes construções da teoria.</p>
+</section>
+<section id="importância-dos-conjuntos-para-a-teoria-de-linguagens" class="level4">
+<h4 class="anchored" data-anchor-id="importância-dos-conjuntos-para-a-teoria-de-linguagens">Importância dos conjuntos para a Teoria de Linguagens</h4>
+<p>Os conceitos apresentados nesta seção constituem uma base para praticamente todas as definições que serão introduzidas posteriormente. Um <strong>alfabeto</strong> será definido como um conjunto de símbolos; uma <strong>palavra</strong> será construída a partir de símbolos pertencentes a um alfabeto; e uma <strong>linguagem</strong> poderá ser definida como um conjunto de palavras.</p>
+<p>Da mesma forma, um autômato será descrito por conjuntos de <strong>estados</strong>, <strong>símbolos</strong> e <strong>transições</strong>, além de funções que estabelecem relações entre esses elementos. As operações de união, interseção, diferença e inclusão também serão utilizadas para estabelecer propriedades das linguagens e demonstrar resultados importantes.</p>
+<p>Portanto, esta revisão não tem apenas o objetivo de recordar conceitos matemáticos conhecidos. Ela estabelece a <strong>linguagem formal</strong> que será utilizada ao longo do livro. A partir desses fundamentos, será possível apresentar as definições da Teoria de Linguagens de maneira rigorosa e, posteriormente, utilizar essas definições em demonstrações, construções de autômatos e análise das propriedades das linguagens formais.</p>
+</section>
+</section>
+</section>
+<section id="sequências-e-uplas" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="sequências-e-uplas"><span class="header-section-number">2.2</span> Sequências e Uplas</h2>
+<p>Enquanto um conjunto é uma coleção de elementos na qual a ordem e a repetição não são relevantes, uma <strong>sequência</strong> é uma lista de objetos na qual a ordem em que os elementos aparecem é parte fundamental da representação. Assim, em uma sequência, cada elemento ocupa uma determinada posição. Por exemplo, podemos considerar a sequência:</p>
+<p><span class="math display">\[
+(1,4,20)
+\]</span></p>
+<p>Nesse caso, o primeiro elemento é <span class="math inline">\(1\)</span>, o segundo é <span class="math inline">\(4\)</span> e o terceiro é <span class="math inline">\(20\)</span>. A sequência é representada utilizando parênteses, justamente para diferenciá-la da representação usual de conjuntos. A ordem dos elementos produz sequências diferentes. Portanto,</p>
+<p><span class="math display">\[
+(1,4,20) \neq (4,1,20).
+\]</span></p>
+<p>Essa característica será particularmente importante no estudo das linguagens formais, pois uma palavra pode ser entendida como uma <strong>sequência finita de símbolos</strong> pertencentes a um alfabeto. Assim, as sequências fornecem a estrutura matemática necessária para representar a ordem em que os símbolos aparecem em uma palavra.</p>
+<p>As sequências podem ser <strong>finitas ou infinitas</strong>. Uma sequência finita possui uma quantidade determinada de elementos e é denominada <strong>tupla</strong>. Uma <span class="math inline">\(k\)</span>-upla é uma sequência constituída por <span class="math inline">\(k\)</span> elementos. Por exemplo,</p>
+<p><span class="math display">\[
+(2,1,3)
+\]</span></p>
+<p>é uma 3-upla, enquanto</p>
+<p><span class="math display">\[
+(1,2)
+\]</span></p>
+<p>é uma 2-upla. A posição ocupada por cada elemento é importante: a primeira componente de uma tupla é diferente da segunda, mesmo quando os valores envolvidos são iguais.</p>
+<section id="conjunto-das-partes" class="level3">
+<h3 class="anchored" data-anchor-id="conjunto-das-partes">Conjunto das partes</h3>
+<p>É importante observar que conjuntos e sequências podem ser utilizados como elementos de outras estruturas matemáticas. Por exemplo, considere o conjunto:</p>
+<p><span class="math display">\[
+A=\{0,1\}.
+\]</span></p>
+<p>O <strong>conjunto das partes</strong>, ou <strong>conjunto potência</strong>, de <span class="math inline">\(A\)</span> é o conjunto formado por todos os subconjuntos de <span class="math inline">\(A\)</span>. Nesse caso, temos:</p>
+<p><span class="math display">\[
+P(A)=\{\emptyset,\{0\},\{1\},\{0,1\}\}.
+\]</span></p>
+<p>Esse exemplo mostra que os próprios conjuntos podem aparecer como elementos de outro conjunto. De maneira semelhante, tuplas podem conter conjuntos, sequências ou outros objetos matemáticos como seus componentes. Essa possibilidade será importante quando forem definidas estruturas mais complexas utilizadas na representação de autômatos e de outros modelos computacionais.</p>
+</section>
+<section id="produto-cartesiano" class="level3">
+<h3 class="anchored" data-anchor-id="produto-cartesiano">Produto cartesiano</h3>
+<p>Outro conceito fundamental relacionado aos conjuntos e às sequências é o <strong>produto cartesiano</strong>. Dados dois conjuntos <span class="math inline">\(A\)</span> e <span class="math inline">\(B\)</span>, o produto cartesiano, denotado por <span class="math inline">\(A\times B\)</span>, é o conjunto formado por todos os pares ordenados <span class="math inline">\((a,b)\)</span> nos quais <span class="math inline">\(a\in A\)</span> e <span class="math inline">\(b\in B\)</span>.</p>
+<p>Por exemplo, sejam:</p>
+<p><span class="math display">\[
+A=\{1,2\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+B=\{x,y,z\}.
+\]</span></p>
+<p>O produto cartesiano desses conjuntos é:</p>
+<p><span class="math display">\[
+A\times B=
+\{(1,x),(1,y),(1,z),(2,x),(2,y),(2,z)\}.
+\]</span></p>
+<p>Cada elemento do produto cartesiano é, portanto, uma <strong>2-upla</strong>, ou par ordenado. Observe novamente que a ordem é importante. Em geral,</p>
+<p><span class="math display">\[
+(a,b)\neq(b,a),
+\]</span></p>
+<p>pois a primeira componente pertence a <span class="math inline">\(A\)</span> e a segunda pertence a <span class="math inline">\(B\)</span>.</p>
+<p>O produto cartesiano pode ser estendido para mais de dois conjuntos. Dados os conjuntos <span class="math inline">\(A_1,A_2,\ldots,A_k\)</span>, podemos definir:</p>
+<p><span class="math display">\[
+A_1\times A_2\times\cdots\times A_k
+\]</span></p>
+<p>como o conjunto formado por todas as <span class="math inline">\(k\)</span>-uplas</p>
+<p><span class="math display">\[
+(a_1,a_2,\ldots,a_k),
+\]</span></p>
+<p>nas quais cada componente pertence ao respectivo conjunto:</p>
+<p><span class="math display">\[
+a_i\in A_i.
+\]</span></p>
+<p>Essa definição permite representar matematicamente estruturas que possuem diferentes componentes organizados em posições específicas.</p>
+<p>Quando todos os conjuntos envolvidos no produto cartesiano são iguais, podemos utilizar uma notação abreviada. O produto cartesiano de <span class="math inline">\(A\)</span> por ele mesmo <span class="math inline">\(k\)</span> vezes é representado por:</p>
+<p><span class="math display">\[
+\underbrace{A\times A\times\cdots\times A}_{k\text{ vezes}}
+=A^k.
+\]</span></p>
+<p>Por exemplo:</p>
+<p><span class="math display">\[
+\mathbb{N}^2=\mathbb{N}\times\mathbb{N}
+\]</span></p>
+<p>representa o conjunto de todos os pares ordenados de números naturais. Assim:</p>
+<p><span class="math display">\[
+\mathbb{N}^2=
+\{(0,0),(0,1),(0,2),\ldots,(1,0),(1,1),\ldots\}.
+\]</span></p>
+<p>O conceito de produto cartesiano será utilizado posteriormente para formalizar diversas estruturas da Teoria de Linguagens. Em particular, ele permite definir conjuntos de tuplas e estabelecer relações entre diferentes conjuntos de objetos. Dessa forma, sequências, tuplas e produtos cartesianos complementam os conceitos de conjuntos apresentados anteriormente e fornecem uma base matemática para a definição formal de alfabetos, palavras, linguagens e autômatos.</p>
+</section>
+</section>
+<section id="funções-e-relações" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="funções-e-relações"><span class="header-section-number">2.3</span> Funções e Relações</h2>
+<p>Funções e relações são conceitos fundamentais da Matemática Discreta e aparecem de maneira recorrente na definição dos objetos estudados em Teoria de Linguagens. Autômatos, gramáticas e linguagens formais são definidos a partir de conjuntos e operações entre seus elementos. Para compreender adequadamente essas definições, é importante conhecer como funções e relações permitem representar transformações, propriedades e comparações entre objetos.</p>
+<section id="funções" class="level3">
+<h3 class="anchored" data-anchor-id="funções">Funções</h3>
+<p>Uma <strong>função</strong> é uma regra que associa elementos de um conjunto de entrada a elementos de um conjunto de saída. Formalmente, uma função <span class="math inline">\(f\)</span> de um conjunto <span class="math inline">\(D\)</span> em um conjunto <span class="math inline">\(C\)</span> é representada por</p>
+<p><span class="math display">\[
+f:D\rightarrow C.
+\]</span></p>
+<p>O conjunto <span class="math inline">\(D\)</span> é denominado <strong>domínio</strong> da função e o conjunto <span class="math inline">\(C\)</span> é denominado <strong>contradomínio</strong>. Para cada elemento <span class="math inline">\(a\in D\)</span>, a função associa exatamente um elemento <span class="math inline">\(b\in C\)</span>. Essa associação é indicada por</p>
+<p><span class="math display">\[
+f(a)=b.
+\]</span></p>
+<p>A exigência de que cada elemento do domínio esteja associado a exatamente um elemento do contradomínio é o que diferencia uma função de uma relação arbitrária. Um mesmo elemento do contradomínio pode ser associado a vários elementos do domínio; portanto, não é necessário que elementos diferentes do domínio tenham imagens diferentes.</p>
+<p>Uma função também pode ser denominada <strong>mapeamento</strong>, pois estabelece uma correspondência entre elementos de dois conjuntos. Por exemplo, considere a função</p>
+<p><span class="math display">\[
+add:\mathbb{Z}\times\mathbb{Z}\rightarrow\mathbb{Z},
+\]</span></p>
+<p>definida por</p>
+<p><span class="math display">\[
+add(x,y)=x+y.
+\]</span></p>
+<p>Nesse caso, o domínio é o produto cartesiano <span class="math inline">\(\mathbb{Z}\times\mathbb{Z}\)</span>, o contradomínio é <span class="math inline">\(\mathbb{Z}\)</span> e a função possui dois argumentos. Assim, a entrada da função é um par ordenado <span class="math inline">\((x,y)\)</span>.</p>
+<p>De maneira geral, uma função pode possuir qualquer número finito de argumentos. Uma função</p>
+<p><span class="math display">\[
+f:A_1\times A_2\times\cdots\times A_k\rightarrow B
+\]</span></p>
+<p>recebe como entrada uma <span class="math inline">\(k\)</span>-upla</p>
+<p><span class="math display">\[
+(a_1,a_2,\ldots,a_k),
+\]</span></p>
+<p>em que cada <span class="math inline">\(a_i\)</span> pertence ao conjunto correspondente <span class="math inline">\(A_i\)</span>. Uma função com um argumento é denominada <strong>função unária</strong>, enquanto uma função com dois argumentos é denominada <strong>função binária</strong>. Essa terminologia será utilizada diversas vezes ao longo do estudo de linguagens formais.</p>
+<p>Uma função pode ser representada de diferentes maneiras. Podemos utilizar uma expressão matemática, uma tabela, um diagrama ou até mesmo um algoritmo ou programa de computador. Considere, por exemplo, a função</p>
+<p><span class="math display">\[
+f:\mathbb{Z}_5\rightarrow\mathbb{Z}_5
+\]</span></p>
+<p>definida por</p>
+<p><span class="math display">\[
+f(x)=(x+1)\bmod 5.
+\]</span></p>
+<p>Como <span class="math inline">\(\mathbb{Z}_5={0,1,2,3,4}\)</span>, podemos representar essa função pela tabela:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: center;">0</th>
+<th style="text-align: center;">1</th>
+<th style="text-align: center;">2</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(f(x)\)</span></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">0</td>
+</tr>
+</tbody>
+</table>
+<p>Observe que cada elemento do domínio possui exatamente uma imagem. Assim, <span class="math inline">\(f(0)=1\)</span>, <span class="math inline">\(f(1)=2\)</span>, <span class="math inline">\(f(2)=3\)</span>, <span class="math inline">\(f(3)=4\)</span> e <span class="math inline">\(f(4)=0\)</span>. O uso da operação módulo faz com que, depois do valor <span class="math inline">\(4\)</span>, o resultado volte para <span class="math inline">\(0\)</span>.</p>
+<p>Essa forma de representar funções é particularmente útil em Computação. Uma tabela de transição de um autômato, por exemplo, pode ser entendida como uma representação tabular de uma função. Essa observação permite estabelecer uma conexão direta entre o conceito matemático de função e a definição formal dos autômatos.</p>
+</section>
+<section id="predicados" class="level3">
+<h3 class="anchored" data-anchor-id="predicados">Predicados</h3>
+<p>Outro conceito importante relacionado às funções é o de <strong>predicado</strong>. Um predicado, também denominado <strong>propriedade</strong>, é uma função cujo contradomínio possui dois valores possíveis, normalmente representados por verdadeiro e falso.</p>
+<p>Um exemplo simples é o predicado que determina se um número inteiro é par. Podemos defini-lo como</p>
+<p><span class="math display">\[
+par:\mathbb{Z}\rightarrow\{\text{verdadeiro},\text{falso}\},
+\]</span></p>
+<p>em que</p>
+<p><span class="math display">\[
+par(x)=
+\begin{cases}
+\text{verdadeiro}, &amp; \text{se }x\bmod 2=0,\\
+\text{falso}, &amp; \text{caso contrário}.
+\end{cases}
+\]</span></p>
+<p>Assim, <span class="math inline">\(par(4)\)</span> é verdadeiro, enquanto <span class="math inline">\(par(5)\)</span> é falso.</p>
+<p>Os predicados são particularmente importantes em Teoria de Linguagens porque uma linguagem pode ser interpretada como uma propriedade sobre as cadeias de um alfabeto. Seja</p>
+<p><span class="math display">\[
+L\subseteq\Sigma^*
+\]</span></p>
+<p>uma linguagem. Podemos definir o predicado</p>
+<p><span class="math display">\[
+P_L:\Sigma^*\rightarrow\{\text{verdadeiro},\text{falso}\}
+\]</span></p>
+<p>por</p>
+<p><span class="math display">\[
+P_L(w)=
+\begin{cases}
+\text{verdadeiro}, &amp; \text{se }w\in L,\\
+\text{falso}, &amp; \text{se }w\notin L.
+\end{cases}
+\]</span></p>
+<p>Nesse caso, o predicado <span class="math inline">\(P_L\)</span> responde à pergunta fundamental: <strong>a cadeia</strong> <span class="math inline">\(w\)</span> pertence à linguagem <span class="math inline">\(L\)</span>?</p>
+<p>Essa interpretação permite compreender o papel de um reconhecedor de linguagens. Um autômato recebe uma cadeia como entrada e produz, ao final do processamento, uma resposta que pode ser interpretada como verdadeiro ou falso. Se a cadeia é aceita, o predicado correspondente assume o valor verdadeiro; caso contrário, assume o valor falso.</p>
+</section>
+<section id="relações-de-equivalência" class="level3">
+<h3 class="anchored" data-anchor-id="relações-de-equivalência">Relações de equivalência</h3>
+<p>Uma relação binária <span class="math inline">\(R\)</span> definida sobre um conjunto <span class="math inline">\(A\)</span> é denominada <strong>relação de equivalência</strong> quando satisfaz três propriedades: reflexividade, simetria e transitividade.</p>
+<p>A <strong>reflexividade</strong> estabelece que todo elemento está relacionado consigo mesmo. Formalmente,</p>
+<p><span class="math display">\[
+\forall x\in A,\quad xRx.
+\]</span></p>
+<p>A <strong>simetria</strong> estabelece que, se um elemento está relacionado a outro, então o segundo também está relacionado ao primeiro:</p>
+<p><span class="math display">\[
+\forall x,y\in A,\quad
+xRy\Rightarrow yRx.
+\]</span></p>
+<p>Finalmente, a <strong>transitividade</strong> estabelece que, se um elemento está relacionado a um segundo e este está relacionado a um terceiro, então o primeiro está relacionado ao terceiro:</p>
+<p><span class="math display">\[
+\forall x,y,z\in A,\quad
+(xRy\land yRz)\Rightarrow xRz.
+\]</span></p>
+<p>A igualdade entre números é um exemplo conhecido de relação de equivalência. Se <span class="math inline">\(x=y\)</span>, então naturalmente <span class="math inline">\(x=x\)</span>, <span class="math inline">\(y=x\)</span> e, se <span class="math inline">\(x=y\)</span> e <span class="math inline">\(y=z\)</span>, então <span class="math inline">\(x=z\)</span>.</p>
+<p>Outro exemplo é a relação de congruência módulo <span class="math inline">\(n\)</span>. Dois inteiros <span class="math inline">\(x\)</span> e <span class="math inline">\(y\)</span> são considerados equivalentes módulo <span class="math inline">\(n\)</span> quando possuem o mesmo resto na divisão por <span class="math inline">\(n\)</span>. Essa relação permite agrupar infinitos números inteiros em um número finito de classes.</p>
+<p>A ideia de agrupar elementos equivalentes é extremamente importante em Computação. Em vez de considerar individualmente todos os elementos de um conjunto, podemos trabalhar com as <strong>classes de equivalência</strong> formadas pela relação.</p>
+</section>
+<section id="funções-predicados-e-relações-uma-visão-integrada" class="level3">
+<h3 class="anchored" data-anchor-id="funções-predicados-e-relações-uma-visão-integrada">Funções, predicados e relações: uma visão integrada</h3>
+<p>Os conceitos apresentados nesta seção aparecem de forma integrada em praticamente toda a Teoria de Linguagens. As funções são utilizadas para descrever transformações e comportamentos determinísticos; os predicados permitem expressar propriedades que podem ser verdadeiras ou falsas; e as relações permitem estabelecer associações ou comparações entre objetos.</p>
+</section>
+</section>
+<section id="grafos" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="grafos"><span class="header-section-number">2.4</span> Grafos</h2>
+<p>Grafos são estruturas matemáticas utilizadas para representar relações entre objetos. Um grafo pode ser utilizado, por exemplo, para representar cidades conectadas por estradas, páginas da Web conectadas por links, pessoas conectadas por relações sociais ou estados de um autômato conectados por transições. Na Teoria de Linguagens, os grafos possuem papel particularmente importante, pois permitem representar visualmente autômatos, relações entre estados, árvores de derivação e diversas outras estruturas.</p>
+<p>De maneira intuitiva, um grafo é formado por um conjunto de <strong>vértices</strong>, também chamados de nós, e por conexões entre esses vértices, denominadas <strong>arestas</strong>. Dependendo do tipo de grafo, as conexões podem possuir ou não uma direção, podem possuir rótulos e podem ainda estar associadas a pesos ou outros atributos.</p>
+<section id="grafos-não-direcionados" class="level3">
+<h3 class="anchored" data-anchor-id="grafos-não-direcionados">Grafos não direcionados</h3>
+<p>Um <strong>grafo não direcionado</strong>, ou simplesmente <strong>grafo</strong>, é uma estrutura formada por um conjunto de vértices e um conjunto de arestas que conectam pares de vértices. Em um grafo não direcionado, uma aresta que conecta os vértices <span class="math inline">\(a\)</span> e <span class="math inline">\(b\)</span> não possui uma direção específica. Assim, a conexão entre <span class="math inline">\(a\)</span> e <span class="math inline">\(b\)</span> é a mesma que a conexão entre <span class="math inline">\(b\)</span> e <span class="math inline">\(a\)</span>.</p>
+<p>Formalmente, um grafo pode ser representado pelo par</p>
+<p><span class="math display">\[
+G=(V,E),
+\]</span></p>
+<p>em que <span class="math inline">\(V\)</span> é o conjunto de vértices e <span class="math inline">\(E\)</span> é o conjunto de arestas.</p>
+<p>No caso de um grafo simples não direcionado, cada aresta é representada por um par não ordenado de vértices. Assim,</p>
+<p><span class="math display">\[
+\{a,b\}
+\]</span></p>
+<p>representa uma aresta que conecta os vértices <span class="math inline">\(a\)</span> e <span class="math inline">\(b\)</span>. A ordem dos elementos não é relevante, de modo que</p>
+<p><span class="math display">\[
+\{a,b\}=\{b,a\}.
+\]</span></p>
+<p>Por exemplo, considere o grafo da</p>
+<div id="fig-grafo1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-grafo1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/g1.png" class="img-fluid figure-img" style="width:20.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-grafo1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.4: Um grafo
+</figcaption>
+</figure>
+</div>
+<p><span class="math display">\[
+G=(V,E),
+\]</span></p>
+<p>em que</p>
+<p><span class="math display">\[
+V=\{a,b,c,d,e\}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+E=
+\{
+\{a,b\},
+\{a,e\},
+\{b,c\},
+\{b,d\},
+\{c,d\},
+\{c,e\},
+\{d,e\}
+\}.
+\]</span></p>
+<p>Nesse grafo, os cinco elementos de <span class="math inline">\(V\)</span> são os vértices e cada elemento de <span class="math inline">\(E\)</span> representa uma conexão entre dois desses vértices.</p>
+<p>Uma representação gráfica desse grafo pode ser feita desenhando um ponto para cada vértice e uma linha para cada aresta, conforme ilustrado na <a href="#fig-grafo1" class="quarto-xref">Figura&nbsp;<span>2.4</span></a>. A representação visual é particularmente útil porque permite identificar propriedades do grafo sem necessariamente manipular sua representação matemática.</p>
+</section>
+<section id="grau-de-um-vértice" class="level3">
+<h3 class="anchored" data-anchor-id="grau-de-um-vértice">Grau de um vértice</h3>
+<p>O <strong>grau</strong> de um vértice de um grafo não direcionado corresponde ao número de arestas incidentes nesse vértice. Em outras palavras, indica quantas conexões estão associadas ao vértice.</p>
+<p>No grafo da <a href="#fig-grafo1" class="quarto-xref">Figura&nbsp;<span>2.4</span></a>, por exemplo, o vértice <span class="math inline">\(a\)</span> possui grau <span class="math inline">\(2\)</span>, pois está conectado aos vértices <span class="math inline">\(b\)</span> e <span class="math inline">\(e\)</span>. Já o vértice <span class="math inline">\(d\)</span> possui grau <span class="math inline">\(3\)</span>, pois está conectado aos vértices <span class="math inline">\(b\)</span>, <span class="math inline">\(c\)</span> e <span class="math inline">\(e\)</span>.</p>
+<p>O grau de um vértice pode ser representado por</p>
+<p><span class="math display">\[
+\deg(v).
+\]</span></p>
+<p>Assim, no exemplo,</p>
+<p><span class="math display">\[
+\deg(a)=2
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\deg(d)=3.
+\]</span></p>
+<p>O conceito de grau é útil para caracterizar a estrutura de um grafo e também aparece, com adaptações, no estudo de grafos direcionados.</p>
+</section>
+<section id="grafos-simples" class="level3">
+<h3 class="anchored" data-anchor-id="grafos-simples">Grafos simples</h3>
+<p>Um <strong>grafo simples</strong> é um grafo que não possui arestas múltiplas entre o mesmo par de vértices e não possui arestas que conectem um vértice a ele próprio.</p>
+<p>Uma aresta que conecta um vértice a ele mesmo é denominada <strong>laço</strong>. Por exemplo, uma aresta</p>
+<p><span class="math display">\[
+\{a,a\}
+\]</span></p>
+<p>seria um laço no vértice <span class="math inline">\(a\)</span>.</p>
+<p>Da mesma forma, não são permitidas duas arestas distintas conectando exatamente os mesmos dois vértices. Quando múltiplas arestas entre os mesmos vértices são permitidas, temos estruturas mais gerais, denominadas <strong>multigrafos</strong>.</p>
+<p>A distinção entre grafos simples e grafos que permitem múltiplas arestas ou laços é importante porque diferentes aplicações exigem diferentes modelos. Em Teoria de Linguagens, por exemplo, os diagramas de autômatos podem possuir várias transições entre estados e, portanto, sua representação não precisa necessariamente ser um grafo simples.</p>
+</section>
+<section id="grafos-como-modelos" class="level3">
+<h3 class="anchored" data-anchor-id="grafos-como-modelos">Grafos como modelos</h3>
+<p>Uma das principais aplicações dos grafos é a modelagem de sistemas. Os vértices representam entidades e as arestas representam relações ou conexões entre essas entidades.</p>
+<div id="fig-grafo3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-grafo3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/g3.png" class="img-fluid figure-img" style="width:15.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-grafo3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.5: Grafo como modelo
+</figcaption>
+</figure>
+</div>
+<p>Por exemplo, podemos utilizar um grafo para representar uma rede de cidades, conforme ilustrado na <a href="#fig-grafo3" class="quarto-xref">Figura&nbsp;<span>2.5</span></a>. Nesse caso, cada vértice representa uma cidade e cada aresta representa uma estrada que conecta duas cidades. Outro exemplo é uma rede de páginas da Web, em que cada vértice representa uma página e cada conexão representa um link entre páginas.</p>
+<p>As arestas também podem possuir <strong>rótulos</strong>. Nesse caso, além de indicar que dois vértices estão relacionados, a aresta pode especificar a natureza dessa relação. Essa característica é especialmente importante em Teoria de Linguagens, pois as transições de um autômato são normalmente rotuladas com símbolos do alfabeto.</p>
+<p>Assim, uma estrutura gráfica pode representar não apenas a existência de uma conexão, mas também a informação associada a essa conexão.</p>
+</section>
+<section id="subgrafos" class="level3">
+<h3 class="anchored" data-anchor-id="subgrafos">Subgrafos</h3>
+<p>Um grafo pode conter dentro de sua estrutura outros grafos menores. Um <strong>subgrafo</strong> de um grafo <span class="math inline">\(H\)</span> é um grafo formado por um subconjunto dos vértices de <span class="math inline">\(H\)</span> e por arestas de <span class="math inline">\(H\)</span> que conectam esses vértices.</p>
+<p>Se</p>
+<p><span class="math display">\[
+H=(V_H,E_H),
+\]</span></p>
+<p>um subgrafo <span class="math inline">\(G=(V_G,E_G)\)</span> de <span class="math inline">\(H\)</span> deve satisfazer</p>
+<p><span class="math display">\[
+V_G\subseteq V_H
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+E_G\subseteq E_H.
+\]</span></p>
+<p>Por exemplo, se selecionarmos os vértices <span class="math inline">\(1\)</span>, <span class="math inline">\(2\)</span> e <span class="math inline">\(4\)</span> do grafo da <a href="#fig-grafo3" class="quarto-xref">Figura&nbsp;<span>2.5</span></a> e mantivermos as arestas existentes entre esses vértices, obteremos um subgrafo do grafo original.</p>
+<p>O conceito de subgrafo é útil quando estamos interessados apenas em uma parte de uma estrutura maior. Em aplicações computacionais, isso permite analisar regiões específicas de uma rede ou de um sistema sem considerar todos os seus elementos.</p>
+</section>
+<section id="caminhos" class="level3">
+<h3 class="anchored" data-anchor-id="caminhos">Caminhos</h3>
+<p>Um dos conceitos mais importantes em grafos é o de <strong>caminho</strong>. Intuitivamente, um caminho é uma sequência de vértices em que cada vértice consecutivo está conectado por uma aresta.</p>
+<p>Por exemplo, na <a href="#fig-grafo4" class="quarto-xref">Figura&nbsp;<span>2.6</span></a></p>
+<div id="fig-grafo4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-grafo4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/g4.png" class="img-fluid figure-img" style="width:20.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-grafo4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.6: Caminho num grafo
+</figcaption>
+</figure>
+</div>
+<p><span class="math display">\[
+(c,a,d,e)
+\]</span></p>
+<p>representa um caminho quando existem as arestas</p>
+<p><span class="math display">\[
+\{c,a\},\quad
+\{a,d\},\quad
+\{d,e\}.
+\]</span></p>
+<p>Um caminho pode visitar um mesmo vértice mais de uma vez. Quando nenhum vértice é repetido, temos um <strong>caminho simples</strong>.</p>
+<p>O comprimento de um caminho corresponde ao número de arestas percorridas. Assim, o caminho</p>
+<p><span class="math display">\[
+(a,c,d,e)
+\]</span></p>
+<p>possui comprimento <span class="math inline">\(3\)</span>, pois utiliza as arestas que conectam <span class="math inline">\(a\)</span> a <span class="math inline">\(c\)</span>, <span class="math inline">\(c\)</span> a <span class="math inline">\(d\)</span> e <span class="math inline">\(d\)</span> a <span class="math inline">\(e\)</span>.</p>
+<p>A noção de caminho é fundamental para diversas operações sobre grafos. Ela permite, por exemplo, verificar se existe uma conexão entre dois vértices, determinar rotas e estudar propriedades de conectividade.</p>
+</section>
+<section id="ciclos" class="level3">
+<h3 class="anchored" data-anchor-id="ciclos">Ciclos</h3>
+<p>Um <strong>ciclo</strong> é um caminho que começa e termina no mesmo vértice. Por exemplo, conforme ilustrado na <a href="#fig-grafo5" class="quarto-xref">Figura&nbsp;<span>2.7</span></a></p>
+<div id="fig-grafo5" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-grafo5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/g5.png" class="img-fluid figure-img" style="width:20.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-grafo5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.7: Ciclo num grafo
+</figcaption>
+</figure>
+</div>
+<p><span class="math display">\[
+(d,e,f,d)
+\]</span></p>
+<p>é um ciclo quando existem as arestas</p>
+<p><span class="math display">\[
+\{d,e\},\quad
+\{e,f\},\quad
+\{f,d\}.
+\]</span></p>
+<p>Um ciclo simples não repete vértices, exceto pelo primeiro e pelo último, que são iguais.</p>
+<p>Os ciclos são importantes porque permitem identificar situações em que é possível retornar ao ponto de partida seguindo as conexões do grafo. Essa propriedade terá uma interpretação particularmente importante quando estudarmos autômatos, pois um ciclo em um autômato pode representar a possibilidade de processar uma quantidade arbitrária de símbolos repetindo uma determinada sequência de estados.</p>
+</section>
+<section id="conectividade" class="level3">
+<h3 class="anchored" data-anchor-id="conectividade">Conectividade</h3>
+<p>Um grafo é denominado <strong>conexo</strong> quando existe um caminho entre quaisquer dois de seus vértices.</p>
+<p>Considere dois vértices <span class="math inline">\(u\)</span> e <span class="math inline">\(v\)</span>. Se existe um caminho que começa em <span class="math inline">\(u\)</span> e termina em <span class="math inline">\(v\)</span>, dizemos que esses vértices estão conectados.</p>
+<p>Um grafo desconexo possui pelo menos dois grupos de vértices que não podem ser alcançados uns a partir dos outros. Esses grupos são denominados <strong>componentes conexas</strong> do grafo.</p>
+<p>A conectividade é uma propriedade importante em diversas aplicações. Em uma rede de comunicação, por exemplo, um grafo conexo representa uma rede em que existe alguma sequência de conexões entre quaisquer dois pontos.</p>
+</section>
+<section id="árvores" class="level3">
+<h3 class="anchored" data-anchor-id="árvores">Árvores</h3>
+<p>Uma <strong>árvore</strong> é um grafo não direcionado, conexo e sem ciclos, conforme ilustrado na <a href="#fig-grafo6" class="quarto-xref">Figura&nbsp;<span>2.8</span></a></p>
+<div id="fig-grafo6" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-grafo6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/g6.png" class="img-fluid figure-img" style="width:30.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-grafo6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.8: Uma árvore
+</figcaption>
+</figure>
+</div>
+<p>Portanto, uma árvore possui duas características fundamentais: existe um caminho entre quaisquer dois vértices e não existe um caminho que permita sair de um vértice e retornar a ele seguindo um ciclo.</p>
+<p>Uma propriedade importante das árvores é que, entre quaisquer dois vértices, existe exatamente um caminho simples.</p>
+<p>Se uma árvore possui <span class="math inline">\(n\)</span> vértices, então ela possui exatamente</p>
+<p><span class="math display">\[
+n-1
+\]</span></p>
+<p>arestas.</p>
+<p>As árvores aparecem frequentemente na Computação. Estruturas hierárquicas, sistemas de arquivos, árvores de busca e árvores de derivação de gramáticas são alguns exemplos.</p>
+<p>Na Teoria de Linguagens, as <strong>árvores de derivação</strong> são utilizadas para representar como uma cadeia pode ser gerada a partir do símbolo inicial de uma gramática. Nesse caso, os nós da árvore representam símbolos da gramática e a estrutura da árvore representa a sequência de aplicações das produções.</p>
+<p>Essa aplicação será particularmente importante no estudo de <strong>gramáticas livres de contexto</strong>, em que a existência de diferentes árvores de derivação para uma mesma cadeia pode indicar ambiguidade da gramática.</p>
+</section>
+<section id="grafos-direcionados" class="level3">
+<h3 class="anchored" data-anchor-id="grafos-direcionados">Grafos direcionados</h3>
+<p>Em muitas aplicações, a existência de uma conexão entre dois objetos não é suficiente; é necessário também indicar a direção da conexão. Nesse caso, utilizamos um <strong>grafo direcionado</strong>, também chamado de digrafo, conforme ilustrado na <a href="#fig-grafo7" class="quarto-xref">Figura&nbsp;<span>2.9</span></a></p>
+<div id="fig-grafo7" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-grafo7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../chapters/images/g7.png" class="img-fluid figure-img" style="width:20.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-grafo7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2.9: Grafo direcionado
+</figcaption>
+</figure>
+</div>
+<p>Em um grafo direcionado, uma aresta é denominada <strong>arco</strong> e possui uma origem e um destino. Um arco que parte de <span class="math inline">\(u\)</span> e chega a <span class="math inline">\(v\)</span> é representado pelo par ordenado</p>
+<p><span class="math display">\[
+(u,v).
+\]</span></p>
+<p>Observe que, ao contrário dos pares não ordenados utilizados nos grafos não direcionados,</p>
+<p><span class="math display">\[
+(u,v)\neq(v,u)
+\]</span></p>
+<p>em geral.</p>
+<p>Formalmente, um grafo direcionado pode ser representado por</p>
+<p><span class="math display">\[
+G=(V,E),
+\]</span></p>
+<p>em que</p>
+<p><span class="math display">\[
+E\subseteq V\times V.
+\]</span></p>
+<p>Nesse caso, cada elemento de <span class="math inline">\(E\)</span> é um par ordenado de vértices.</p>
+<p>A direção dos arcos permite representar relações assimétricas. Por exemplo, em uma rede de páginas da Web, uma página pode possuir um link para outra sem que a segunda possua necessariamente um link de volta para a primeira.</p>
+</section>
+<section id="grau-de-entrada-e-grau-de-saída" class="level3">
+<h3 class="anchored" data-anchor-id="grau-de-entrada-e-grau-de-saída">Grau de entrada e grau de saída</h3>
+<p>Em um grafo direcionado, é necessário distinguir as arestas que chegam a um vértice daquelas que saem dele.</p>
+<p>O <strong>grau de entrada</strong> de um vértice <span class="math inline">\(v\)</span>, representado por</p>
+<p><span class="math display">\[
+\deg^-(v),
+\]</span></p>
+<p>é o número de arcos que chegam a <span class="math inline">\(v\)</span>.</p>
+<p>O <strong>grau de saída</strong>, representado por</p>
+<p><span class="math display">\[
+\deg^+(v),
+\]</span></p>
+<p>é o número de arcos que partem de <span class="math inline">\(v\)</span>.</p>
+<p>Essa distinção é fundamental no estudo dos autômatos. Um estado pode possuir várias transições de saída e várias transições de entrada. Em um AFD, por exemplo, para cada estado e símbolo do alfabeto existe exatamente uma transição correspondente.</p>
+</section>
+<section id="caminhos-direcionados" class="level3">
+<h3 class="anchored" data-anchor-id="caminhos-direcionados">Caminhos direcionados</h3>
+<p>Em um grafo direcionado, um <strong>caminho direcionado</strong> é uma sequência de vértices na qual cada arco é percorrido respeitando sua direção.</p>
+<p>Considere, por exemplo, os arcos</p>
+<p><span class="math display">\[
+(a,b),\quad
+(b,c),\quad
+(c,d).
+\]</span></p>
+<p>Nesse caso,</p>
+<p><span class="math display">\[
+(a,b,c,d)
+\]</span></p>
+<p>é um caminho direcionado.</p>
+<p>Entretanto, se o arco disponível for <span class="math inline">\((b,a)\)</span> em vez de <span class="math inline">\((a,b)\)</span>, não será possível percorrer esse arco de <span class="math inline">\(a\)</span> para <span class="math inline">\(b\)</span>. Essa característica diferencia fundamentalmente os caminhos em grafos direcionados daqueles existentes em grafos não direcionados.</p>
+<p>Em um autômato, o processamento de uma cadeia pode ser interpretado como um caminho direcionado no grafo de estados. Cada símbolo lido determina qual transição deve ser percorrida.</p>
+</section>
+<section id="conectividade-forte" class="level3">
+<h3 class="anchored" data-anchor-id="conectividade-forte">Conectividade forte</h3>
+<p>Um grafo direcionado é <strong>fortemente conexo</strong> quando, para quaisquer dois vértices <span class="math inline">\(u\)</span> e <span class="math inline">\(v\)</span>, existe um caminho direcionado de <span class="math inline">\(u\)</span> para <span class="math inline">\(v\)</span> e também um caminho direcionado de <span class="math inline">\(v\)</span> para <span class="math inline">\(u\)</span>.</p>
+<p>A conectividade forte é uma propriedade mais restritiva que a conectividade de um grafo não direcionado, pois exige que os caminhos possam ser percorridos respeitando as direções dos arcos.</p>
+<p>As <strong>componentes fortemente conexas</strong> de um grafo direcionado são subconjuntos máximos de vértices nos quais todos os vértices são mutuamente alcançáveis por caminhos direcionados. Esse conceito possui aplicações em análise de programas, redes, compiladores e algoritmos sobre grafos.</p>
+</section>
+<section id="grafos-e-relações" class="level3">
+<h3 class="anchored" data-anchor-id="grafos-e-relações">Grafos e relações</h3>
+<p>Existe uma conexão direta entre grafos direcionados e relações binárias. Seja <span class="math inline">\(D\)</span> um conjunto e seja</p>
+<p><span class="math display">\[
+R\subseteq D\times D
+\]</span></p>
+<p>uma relação binária sobre <span class="math inline">\(D\)</span>.</p>
+<p>Podemos construir um grafo direcionado</p>
+<p><span class="math display">\[
+G=(D,E),
+\]</span></p>
+<p>definindo</p>
+<p><span class="math display">\[
+E=\{(x,y)\mid xRy\}.
+\]</span></p>
+<p>Nesse grafo, cada elemento de <span class="math inline">\(D\)</span> corresponde a um vértice e cada par <span class="math inline">\((x,y)\)</span> pertencente à relação corresponde a um arco de <span class="math inline">\(x\)</span> para <span class="math inline">\(y\)</span>.</p>
+<p>Essa correspondência permite representar relações matemáticas graficamente.</p>
+<p>Por exemplo, considere a relação</p>
+<p><span class="math display">\[
+R=\{(x,y)\in\mathbb{Z}\times\mathbb{Z}\mid x&lt;y\}.
+\]</span></p>
+<p>Podemos interpretar essa relação como um grafo direcionado em que existe um arco de <span class="math inline">\(x\)</span> para <span class="math inline">\(y\)</span> sempre que <span class="math inline">\(x&lt;y\)</span>.</p>
+<p>Essa conexão entre relações e grafos é importante porque permite utilizar propriedades gráficas para analisar relações matemáticas. Da mesma forma, propriedades de relações, como reflexividade, simetria e transitividade, podem ser interpretadas em termos da estrutura do grafo correspondente.</p>
+</section>
+</section>
+<section id="lógica-booleana" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="lógica-booleana"><span class="header-section-number">2.5</span> Lógica Booleana</h2>
+<p>A <strong>Lógica Booleana</strong> é um sistema matemático utilizado para representar e manipular informações que podem assumir dois valores distintos. Esses valores são normalmente denominados <strong>verdadeiro</strong> e <strong>falso</strong> e podem ser representados, respectivamente, pelos valores <span class="math inline">\(1\)</span> e <span class="math inline">\(0\)</span>.</p>
+<p>A lógica booleana está presente em diversas áreas da Computação. Ela é utilizada na construção de circuitos digitais, na representação de condições em programas, na consulta a bancos de dados, na definição de propriedades matemáticas e na descrição de decisões tomadas por sistemas computacionais.</p>
+<p>O conjunto de valores booleanos pode ser representado por</p>
+<p><span class="math display">\[
+\mathbb{B}=\{0,1\},
+\]</span></p>
+<p>em que <span class="math inline">\(0\)</span> representa falso e <span class="math inline">\(1\)</span> representa verdadeiro.</p>
+<p>Uma expressão construída a partir de variáveis booleanas e operadores lógicos é denominada <strong>expressão booleana</strong>. Por exemplo,</p>
+<p><span class="math display">\[
+P\wedge Q
+\]</span></p>
+<p>é uma expressão booleana formada pelas variáveis <span class="math inline">\(P\)</span> e <span class="math inline">\(Q\)</span> e pelo operador de conjunção.</p>
+<section id="proposições" class="level3">
+<h3 class="anchored" data-anchor-id="proposições">Proposições</h3>
+<p>Uma <strong>proposição</strong> é uma afirmação que pode ser classificada como verdadeira ou falsa, mas não pode assumir simultaneamente os dois valores.</p>
+<p>Por exemplo, a afirmação</p>
+<blockquote class="blockquote">
+<p><span class="math inline">\(2+3=5\)</span></p>
+</blockquote>
+<p>é uma proposição verdadeira, enquanto</p>
+<blockquote class="blockquote">
+<p><span class="math inline">\(2+3=6\)</span></p>
+</blockquote>
+<p>é uma proposição falsa.</p>
+<p>Podemos representar proposições por letras, como <span class="math inline">\(P\)</span>, <span class="math inline">\(Q\)</span> e <span class="math inline">\(R\)</span>. Assim, podemos escrever</p>
+<p><span class="math display">\[
+P=1
+\]</span></p>
+<p>para indicar que a proposição <span class="math inline">\(P\)</span> é verdadeira, ou</p>
+<p><span class="math display">\[
+P=0
+\]</span></p>
+<p>para indicar que <span class="math inline">\(P\)</span> é falsa.</p>
+<p>É importante distinguir uma proposição de uma expressão que contém variáveis não determinadas. Por exemplo,</p>
+<p><span class="math display">\[
+x&gt;5
+\]</span></p>
+<p>não possui um valor lógico definido enquanto o valor de <span class="math inline">\(x\)</span> não for conhecido. Entretanto, uma vez determinado <span class="math inline">\(x\)</span>, a expressão poderá ser avaliada como verdadeira ou falsa.</p>
+</section>
+<section id="operações-lógicas" class="level3">
+<h3 class="anchored" data-anchor-id="operações-lógicas">Operações lógicas</h3>
+<p>As proposições podem ser combinadas utilizando <strong>operadores lógicos</strong>. Os operadores básicos são a negação, a conjunção e a disjunção. Outros operadores, como o ou-exclusivo, a implicação e a equivalência, podem ser definidos a partir desses operadores.</p>
+<section id="negação" class="level4">
+<h4 class="anchored" data-anchor-id="negação">Negação</h4>
+<p>A <strong>negação</strong>, representada pelo símbolo <span class="math inline">\(\neg\)</span>, inverte o valor lógico de uma proposição.</p>
+<p>A tabela-verdade da negação é</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\neg P\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Assim, se <span class="math inline">\(P\)</span> é verdadeira, então <span class="math inline">\(\neg P\)</span> é falsa. Da mesma forma, se <span class="math inline">\(P\)</span> é falsa, então <span class="math inline">\(\neg P\)</span> é verdadeira.</p>
+<p>Podemos representar a operação por</p>
+<p><span class="math display">\[
+\neg 0=1
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\neg 1=0.
+\]</span></p>
+</section>
+<section id="conjunção" class="level4">
+<h4 class="anchored" data-anchor-id="conjunção">Conjunção</h4>
+<p>A <strong>conjunção</strong>, representada por <span class="math inline">\(\wedge\)</span>, corresponde ao operador lógico <strong>E</strong>. A expressão</p>
+<p><span class="math display">\[
+P\wedge Q
+\]</span></p>
+<p>é verdadeira somente quando <span class="math inline">\(P\)</span> e <span class="math inline">\(Q\)</span> são simultaneamente verdadeiras.</p>
+<p>Sua tabela-verdade é</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(P\wedge Q\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Por exemplo, considere as proposições:</p>
+<p><span class="math display">\[
+P=\text{``10 é maior que 5''}
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+Q=\text{``10 é par''}.
+\]</span></p>
+<p>As duas proposições são verdadeiras. Portanto,</p>
+<p><span class="math display">\[
+P\wedge Q=1.
+\]</span></p>
+<p>A conjunção exige que todas as proposições envolvidas sejam verdadeiras.</p>
+</section>
+<section id="disjunção" class="level4">
+<h4 class="anchored" data-anchor-id="disjunção">Disjunção</h4>
+<p>A <strong>disjunção</strong>, representada por <span class="math inline">\(\vee\)</span>, corresponde ao operador lógico <strong>OU</strong>. A expressão</p>
+<p><span class="math display">\[
+P\vee Q
+\]</span></p>
+<p>é verdadeira quando pelo menos uma das proposições é verdadeira.</p>
+<p>Sua tabela-verdade é</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(P\vee Q\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Portanto,</p>
+<p><span class="math display">\[
+0\vee0=0,
+\]</span></p>
+<p>enquanto</p>
+<p><span class="math display">\[
+0\vee1=1,
+\]</span></p>
+<p><span class="math display">\[
+1\vee0=1
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+1\vee1=1.
+\]</span></p>
+<p>Na lógica booleana, o operador <span class="math inline">\(\vee\)</span> corresponde ao <strong>OU inclusivo</strong>, pois o resultado também é verdadeiro quando ambas as proposições são verdadeiras.</p>
+</section>
+<section id="ou-exclusivo" class="level4">
+<h4 class="anchored" data-anchor-id="ou-exclusivo">Ou-exclusivo</h4>
+<p>O <strong>ou-exclusivo</strong>, representado por <span class="math inline">\(\oplus\)</span>, é verdadeiro quando exatamente uma das duas proposições é verdadeira.</p>
+<p>Sua tabela-verdade é</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(P\oplus Q\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Assim,</p>
+<p><span class="math display">\[
+P\oplus Q
+\]</span></p>
+<p>é verdadeiro quando <span class="math inline">\(P\)</span> e <span class="math inline">\(Q\)</span> possuem valores diferentes.</p>
+<p>Uma forma de expressar o ou-exclusivo utilizando outros operadores é</p>
+<p><span class="math display">\[
+P\oplus Q
+\equiv
+(P\vee Q)\wedge\neg(P\wedge Q).
+\]</span></p>
+<p>Outra representação equivalente é</p>
+<p><span class="math display">\[
+P\oplus Q
+\equiv
+\neg(P\leftrightarrow Q).
+\]</span></p>
+</section>
+<section id="implicação" class="level4">
+<h4 class="anchored" data-anchor-id="implicação">Implicação</h4>
+<p>A <strong>implicação</strong>, representada por <span class="math inline">\(\rightarrow\)</span>, é utilizada para expressar uma condição do tipo “se… então…”.</p>
+<p>A expressão</p>
+<p><span class="math display">\[
+P\rightarrow Q
+\]</span></p>
+<p>é lida como:</p>
+<blockquote class="blockquote">
+<p>Se <span class="math inline">\(P\)</span>, então <span class="math inline">\(Q\)</span>.</p>
+</blockquote>
+<p>Sua tabela-verdade é</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(P\rightarrow Q\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Observe que a implicação é falsa somente quando <span class="math inline">\(P\)</span> é verdadeira e <span class="math inline">\(Q\)</span> é falsa.</p>
+<p>Uma propriedade importante é que a implicação pode ser expressa utilizando apenas a negação e a disjunção:</p>
+<p><span class="math display">\[
+P\rightarrow Q
+\equiv
+\neg P\vee Q.
+\]</span></p>
+<p>Também pode ser expressa utilizando apenas a negação e a conjunção:</p>
+<p><span class="math display">\[
+P\rightarrow Q
+\equiv
+\neg(P\wedge\neg Q).
+\]</span></p>
+<p>Essa equivalência é útil porque mostra que a implicação não precisa necessariamente ser considerada um operador lógico básico.</p>
+</section>
+<section id="equivalência-lógica" class="level4">
+<h4 class="anchored" data-anchor-id="equivalência-lógica">Equivalência lógica</h4>
+<p>A <strong>equivalência lógica</strong>, representada por <span class="math inline">\(\leftrightarrow\)</span>, estabelece que duas proposições possuem o mesmo valor lógico.</p>
+<p>A expressão</p>
+<p><span class="math display">\[
+P\leftrightarrow Q
+\]</span></p>
+<p>é verdadeira quando <span class="math inline">\(P\)</span> e <span class="math inline">\(Q\)</span> possuem o mesmo valor.</p>
+<p>Sua tabela-verdade é</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(P\leftrightarrow Q\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>A equivalência lógica pode ser expressa por duas implicações:</p>
+<p><span class="math display">\[
+P\leftrightarrow Q
+\equiv
+(P\rightarrow Q)\wedge(Q\rightarrow P).
+\]</span></p>
+<p>Também podemos escrevê-la como</p>
+<p><span class="math display">\[
+P\leftrightarrow Q
+\equiv
+(P\wedge Q)\vee(\neg P\wedge\neg Q).
+\]</span></p>
+<p>Essa última expressão evidencia que <span class="math inline">\(P\leftrightarrow Q\)</span> é verdadeira quando ambas são verdadeiras ou quando ambas são falsas.</p>
+</section>
+</section>
+<section id="expressões-booleanas" class="level3">
+<h3 class="anchored" data-anchor-id="expressões-booleanas">Expressões booleanas</h3>
+<p>Operadores lógicos podem ser combinados para formar expressões mais complexas. Por exemplo,</p>
+<p><span class="math display">\[
+(P\wedge Q)\vee\neg R
+\]</span></p>
+<p>é uma expressão booleana formada pelas variáveis <span class="math inline">\(P\)</span>, <span class="math inline">\(Q\)</span> e <span class="math inline">\(R\)</span>.</p>
+<p>O valor da expressão depende dos valores atribuídos às variáveis. Para determinar o resultado de uma expressão, podemos construir uma <strong>tabela-verdade</strong> contendo todas as combinações possíveis de valores das variáveis.</p>
+<p>Se uma expressão possui <span class="math inline">\(n\)</span> variáveis booleanas, existem</p>
+<p><span class="math display">\[
+2^n
+\]</span></p>
+<p>possíveis combinações de valores.</p>
+<p>Por exemplo, uma expressão com três variáveis <span class="math inline">\(P\)</span>, <span class="math inline">\(Q\)</span> e <span class="math inline">\(R\)</span> possui</p>
+<p><span class="math display">\[
+2^3=8
+\]</span></p>
+<p>combinações possíveis.</p>
+<p>Uma tabela-verdade completa permite determinar o resultado de uma expressão para cada uma dessas combinações.</p>
+</section>
+<section id="tabelas-verdade" class="level3">
+<h3 class="anchored" data-anchor-id="tabelas-verdade">Tabelas-verdade</h3>
+<p>Considere a expressão</p>
+<p><span class="math display">\[
+P\wedge(Q\vee R).
+\]</span></p>
+<p>Para construir sua tabela-verdade, começamos listando todas as combinações possíveis de <span class="math inline">\(P\)</span>, <span class="math inline">\(Q\)</span> e <span class="math inline">\(R\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(R\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\vee R\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(P\wedge(Q\vee R)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+</tbody>
+</table>
+<p>A tabela-verdade permite verificar propriedades das expressões booleanas de maneira sistemática.</p>
+<p>Ela também fornece um método para verificar se duas expressões são logicamente equivalentes. Basta construir as respectivas tabelas-verdade e comparar suas colunas finais.</p>
+</section>
+<section id="tautologias-e-contradições" class="level3">
+<h3 class="anchored" data-anchor-id="tautologias-e-contradições">Tautologias e contradições</h3>
+<p>Uma expressão booleana é uma <strong>tautologia</strong> quando seu resultado é verdadeiro para todas as possíveis atribuições de valores às suas variáveis.</p>
+<p>Um exemplo é</p>
+<p><span class="math display">\[
+P\vee\neg P.
+\]</span></p>
+<p>Independentemente do valor de <span class="math inline">\(P\)</span>, uma das duas partes será verdadeira. Portanto,</p>
+<p><span class="math display">\[
+P\vee\neg P\equiv1.
+\]</span></p>
+<p>Uma expressão é uma <strong>contradição</strong> quando seu resultado é falso para todas as possíveis atribuições.</p>
+<p>Um exemplo é</p>
+<p><span class="math display">\[
+P\wedge\neg P.
+\]</span></p>
+<p>Nesse caso,</p>
+<p><span class="math display">\[
+P\wedge\neg P\equiv0.
+\]</span></p>
+<p>Também podemos ter expressões que são verdadeiras para algumas atribuições e falsas para outras. Essas expressões são denominadas <strong>contingências</strong>.</p>
+<p>Portanto, uma expressão booleana pode ser classificada, de acordo com seu comportamento, como tautologia, contradição ou contingência.</p>
+</section>
+<section id="equivalências-booleanas" class="level3">
+<h3 class="anchored" data-anchor-id="equivalências-booleanas">Equivalências booleanas</h3>
+<p>Duas expressões booleanas são <strong>logicamente equivalentes</strong> quando produzem o mesmo resultado para todas as possíveis atribuições de valores às suas variáveis.</p>
+<p>Podemos representar essa equivalência por</p>
+<p><span class="math display">\[
+P\equiv Q.
+\]</span></p>
+<p>Por exemplo,</p>
+<p><span class="math display">\[
+P\rightarrow Q
+\equiv
+\neg P\vee Q.
+\]</span></p>
+<p>As duas expressões possuem o mesmo valor para todas as combinações de <span class="math inline">\(P\)</span> e <span class="math inline">\(Q\)</span>.</p>
+<p>As equivalências lógicas permitem transformar expressões sem alterar seu significado lógico. Essa propriedade é muito útil para simplificar expressões e demonstrar propriedades de sistemas que utilizam lógica booleana.</p>
+</section>
+<section id="leis-de-de-morgan" class="level3">
+<h3 class="anchored" data-anchor-id="leis-de-de-morgan">Leis de De Morgan</h3>
+<p>Entre as equivalências mais importantes da lógica booleana estão as <strong>Leis de De Morgan</strong>:</p>
+<p><span class="math display">\[
+\neg(P\wedge Q)
+\equiv
+\neg P\vee\neg Q
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\neg(P\vee Q)
+\equiv
+\neg P\wedge\neg Q.
+\]</span></p>
+<p>A primeira afirma que negar uma conjunção equivale a realizar a disjunção das negações. A segunda afirma que negar uma disjunção equivale a realizar a conjunção das negações.</p>
+<p>Essas leis podem ser verificadas diretamente por meio de tabelas-verdade.</p>
+<p>Por exemplo:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(P\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\neg(P\wedge Q)\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\neg P\vee\neg Q\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+</tbody>
+</table>
+<p>As duas últimas colunas são iguais, confirmando a equivalência.</p>
+</section>
+<section id="leis-distributivas" class="level3">
+<h3 class="anchored" data-anchor-id="leis-distributivas">Leis distributivas</h3>
+<p>A lógica booleana possui também leis distributivas. Para a conjunção e a disjunção temos</p>
+<p><span class="math display">\[
+P\wedge(Q\vee R)
+\equiv
+(P\wedge Q)\vee(P\wedge R)
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+P\vee(Q\wedge R)
+\equiv
+(P\vee Q)\wedge(P\vee R).
+\]</span></p>
+<p>Essas expressões possuem uma estrutura semelhante às leis distributivas conhecidas da aritmética. Entretanto, é importante observar que a álgebra booleana não é simplesmente a aritmética com os valores <span class="math inline">\(0\)</span> e <span class="math inline">\(1\)</span>.</p>
+<p>Na aritmética usual,</p>
+<p><span class="math display">\[
+a(b+c)=ab+ac,
+\]</span></p>
+<p>enquanto na lógica booleana os operadores envolvidos são <span class="math inline">\(\wedge\)</span> e <span class="math inline">\(\vee\)</span>.</p>
+<p>A existência das duas leis distributivas é uma das diferenças interessantes entre a álgebra booleana e a álgebra aritmética tradicional.</p>
+</section>
+<section id="outras-leis-importantes" class="level3">
+<h3 class="anchored" data-anchor-id="outras-leis-importantes">Outras leis importantes</h3>
+<p>Diversas outras equivalências podem ser utilizadas para manipular expressões booleanas. Entre elas estão as leis de identidade:</p>
+<p><span class="math display">\[
+P\wedge1\equiv P
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+P\vee0\equiv P.
+\]</span></p>
+<p>As leis de dominação são</p>
+<p><span class="math display">\[
+P\vee1\equiv1
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+P\wedge0\equiv0.
+\]</span></p>
+<p>As leis de idempotência são</p>
+<p><span class="math display">\[
+P\vee P\equiv P
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+P\wedge P\equiv P.
+\]</span></p>
+<p>As leis de complemento são</p>
+<p><span class="math display">\[
+P\vee\neg P\equiv1
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+P\wedge\neg P\equiv0.
+\]</span></p>
+<p>Também temos as leis de dupla negação:</p>
+<p><span class="math display">\[
+\neg(\neg P)\equiv P.
+\]</span></p>
+<p>Essas leis fornecem regras para transformar e simplificar expressões booleanas.</p>
+</section>
+<section id="conjuntos-completos-de-operadores" class="level3">
+<h3 class="anchored" data-anchor-id="conjuntos-completos-de-operadores">Conjuntos completos de operadores</h3>
+<p>Embora vários operadores possam ser utilizados na construção de expressões booleanas, nem todos são necessários. Um conjunto de operadores é denominado <strong>completo</strong> quando qualquer função booleana pode ser expressa utilizando apenas os operadores desse conjunto.</p>
+<p>Por exemplo, <span class="math inline">\({\neg,\wedge}\)</span> é um conjunto completo. A partir da negação e da conjunção podemos representar a disjunção utilizando a Lei de De Morgan:</p>
+<p><span class="math display">\[
+P\vee Q
+\equiv
+\neg(\neg P\wedge\neg Q).
+\]</span></p>
+<p>A implicação pode então ser representada por</p>
+<p><span class="math display">\[
+P\rightarrow Q
+\equiv
+\neg(P\wedge\neg Q).
+\]</span></p>
+<p>A equivalência pode ser construída como</p>
+<p><span class="math display">\[
+P\leftrightarrow Q
+\equiv
+\neg(P\wedge\neg Q)
+\wedge
+\neg(Q\wedge\neg P).
+\]</span></p>
+<p>E o ou-exclusivo pode ser representado por</p>
+<p><span class="math display">\[
+P\oplus Q
+\equiv
+\neg\left(
+\neg(P\wedge\neg Q)
+\wedge
+\neg(Q\wedge\neg P)
+\right).
+\]</span></p>
+<p>Dessa maneira, operações que inicialmente parecem diferentes podem ser construídas a partir de um conjunto menor de operações básicas.</p>
+<p>Outro exemplo importante é o operador <strong>NAND</strong>, definido por</p>
+<p><span class="math display">\[
+P\uparrow Q=\neg(P\wedge Q).
+\]</span></p>
+<p>O operador NAND, isoladamente, também forma um conjunto completo. Isso significa que qualquer função booleana pode ser construída utilizando exclusivamente operadores NAND. Essa propriedade possui aplicações importantes na construção de circuitos digitais.</p>
+</section>
+<section id="álgebra-booleana" class="level3">
+<h3 class="anchored" data-anchor-id="álgebra-booleana">Álgebra Booleana</h3>
+<p>A lógica booleana pode ser estudada também por meio de uma estrutura algébrica. As operações <span class="math inline">\(\wedge\)</span>, <span class="math inline">\(\vee\)</span> e <span class="math inline">\(\neg\)</span>, juntamente com os valores <span class="math inline">\(0\)</span> e <span class="math inline">\(1\)</span>, obedecem a um conjunto de leis que permite manipular expressões formalmente.</p>
+<p>Essa estrutura é denominada <strong>álgebra booleana</strong>.</p>
+<p>Uma maneira de visualizar a correspondência entre a lógica e a álgebra é observar que:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Lógica</th>
+<th>Álgebra Booleana</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>verdadeiro</td>
+<td><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td>falso</td>
+<td><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td>E</td>
+<td><span class="math inline">\(\wedge\)</span></td>
+</tr>
+<tr class="even">
+<td>OU</td>
+<td><span class="math inline">\(\vee\)</span></td>
+</tr>
+<tr class="odd">
+<td>NÃO</td>
+<td><span class="math inline">\(\neg\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Essa correspondência permite utilizar técnicas algébricas para transformar expressões lógicas.</p>
+<p>É importante, entretanto, lembrar que os símbolos <span class="math inline">\(\wedge\)</span> e <span class="math inline">\(\vee\)</span> representam operações específicas e não devem ser confundidos diretamente com a multiplicação e a adição convencionais. Embora existam algumas semelhanças formais, as estruturas matemáticas possuem propriedades próprias.</p>
+</section>
+<section id="síntese" class="level3">
+<h3 class="anchored" data-anchor-id="síntese">Síntese</h3>
+<p>A lógica booleana fornece uma linguagem matemática para representar informações que possuem dois valores possíveis. Seus valores básicos são</p>
+<p><span class="math display">\[
+\mathbb{B}=\{0,1\},
+\]</span></p>
+<p>em que <span class="math inline">\(0\)</span> representa falso e <span class="math inline">\(1\)</span> representa verdadeiro.</p>
+<p>As operações fundamentais são a negação, a conjunção e a disjunção:</p>
+<p><span class="math display">\[
+\neg,\qquad
+\wedge,\qquad
+\vee.
+\]</span></p>
+<p>A partir delas podem ser definidos outros operadores, como o ou-exclusivo, a implicação e a equivalência:</p>
+<p><span class="math display">\[
+\oplus,\qquad
+\rightarrow,\qquad
+\leftrightarrow.
+\]</span></p>
+<p>As operações podem ser combinadas para formar expressões booleanas, cujo comportamento pode ser analisado por meio de tabelas-verdade. Uma expressão pode ser uma tautologia, uma contradição ou uma contingência, dependendo de seu comportamento para as diferentes atribuições de valores às variáveis.</p>
+<p>As equivalências lógicas permitem transformar expressões sem modificar seus resultados. Entre as propriedades mais importantes estão as Leis de De Morgan, as leis distributivas, as leis de identidade, dominação, idempotência, complemento e dupla negação.</p>
+<p>A lógica booleana pode ser resumida como um sistema em que valores, operações e propriedades são combinados para produzir e manipular expressões formais:</p>
+<p><span class="math display">\[
+\boxed{
+\text{valores}
+\longrightarrow
+\text{operações}
+\longrightarrow
+\text{expressões}
+\longrightarrow
+\text{tabelas-verdade}
+\longrightarrow
+\text{equivalências}
+}
+\]</span></p>
+<p>Esses conceitos fornecem uma base matemática para o tratamento formal de condições, decisões e propriedades booleanas e serão utilizados como ferramentas fundamentais em diferentes áreas da Computação.</p>
+</section>
+</section>
+<section id="definições-teoremas-e-provas" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="definições-teoremas-e-provas"><span class="header-section-number">2.6</span> Definições, Teoremas e Provas</h2>
+<p>A Matemática é construída a partir de conceitos, propriedades e argumentos que permitem estabelecer relações entre esses conceitos. Para apresentar esses resultados de maneira precisa, utilizamos principalmente <strong>definições</strong>, <strong>enunciados matemáticos</strong> e <strong>provas</strong>. Esses elementos também são fundamentais no estudo de estruturas matemáticas utilizadas na Computação.</p>
+<p>Uma definição estabelece exatamente o significado de um conceito. Um enunciado afirma que determinada propriedade é verdadeira. Uma prova fornece uma justificativa matemática para essa afirmação. Quando um enunciado é demonstrado, ele pode receber diferentes denominações, como proposição, lema, teorema ou corolário, dependendo principalmente de sua função dentro do desenvolvimento matemático.</p>
+<section id="definições" class="level3">
+<h3 class="anchored" data-anchor-id="definições">Definições</h3>
+<p>Uma <strong>definição</strong> estabelece formalmente o significado de um objeto, propriedade ou conceito matemático. Ela não é uma afirmação que precisa ser demonstrada como verdadeira ou falsa; seu objetivo é estabelecer uma convenção precisa que será utilizada posteriormente.</p>
+<p>Por exemplo, podemos definir uma cadeia como uma sequência finita de símbolos pertencentes a um alfabeto. A partir dessa definição, podemos utilizar o conceito de cadeia em outras definições e resultados.</p>
+<p>Da mesma forma, podemos definir um grafo simples como um grafo que não possui laços nem arestas múltiplas. Depois que essa definição foi estabelecida, podemos utilizá-la em teoremas e provas envolvendo grafos.</p>
+<p>As definições são particularmente importantes porque eliminam ambiguidades. Em uma disciplina formal, termos como cadeia, linguagem, autômato, árvore ou grafo precisam possuir um significado preciso para que seja possível argumentar matematicamente sobre eles.</p>
+<p>Uma definição também pode utilizar conceitos que já foram definidos anteriormente. Dessa maneira, o conhecimento matemático é construído de forma incremental: novos conceitos são definidos a partir de conceitos previamente estabelecidos.</p>
+</section>
+<section id="enunciados-matemáticos" class="level3">
+<h3 class="anchored" data-anchor-id="enunciados-matemáticos">Enunciados matemáticos</h3>
+<p>Um <strong>enunciado matemático</strong> é uma afirmação que pode ser analisada quanto à sua validade. Dependendo do contexto, um enunciado pode ser denominado proposição, lema, teorema ou corolário.</p>
+<p>Por exemplo:</p>
+<blockquote class="blockquote">
+<p>Todo número inteiro par é divisível por 2.</p>
+</blockquote>
+<p>é um enunciado matemático. Podemos investigar sua validade e construir uma demonstração.</p>
+<p>Em geral, um enunciado pode possuir uma estrutura lógica. Uma forma bastante comum é a implicação</p>
+<p><span class="math display">\[
+P\rightarrow Q,
+\]</span></p>
+<p>que pode ser interpretada como “se <span class="math inline">\(P\)</span> é verdadeira, então <span class="math inline">\(Q\)</span> também é verdadeira”.</p>
+<p>Por exemplo:</p>
+<p><span class="math display">\[
+n\text{ é divisível por }4
+\rightarrow
+n\text{ é par}.
+\]</span></p>
+<p>Nesse caso, a hipótese é que <span class="math inline">\(n\)</span> seja divisível por <span class="math inline">\(4\)</span> e a conclusão é que <span class="math inline">\(n\)</span> seja par.</p>
+<p>A identificação da hipótese e da conclusão é importante porque muitos métodos de demonstração dependem diretamente da estrutura lógica do enunciado.</p>
+</section>
+<section id="provas" class="level3">
+<h3 class="anchored" data-anchor-id="provas">Provas</h3>
+<p>Uma <strong>prova matemática</strong> é uma sequência de argumentos que estabelece a validade de um enunciado a partir de definições, propriedades já demonstradas, axiomas e regras de inferência.</p>
+<p>Uma prova não deve apenas apresentar exemplos que confirmem uma afirmação. Para demonstrar uma propriedade geral, é necessário mostrar que ela é válida para todos os objetos que satisfazem as condições estabelecidas.</p>
+<p>Por exemplo, considere o enunciado:</p>
+<p><span class="math display">\[
+\text{Para todo }n\in\mathbb{Z},\quad
+n\text{ par}\Rightarrow n^2\text{ par}.
+\]</span></p>
+<p>Podemos verificar que isso acontece para alguns valores:</p>
+<p><span class="math display">\[
+2^2=4,
+\qquad
+4^2=16,
+\qquad
+6^2=36.
+\]</span></p>
+<p>Entretanto, esses exemplos não constituem uma prova. Eles apenas fornecem evidências para a afirmação. Uma prova precisa considerar um número par arbitrário.</p>
+<p>Se <span class="math inline">\(n\)</span> é par, pela definição de número par existe um inteiro <span class="math inline">\(k\)</span> tal que</p>
+<p><span class="math display">\[
+n=2k.
+\]</span></p>
+<p>Então,</p>
+<p><span class="math display">\[
+n^2=(2k)^2=4k^2=2(2k^2).
+\]</span></p>
+<p>Como <span class="math inline">\(2k^2\)</span> é um inteiro, concluímos que <span class="math inline">\(n^2\)</span> é par.</p>
+<p>Essa demonstração vale para qualquer número inteiro par e, portanto, estabelece o resultado.</p>
+</section>
+<section id="teoremas-lemas-e-corolários" class="level3">
+<h3 class="anchored" data-anchor-id="teoremas-lemas-e-corolários">Teoremas, lemas e corolários</h3>
+<p>Um <strong>teorema</strong> é um enunciado matemático que foi demonstrado formalmente. Os teoremas normalmente representam resultados importantes dentro de uma teoria.</p>
+<p>Um <strong>lema</strong> também é um enunciado demonstrado, mas geralmente é utilizado como uma ferramenta auxiliar para demonstrar outro resultado mais importante. Um lema não é necessariamente menos difícil ou menos importante que um teorema; sua denominação está relacionada principalmente à função que desempenha na construção da teoria.</p>
+<p>Um <strong>corolário</strong> é um resultado que pode ser obtido diretamente a partir de um teorema ou de um resultado já demonstrado. Em geral, sua demonstração é mais simples porque depende de um resultado anterior.</p>
+<p>Por exemplo, uma teoria pode seguir uma estrutura como</p>
+<p><span class="math display">\[
+\text{Definições}
+\rightarrow
+\text{Lemas}
+\rightarrow
+\text{Teorema}
+\rightarrow
+\text{Corolários}.
+\]</span></p>
+<p>Essa organização permite construir resultados complexos a partir de resultados mais elementares.</p>
+</section>
+<section id="conjecturas" class="level3">
+<h3 class="anchored" data-anchor-id="conjecturas">Conjecturas</h3>
+<p>Uma <strong>conjectura</strong> é um enunciado para o qual existem evidências ou argumentos que sugerem sua validade, mas que ainda não possui uma demonstração matemática aceita.</p>
+<p>Uma conjectura pode posteriormente ser demonstrada, tornando-se um teorema, ou pode ser refutada pela apresentação de um contraexemplo.</p>
+<p>É importante distinguir uma conjectura de um teorema. Mesmo que uma afirmação tenha sido verificada para muitos casos, isso não significa que ela tenha sido demonstrada para todos os casos.</p>
+<p>Por exemplo, suponha que uma propriedade tenha sido verificada para os primeiros milhares de valores de uma variável. Isso fornece uma evidência experimental, mas não constitui, por si só, uma prova matemática.</p>
+<p>Um único contraexemplo é suficiente para mostrar que um enunciado universal é falso. Se uma afirmação possui a forma</p>
+<p><span class="math display">\[
+\forall x\in A,\quad P(x),
+\]</span></p>
+<p>basta encontrar um elemento <span class="math inline">\(x\in A\)</span> para o qual</p>
+<p><span class="math display">\[
+P(x)
+\]</span></p>
+<p>seja falsa para refutar a afirmação.</p>
+</section>
+<section id="prova-direta" class="level3">
+<h3 class="anchored" data-anchor-id="prova-direta">Prova direta</h3>
+<p>A <strong>prova direta</strong> é uma das formas mais simples de demonstração. Nesse método, partimos das hipóteses do enunciado e aplicamos definições, propriedades e resultados já conhecidos até chegar à conclusão desejada.</p>
+<p>Considere o seguinte resultado.</p>
+<p><strong>Teorema:</strong> Se <span class="math inline">\(n\)</span> é um número inteiro par, então <span class="math inline">\(n^2\)</span> é par.</p>
+<p>Como vimos anteriormente, se <span class="math inline">\(n\)</span> é par, então existe um inteiro <span class="math inline">\(k\)</span> tal que</p>
+<p><span class="math display">\[
+n=2k.
+\]</span></p>
+<p>Elevando ambos os lados ao quadrado,</p>
+<p><span class="math display">\[
+n^2=(2k)^2=4k^2.
+\]</span></p>
+<p>Podemos escrever</p>
+<p><span class="math display">\[
+n^2=2(2k^2).
+\]</span></p>
+<p>Como <span class="math inline">\(2k^2\)</span> é inteiro, concluímos que <span class="math inline">\(n^2\)</span> é par.</p>
+<p>Nesse exemplo, partimos diretamente da hipótese e construímos uma sequência de passos que conduz à conclusão.</p>
+<p>A estrutura geral de uma prova direta de um enunciado</p>
+<p><span class="math display">\[
+P\rightarrow Q
+\]</span></p>
+<p>é:</p>
+<p><span class="math display">\[
+P
+\rightarrow
+P_1
+\rightarrow
+P_2
+\rightarrow
+\cdots
+\rightarrow
+Q.
+\]</span></p>
+</section>
+<section id="prova-por-construção" class="level3">
+<h3 class="anchored" data-anchor-id="prova-por-construção">Prova por construção</h3>
+<p>Em uma prova por construção, demonstramos a existência de um objeto apresentando explicitamente uma forma de construí-lo.</p>
+<p>Esse método é particularmente útil quando o enunciado afirma que determinado objeto existe.</p>
+<p>Considere o seguinte resultado sobre grafos.</p>
+<p>Teorema: Para todo número par <span class="math inline">\(n&gt;2\)</span>, existe um grafo 3-regular com <span class="math inline">\(n\)</span> vértices.</p>
+<p>Um grafo é denominado 3-regular quando todos os seus vértices possuem grau <span class="math inline">\(3\)</span>.</p>
+<p>Para demonstrar o resultado, podemos construir explicitamente o grafo. Seja</p>
+<p><span class="math display">\[
+n&gt;2
+\]</span></p>
+<p>um número par e considere os vértices</p>
+<p><span class="math display">\[
+V={0,1,\ldots,n-1}.
+\]</span></p>
+<p>Inicialmente, conectamos os vértices formando um ciclo:</p>
+<p><span class="math display">\[
+0-1-2-\cdots-(n-1)-0.
+\]</span></p>
+<p>Cada vértice possui, nesse momento, grau <span class="math inline">\(2\)</span>.</p>
+<p>Como <span class="math inline">\(n\)</span> é par, podemos então adicionar uma aresta entre cada vértice da primeira metade e o vértice correspondente da segunda metade. Para</p>
+<p><span class="math display">\[
+0\leq i&lt;\frac n2,
+\]</span></p>
+<p>adicionamos a aresta</p>
+<p><span class="math display">\[
+{i,i+n/2}.
+\]</span></p>
+<p>Cada vértice recebe exatamente uma nova aresta. Portanto, todos os vértices passam a possuir grau</p>
+<p><span class="math display">\[
+2+1=3.
+\]</span></p>
+<p>O grafo construído é, consequentemente, 3-regular e possui <span class="math inline">\(n\)</span> vértices.</p>
+<p>O aspecto fundamental dessa prova é que não nos limitamos a afirmar que o grafo existe. Nós apresentamos um procedimento que permite construí-lo para qualquer número par <span class="math inline">\(n&gt;2\)</span>.</p>
+<p>A prova por construção é bastante comum em Computação. Muitos algoritmos podem ser interpretados como construções que demonstram a existência de uma solução ao mesmo tempo em que fornecem um procedimento para obtê-la.</p>
+</section>
+<section id="prova-por-contradição" class="level3">
+<h3 class="anchored" data-anchor-id="prova-por-contradição">Prova por contradição</h3>
+<p>Na prova por contradição, assumimos inicialmente que o enunciado que queremos demonstrar é falso. Em seguida, mostramos que essa hipótese conduz a uma contradição.</p>
+<p>Considere o conhecido resultado:</p>
+<p>Teorema: <span class="math inline">\(\sqrt{2}\)</span> é irracional.</p>
+<p>Para demonstrá-lo, suponha, por contradição, que <span class="math inline">\(\sqrt{2}\)</span> seja racional. Nesse caso, podemos escrever</p>
+<p><span class="math display">\[
+\sqrt{2}=\frac{m}{n},
+\]</span></p>
+<p>em que <span class="math inline">\(m\)</span> e <span class="math inline">\(n\)</span> são inteiros, <span class="math inline">\(n\neq0\)</span>, e a fração está na forma irredutível.</p>
+<p>Elevando ambos os lados ao quadrado,</p>
+<p><span class="math display">\[
+2=\frac{m^2}{n^2}.
+\]</span></p>
+<p>Portanto,</p>
+<p><span class="math display">\[
+m^2=2n^2.
+\]</span></p>
+<p>Isso significa que <span class="math inline">\(m^2\)</span> é par e, consequentemente, <span class="math inline">\(m\)</span> também é par. Podemos escrever</p>
+<p><span class="math display">\[
+m=2k
+\]</span></p>
+<p>para algum inteiro <span class="math inline">\(k\)</span>.</p>
+<p>Substituindo na equação anterior,</p>
+<p><span class="math display">\[
+(2k)^2=2n^2.
+\]</span></p>
+<p>Logo,</p>
+<p><span class="math display">\[
+4k^2=2n^2
+\]</span></p>
+<p>e, dividindo por <span class="math inline">\(2\)</span>,</p>
+<p><span class="math display">\[
+n^2=2k^2.
+\]</span></p>
+<p>Portanto, <span class="math inline">\(n^2\)</span> também é par e, consequentemente, <span class="math inline">\(n\)</span> é par.</p>
+<p>Chegamos então à conclusão de que tanto <span class="math inline">\(m\)</span> quanto <span class="math inline">\(n\)</span> são pares. Isso significa que ambos possuem o fator <span class="math inline">\(2\)</span>, contradizendo a hipótese de que <span class="math inline">\(\frac{m}{n}\)</span> estava na forma irredutível.</p>
+<p>A hipótese de que <span class="math inline">\(\sqrt{2}\)</span> é racional levou a uma contradição. Portanto,</p>
+<p><span class="math display">\[
+\boxed{\sqrt{2}\text{ é irracional}.}
+\]</span></p>
+<p>A estrutura geral de uma prova por contradição pode ser representada por</p>
+<p><span class="math display">\[
+\neg P
+\rightarrow
+\text{contradição}.
+\]</span></p>
+<p>Consequentemente, concluímos que</p>
+<p><span class="math display">\[
+P.
+\]</span></p>
+<p>Esse método é particularmente útil quando a negação do resultado possui uma estrutura mais fácil de analisar do que o próprio resultado.</p>
+</section>
+<section id="prova-por-indução-matemática" class="level3">
+<h3 class="anchored" data-anchor-id="prova-por-indução-matemática">Prova por indução matemática</h3>
+<p>A indução matemática é um método utilizado para demonstrar propriedades que dependem de números naturais.</p>
+<p>A ideia fundamental é semelhante à de uma sequência de dominós. Primeiro demonstramos que a propriedade é verdadeira para o primeiro caso. Depois mostramos que, sempre que ela for verdadeira para um determinado caso, também será verdadeira para o caso seguinte. Dessa forma, a propriedade vale para todos os casos a partir do primeiro.</p>
+<p>Considere o teorema:</p>
+<p>Teorema: <span class="math display">\[
+\sum_{i = 0}^n i =
+\frac{n(n+1)}{2},
+\qquad n\geq0.
+\]</span></p>
+<p>A demonstração possui duas etapas principais: o passo base e o passo indutivo.</p>
+<p>Passo base</p>
+<p>Verificamos inicialmente o caso <span class="math inline">\(n=0\)</span>:</p>
+<p><span class="math display">\[
+\sum_{i=0}^{0}i=0.
+\]</span></p>
+<p>A fórmula fornece</p>
+<p><span class="math display">\[
+\frac{0(0+1)}{2}=0.
+\]</span></p>
+<p>Portanto, a propriedade é verdadeira para <span class="math inline">\(n=0\)</span>.</p>
+<p>Hipótese de indução</p>
+<p>Agora assumimos que a propriedade é verdadeira para um número natural arbitrário <span class="math inline">\(n\)</span>. Ou seja, assumimos que <span class="math display">\[
+\sum_{i = 0}^n i =
+\frac{n(n+1)}{2}.
+\]</span></p>
+<p>Essa afirmação é denominada hipótese de indução.</p>
+<p>É importante observar que, nesse ponto, não estamos assumindo aquilo que queremos provar para todos os valores. Estamos assumindo a propriedade para um valor arbitrário <span class="math inline">\(n\)</span> com o objetivo de demonstrá-la para <span class="math inline">\(n+1\)</span>.</p>
+<section id="passo-indutivo" class="level4">
+<h4 class="anchored" data-anchor-id="passo-indutivo">Passo indutivo</h4>
+<p>Queremos demonstrar que <span class="math display">\[
+\sum_{i = 0}^{n + 1}  i =
+\frac{(n+1)(n+2)}{2}.
+\]</span></p>
+<p>Começamos pela soma: <span class="math display">\[
+\sum_{i = 0}^{n + 1}  i =
+\sum_{i=0}^{n}i+(n+1).
+\]</span></p>
+<p>Aplicando a hipótese de indução,</p>
+<p><span class="math display">\[
+\sum_{i = 0}^{n + 1} i =
+\frac{n(n+1)}{2}+(n+1).
+\]</span></p>
+<p>Colocando <span class="math inline">\((n+1)\)</span> em evidência,</p>
+<p><span class="math display">\[
+\sum_{i = 0}^{n + 1} i =
+(n+1)
+\left(
+\frac n2+1
+\right).
+\]</span></p>
+<p>Portanto,</p>
+<p><span class="math display">\[
+\sum_{i = 0}^{n + 1} i =
+(n+1)
+\frac{n+2}{2}.
+\]</span></p>
+<p>Logo,</p>
+<p><span class="math display">\[
+\sum_{i = 0}^{n + 1} i =
+\frac{(n+1)(n+2)}{2}.
+\]</span></p>
+<p>Assim, mostramos que, se a propriedade é verdadeira para <span class="math inline">\(n\)</span>, ela também é verdadeira para <span class="math inline">\(n+1\)</span>.</p>
+<p>Como a propriedade é verdadeira para <span class="math inline">\(n=0\)</span> e o passo indutivo é válido, concluímos que</p>
+<p><span class="math display">\[
+\sum_{i = 0}^n i =
+\frac{n(n+1)}{2}.
+\]</span></p>
+<p>para todo <span class="math inline">\(n\geq0\)</span>.</p>
+</section>
+<section id="estrutura-da-indução" class="level4">
+<h4 class="anchored" data-anchor-id="estrutura-da-indução">Estrutura da indução</h4>
+<p>O princípio da indução pode ser resumido da seguinte maneira:</p>
+<p><span class="math display">\[
+P(0)
+\]</span></p>
+<p>e</p>
+<p><span class="math display">\[
+\forall n\geq0,\quad
+P(n)\rightarrow P(n+1).
+\]</span></p>
+<p>Então,</p>
+<p><span class="math display">\[
+\forall n\geq0,\quad P(n).
+\]</span></p>
+<p>A indução matemática é especialmente importante em Computação porque muitas propriedades de algoritmos e estruturas de dados dependem do tamanho de uma entrada. Também é comum utilizar indução para demonstrar propriedades de cadeias, árvores, grafos, gramáticas e estruturas recursivamente definidas.</p>
+</section>
+<section id="indução-forte" class="level4">
+<h4 class="anchored" data-anchor-id="indução-forte">Indução forte</h4>
+<p>Existe uma variante denominada indução forte. Nesse caso, para demonstrar <span class="math inline">\(P(n+1)\)</span>, podemos assumir que a propriedade é verdadeira para todos os valores anteriores:</p>
+<p><span class="math display">\[
+P(0),P(1),\ldots,P(n).
+\]</span></p>
+<p>A hipótese de indução forte é, portanto,</p>
+<p><span class="math display">\[
+\forall k\leq n,\quad P(k).
+\]</span></p>
+<p>A partir dessa hipótese, demonstramos</p>
+<p><span class="math display">\[
+P(n+1).
+\]</span></p>
+<p>A indução forte é útil quando o caso seguinte depende de mais de um caso anterior. Embora possua uma hipótese mais abrangente, ela é logicamente equivalente ao princípio usual da indução matemática.</p>
+</section>
+</section>
+<section id="escolha-do-método-de-prova" class="level3">
+<h3 class="anchored" data-anchor-id="escolha-do-método-de-prova">Escolha do método de prova</h3>
+<p>Diferentes enunciados podem exigir diferentes estratégias de demonstração. Não existe um único método que seja adequado para todos os problemas.</p>
+<p>Se o objetivo é demonstrar que determinado objeto existe e podemos apresentar explicitamente esse objeto, uma prova por construção pode ser apropriada.</p>
+<p>Quando a negação do resultado leva naturalmente a uma situação impossível, podemos utilizar uma prova por contradição.</p>
+<p>Quando o enunciado envolve uma sequência de casos indexados por números naturais, a indução matemática frequentemente fornece uma estratégia natural.</p>
+<p>A prova direta é particularmente adequada quando podemos partir das hipóteses e chegar à conclusão por uma sequência simples de implicações.</p>
+<p>Em problemas mais complexos, diferentes métodos podem ser combinados. Uma prova pode, por exemplo, utilizar indução e, dentro de cada etapa, empregar uma prova por construção.</p>
+</section>
+<section id="provas-e-contraexemplos" class="level3">
+<h3 class="anchored" data-anchor-id="provas-e-contraexemplos">Provas e contraexemplos</h3>
+<p>Uma maneira importante de analisar uma afirmação é procurar um contraexemplo.</p>
+<p>Um contraexemplo é um objeto que satisfaz as condições da hipótese de um enunciado, mas não satisfaz sua conclusão.</p>
+<p>Considere a afirmação:</p>
+<p>Todo número primo é ímpar.</p>
+<p>O número <span class="math inline">\(2\)</span> é primo e é par. Portanto, <span class="math inline">\(2\)</span> é um contraexemplo e demonstra que a afirmação é falsa.</p>
+<p>Um único contraexemplo é suficiente para refutar um enunciado universal. Entretanto, a ausência de contraexemplos em um conjunto finito de testes não constitui uma prova.</p>
+<p>Essa distinção é especialmente importante em Computação. Um programa pode ser executado com milhares ou milhões de entradas e produzir os resultados esperados em todos os testes realizados. Isso não demonstra necessariamente que o programa esteja correto para todas as entradas possíveis.</p>
+<p>Testes computacionais são ferramentas importantes para encontrar erros e formular conjecturas, mas uma prova matemática possui um papel diferente: estabelecer formalmente a validade de uma propriedade dentro das condições consideradas.</p>
+</section>
+<section id="a-estrutura-de-uma-demonstração" class="level3">
+<h3 class="anchored" data-anchor-id="a-estrutura-de-uma-demonstração">A estrutura de uma demonstração</h3>
+<p>Uma demonstração matemática deve ser suficientemente clara para que seus passos possam ser verificados.</p>
+<p>Em geral, uma prova pode seguir a seguinte estrutura:</p>
+<ul>
+<li>Identificação das hipóteses: determinar quais condições são assumidas.</li>
+<li>Definição dos objetos: utilizar corretamente as definições relevantes.</li>
+<li>Aplicação de resultados conhecidos: utilizar propriedades, lemas e teoremas já demonstrados.</li>
+<li>Desenvolvimento do argumento: estabelecer uma sequência lógica de passos.</li>
+<li>Conclusão: mostrar explicitamente que o resultado desejado foi obtido.</li>
+</ul>
+<p>É importante não utilizar como hipótese aquilo que deveria ser demonstrado. Esse erro é conhecido como raciocínio circular.</p>
+<p>Também é importante verificar se cada passo da prova realmente decorre das informações anteriores. Uma prova matemática não é apenas uma sequência de equações; cada transformação precisa ser justificada pelas propriedades matemáticas disponíveis.</p>
+<p>Definições, teoremas e provas em uma teoria matemática</p>
+<p>Uma teoria matemática pode ser construída como uma sequência organizada de definições e resultados.</p>
+<p>Inicialmente, alguns conceitos são definidos. Em seguida, propriedades desses conceitos são estabelecidas por meio de proposições e lemas. Resultados mais importantes podem então ser demonstrados utilizando os resultados anteriores.</p>
+<p>Podemos representar esse processo como</p>
+<p><span class="math display">\[
+\boxed{
+\text{Definições}
+\rightarrow
+\text{Proposições}
+\rightarrow
+\text{Lemas}
+\rightarrow
+\text{Teoremas}
+\rightarrow
+\text{Corolários}
+}
+\]</span></p>
+<p>As provas estabelecem as conexões lógicas entre esses resultados.</p>
+<p>Essa organização permite construir conhecimentos mais complexos sem que seja necessário demonstrar novamente todos os resultados utilizados. Um teorema pode depender de vários lemas, que por sua vez dependem de definições e resultados ainda mais básicos.</p>
+</section>
+<section id="síntese-1" class="level3">
+<h3 class="anchored" data-anchor-id="síntese-1">Síntese</h3>
+<p>Definições, enunciados e provas constituem elementos fundamentais da construção matemática. As definições estabelecem o significado preciso dos conceitos; os enunciados apresentam propriedades que podem ser analisadas; e as provas fornecem argumentos formais que estabelecem a validade dessas propriedades.</p>
+<p>Os resultados demonstrados podem desempenhar diferentes papéis. Um teorema apresenta um resultado matemático relevante, um lema normalmente auxilia na demonstração de outros resultados e um corolário é obtido diretamente de um resultado já demonstrado. Uma conjectura, por sua vez, é uma afirmação que ainda não possui uma demonstração estabelecida.</p>
+<p>Entre os principais métodos de demonstração estão a prova direta, a prova por construção, a prova por contradição e a prova por indução matemática. Cada método explora uma estratégia diferente para estabelecer a validade de um enunciado.</p>
+<p>Podemos resumir as principais ideias da seção da seguinte maneira:</p>
+<p><span class="math display">\[
+\boxed{
+\begin{array}{c}
+\text{Definições}\
+\downarrow\
+\text{Enunciados}\
+\downarrow\
+\text{Provas}\
+\downarrow\
+\text{Resultados demonstrados}
+\end{array}}
+\]</span></p>
+<p>e, no caso das principais estratégias de demonstração,</p>
+<p><span class="math display">\[
+\boxed{
+\text{Direta}
+\qquad
+\text{Construção}
+\qquad
+\text{Contradição}
+\qquad
+\text{Indução}
+}
+\]</span></p>
+<p>O domínio dessas técnicas é essencial para o desenvolvimento de argumentos rigorosos. Ao longo do estudo de estruturas matemáticas e computacionais, as provas serão utilizadas para estabelecer propriedades de cadeias, linguagens, autômatos, gramáticas, grafos e algoritmos.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiada");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiada");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/1-introducao.html" class="pagination-link" aria-label="Introdução à Teoria de Linguagens">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução à Teoria de Linguagens</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/3-compilador.html" class="pagination-link" aria-label="Introdução aos Compiladores">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Introdução aos Compiladores</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
