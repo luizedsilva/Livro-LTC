@@ -46,11 +46,13 @@ Essa possibilidade de uma computação que nunca termina é uma característica 
 
 ### Definição formal
 
+::: {#def-mt}
 Formalmente, uma Máquina de Turing $M$ pode ser definida como uma 7-upla
 
 $$
 M=(Q,\Sigma,\Gamma,\delta,q_0,q_{aceita},q_{rejeita}),
 $$
+:::
 
 em que $Q$ é um conjunto finito de estados, $\Sigma$ é o alfabeto de entrada, $\Gamma$ é o alfabeto da fita, $\delta$ é a função de transição, $q_0$ é o estado inicial, $q_{aceita}$ é o estado de aceitação e $q_{rejeita}$ é o estado de rejeição.
 
@@ -421,7 +423,8 @@ Por fim, o usuário pode fornecer uma palavra de entrada para realizar a simula�
 
 A teoria da computação investiga os problemas que podem ser resolvidos por algoritmos e os limites do processamento automático de informações. Embora os computadores sejam capazes de executar uma enorme variedade de tarefas, nem todo problema formulado de maneira precisa pode ser resolvido por um algoritmo que produza uma resposta correta em tempo finito para qualquer entrada.
 
-O estudo da **decidibilidade** procura estabelecer quais problemas admitem uma solução algorítmica completa. Para isso, utiliza-se um modelo formal de computação, como a máquina de Turing, que permite descrever algoritmos independentemente de uma linguagem de programação ou de uma arquitetura específica.
+O estudo da **decidibilidade** procura estabelecer quais problemas admitem uma solução algorítmica completa. Para isso, utiliza-se um modelo formal de computação, como a máquina de Turing, que permite descrever algoritmos independentemente de uma linguagem de programação ou de uma arquitetura específica. O aprofundamento sobre o tema da decidibilidade e da
+computabilidade são apresentados em @sipser, @hopcroft e @kozen. 
 
 A investigação da decidibilidade possui duas vertentes complementares. A primeira consiste em demonstrar que determinado problema pode ser resolvido, apresentando um algoritmo que sempre termina e fornece a resposta correta. A segunda consiste em demonstrar que nenhum algoritmo pode resolver o problema em todas as situações possíveis.
 
@@ -435,10 +438,13 @@ Seja uma linguagem $A$ sobre um alfabeto $\Sigma$. O problema de decisão associ
 
 Uma máquina de Turing pode ser utilizada para resolver esse problema. Quando a máquina aceita $w$, a resposta é positiva; quando rejeita $w$, a resposta é negativa. Entretanto, não basta que a máquina forneça a resposta correta quando termina: é necessário garantir que ela termine para toda entrada.
 
-**Definição — Linguagem decidível.** Uma linguagem $A$ é decidível se existe uma máquina de Turing que, para toda entrada $w$, termina sua execução e satisfaz as seguintes condições:
+::: {#def-decidivel}
+
+Uma linguagem $A$ é decidível se existe uma máquina de Turing que, para toda entrada $w$, termina sua execução e satisfaz as seguintes condições:
 
 - se $w\in A$, a máquina aceita $w$;
 - se $w\notin A$, a máquina rejeita $w$.
+:::
 
 Uma máquina de Turing que satisfaz essas condições é denominada *decisor* para $A$.
 
@@ -475,7 +481,9 @@ $$
 
 A notação $\langle B,w\rangle$ representa uma codificação da descrição do autômato $B$ e da cadeia $w$. Dessa forma, o problema pode ser tratado como uma linguagem: uma codificação pertence a $A_{\mathrm{AFD}}$ se, e somente se, o autômato descrito aceita a cadeia fornecida.
 
-**Teorema 1.** A linguagem $A_{\mathrm{AFD}}$ é decidível.
+::: {#thm-afd}
+A linguagem $A_{\mathrm{AFD}}$ é decidível.
+:::
 
 **Demonstração.** Constrói-se uma máquina de Turing $M_1$ que recebe como entrada $\langle B,w\rangle$ e executa as seguintes etapas:
 
@@ -498,7 +506,9 @@ $$
 A_{\mathrm{AFN}}=\{\langle B,w\rangle\mid B\text{ é um AFN que aceita }w\}.
 $$
 
-**Teorema 2.** A linguagem $A_{\mathrm{AFN}}$ é decidível.
+::: {#thm-afn}
+A linguagem $A_{\mathrm{AFN}}$ é decidível.
+:::
 
 **Demonstração.** Seja $M_2$ uma máquina de Turing que recebe $\langle B,w\rangle$, em que $B$ é um AFN.
 
@@ -520,7 +530,9 @@ $$
 A_{\mathrm{ER}}=\{\langle R,w\rangle\mid R\text{ é uma expressão regular que aceita }w\}.
 $$
 
-**Teorema 3.** A linguagem $A_{\mathrm{ER}}$ é decidível.
+::: {#thm-er}
+A linguagem $A_{\mathrm{ER}}$ é decidível.
+:::
 
 **Demonstração.** Constrói-se uma máquina $M_3$ que recebe $\langle R,w\rangle$ e executa os seguintes passos:
 
@@ -544,7 +556,9 @@ $$
 
 A linguagem $L(A)$ é vazia quando não existe nenhuma cadeia aceita pelo autômato.
 
-**Teorema 4.** A linguagem $V_{\mathrm{AFD}}$ é decidível.
+::: {#thm-afd-vazio}
+A linguagem $V_{\mathrm{AFD}}$ é decidível.
+:::
 
 **Demonstração.** Constrói-se uma máquina de Turing $M_4$ que recebe a descrição de um AFD $A$ e realiza uma busca nos estados alcançáveis a partir do estado inicial:
 
@@ -575,7 +589,9 @@ $$
 EQ_{\mathrm{AFD}}=\{\langle A,B\rangle\mid A\text{ e }B\text{ são AFDs e }L(A)=L(B)\}.
 $$
 
-**Teorema 5.** A linguagem $EQ_{\mathrm{AFD}}$ é decidível.
+::: {#thm-eq-afd}
+A linguagem $EQ_{\mathrm{AFD}}$ é decidível.
+:::
 
 **Demonstração.** A ideia consiste em verificar se existe alguma cadeia aceita por apenas um dos dois autômatos. Para isso, constrói-se um AFD $C$ que reconhece a diferença simétrica das linguagens:
 
@@ -622,7 +638,9 @@ $$
 A_{\mathrm{GLC}}=\{\langle G,w\rangle\mid G\text{ é uma GLC que gera }w\}.
 $$
 
-**Teorema 6.** A linguagem $A_{\mathrm{GLC}}$ é decidível.
+::: {#thm-glc}
+A linguagem $A_{\mathrm{GLC}}$ é decidível.
+:::
 
 **Demonstração.** Constrói-se uma máquina de Turing $M_6$ que recebe $\langle G,w\rangle$ e executa os seguintes passos:
 
@@ -647,7 +665,9 @@ $$
 V_{\mathrm{GLC}}=\{\langle G\rangle\mid G\text{ é uma GLC e }L(G)=\varnothing\}.
 $$
 
-**Teorema 7.** A linguagem $V_{\mathrm{GLC}}$ é decidível.
+::: {#thm-glc-vazio}
+A linguagem $V_{\mathrm{GLC}}$ é decidível.
+:::
 
 **Demonstração.** A ideia é verificar se o símbolo inicial da gramática pode gerar alguma cadeia composta exclusivamente por terminais. Para isso, constrói-se uma máquina de Turing $M_7$ que realiza uma marcação progressiva dos símbolos da gramática:
 
@@ -678,7 +698,9 @@ $$
 EQ_{\mathrm{GLC}}=\{\langle G,H\rangle\mid G\text{ e }H\text{ são GLCs e }L(G)=L(H)\}.
 $$
 
-**Teorema 8.** A linguagem $EQ_{\mathrm{GLC}}$ não é decidível.
+::: {#thm-glc-eq}
+A linguagem $EQ_{\mathrm{GLC}}$ não é decidível.
+:::
 
 Esse resultado estabelece um contraste importante entre linguagens regulares e linguagens livres de contexto. Para AFDs, a equivalência pode ser decidida por meio da construção da diferença simétrica e do teste de vacuidade. Para gramáticas livres de contexto, não existe um algoritmo geral que sempre termine e determine corretamente se duas gramáticas arbitrárias geram a mesma linguagem.
 
@@ -688,7 +710,9 @@ A existência de algoritmos para decidir a pertinência de uma cadeia e a vacuid
 
 Embora o problema de equivalência entre gramáticas livres de contexto seja indecidível, toda linguagem livre de contexto é decidível.
 
-**Teorema 9.** Toda linguagem livre de contexto é uma linguagem decidível.
+::: {#thm-llc}
+Toda linguagem livre de contexto é uma linguagem decidível.
+:::
 
 **Demonstração.** Seja $A$ uma linguagem livre de contexto. Por definição, existe uma gramática livre de contexto $G$ tal que $L(G)=A$.
 
@@ -721,7 +745,9 @@ $$
 
 A entrada contém a descrição de uma máquina de Turing $M$ e uma cadeia $w$. A pergunta é se $M$, quando executada sobre $w$, alcançará um estado de aceitação.
 
-**Teorema 10.** A linguagem $A_{\mathrm{MT}}$ é Turing-reconhecível, mas não é decidível.
+::: {#thm-mt}
+A linguagem $A_{\mathrm{MT}}$ é Turing-reconhecível, mas não é decidível.
+:::
 
 Para compreender a primeira parte do teorema, construímos uma máquina de Turing universal $U$, capaz de simular a execução de outra máquina descrita na entrada.
 
@@ -1124,7 +1150,7 @@ SUBT
 
 A execução pode ser acompanhada observando a evolução da pilha, ilustrado na @fig-expressao 
 
-![Simulação das operações na pilha de execução](/chapters/images/expressao.png){#fig-expressao width="80%"}
+![Simulação das operações na pilha de execução](/chapters/images/mvs-expressao.png){#fig-expressao width="80%"}
 
 1. `CRVG 3` carrega o valor de `B (2)` na pilha.
 2. `CRVG 1` carrega o valor de `A (10)` no topo.

@@ -31,23 +31,9 @@ No caso de uma máquina virtual didática, como a MVS utilizada neste livro, ess
 
 Durante a execução, um programa utiliza diferentes regiões de memória, cada uma destinada a finalidades específicas. Uma organização conceitual comum distingue a área de código, a área de dados globais ou estáticos, a pilha de execução e a área de alocação dinâmica, denominada heap.
 
-Área de código
+![Representação conceitual das regiões de memória](/chapters/images/organizacao-memoria.png){#fig-organizacao width="30%"}
 
-Instruções do programa compilado
-
-Área global e estática
-
-Variáveis globais, constantes e dados com duração estática
-
-Pilha
-
-Parâmetros, variáveis locais e informações das chamadas
-
-Heap
-
-Objetos e dados alocados dinamicamente
-
-Representação conceitual das regiões de memória. A disposição física e o sentido de crescimento das regiões dependem da plataforma.
+Uma representação conceitual das regiões de memória está ilustrada na @fig-organizacao. A disposição física e o sentido de crescimento das regiões dependem da plataforma.
 
 A área de código contém as instruções executáveis do programa. Seu conteúdo é produzido pelo compilador ou pelo sistema de ligação e, normalmente, permanece estável durante a execução. Em programas convencionais, o tamanho do código pode ser determinado a partir do executável produzido, embora existam mecanismos que permitem carregar código adicional durante a execução.
 
@@ -71,7 +57,7 @@ A alocação dinâmica ocorre durante a execução. O espaço necessário é obt
 
 Considere o seguinte programa:
 
-```
+```{.c}
 int total;
 
 void calcula(int n) {
@@ -94,7 +80,7 @@ Quando uma rotina é chamada, o ambiente de execução reserva espaço para as i
 
 Considere o seguinte programa:
 
-```
+```{.c}
 void C() {
     /* comandos de C */
 }
@@ -111,21 +97,9 @@ int main() {
 
 A execução começa em `main`, que chama `B`. Durante a execução de `B`, ocorre uma chamada a `C`. Nesse momento, as três rotinas possuem ativações vivas: `main`, `B` e `C`.
 
-Estado da pilha durante a execução de C
+![Estado da pilha durante a execução de C](/chapters/images/pilha-ativacao.png){#fig-pilha-ativacao width="30%"}
 
-Ativação de C
-
-Rotina em execução — topo da pilha
-
-Ativação de B
-
-Chamadora de C
-
-Ativação de main
-
-Origem da sequência de chamadas
-
-A representação mostra a ordem lógica dos registros, do topo para a base. A disposição física da memória pode variar.
+A representação na @fig-pilha-ativacao mostra a ordem lógica dos registros, do topo para a base. A disposição física da memória pode variar.
 
 Quando `C` termina, seu registro de ativação é removido e o controle retorna a `B`. Depois que `B` termina, seu registro é removido, e a execução retorna a `main`. Por fim, a ativação de `main` termina.
 
@@ -151,7 +125,7 @@ A afirmação pressupõe chamadas síncronas convencionais. Corrotinas, continua
 
 A árvore de ativação é uma representação conceitual da sequência de chamadas de funções e procedimentos durante a execução de um programa. Ela permite visualizar a relação entre uma ativação e as ativações que ocorrem durante sua execução.
 
-Cada nó da árvore representa uma ativação específica de uma rotina. Se, durante a ativação de uma rotina \\(A\\), ocorre uma chamada que cria a ativação \\(B\\), então \\(B\\) é representada como filha de \\(A\\).
+Cada nó da árvore representa uma ativação específica de uma rotina. Se, durante a ativação de uma rotina $A$, ocorre uma chamada que cria a ativação $B$, então $B$ é representada como filha de $A$.
 
 É importante observar que os nós representam chamadas, e não apenas nomes de funções. Se uma função recursiva for chamada várias vezes, cada chamada será representada por um nó distinto, mesmo que todos os nós correspondam ao mesmo código-fonte.
 

@@ -30,9 +30,9 @@ idade <- 20
 
 Esse segundo trecho também pode ser sintaticamente válido. Entretanto, se a linguagem exigir que uma variável seja declarada antes de sua utilização e não existir nenhuma declaração anterior de `idade`, o programa apresenta um erro semântico.
 
-A diferença entre os dois casos evidencia que a análise sintática e a análise semântica verificam propriedades distintas. A primeira examina a organização dos símbolos de acordo com as regras gramaticais; a segunda verifica se essa organização respeita as regras de significado da linguagem.
+A diferença entre os dois casos evidencia que a análise sintática e a análise semântica verificam propriedades distintas. A primeira examina a organização dos símbolos de acordo com as regras gramaticais; a segunda verifica se essa organização faz algum sentido dentro do contexto do programa usando a linguagem de programação.
 
-Em um compilador, essa etapa normalmente depende de informações que não podem ser verificadas apenas pela gramática, como as declarações existentes, os tipos das expressões e as regras de visibilidade dos identificadores. Para realizar essas verificações, o compilador mantém estruturas auxiliares, como a tabela de símbolos, e percorre a árvore sintática para examinar as construções do programa.
+Em um compilador, essa etapa normalmente depende de informações que não podem ser verificadas apenas pela gramática, como as declarações existentes, os tipos das expressões e as regras de visibilidade dos identificadores. Para realizar essas verificações, o compilador mantém estruturas auxiliares, como a tabela de símbolos e a pilha semântica, e percorre a árvore sintática para examinar as construções do programa.
 
 A análise semântica não substitui a análise sintática. Ao contrário, ela utiliza seus resultados para realizar verificações de natureza diferente. Em geral, um compilador só inicia a análise semântica sobre uma unidade sintática quando dispõe de uma estrutura suficientemente válida para examiná-la.
 
@@ -78,30 +78,28 @@ Depois de analisar sintaticamente e semanticamente um programa, o compilador pre
 
 Para compreender esse processo, considere o seguinte programa hipotético:
 
-```
-inteiro a;
-inteiro b;
-inteiro resultado;
+```{.simples}
+inteiro a b resultado
 
-a = 10;
-b = 20;
-resultado = a + b;
+a <- 10
+b <- 20
+resultado <- a + b
 ```
 
 A análise sintática identifica as declarações, as atribuições e a expressão aritmética, organizando esses elementos em uma árvore sintática abstrata. A análise semântica verifica se as variáveis foram declaradas, se seus tipos são compatíveis e se a operação de adição é válida.
 
 Essas etapas permitem compreender o significado do programa, mas ainda não definem diretamente como suas operações serão realizadas por uma máquina. É necessário traduzir as construções da linguagem de origem para instruções que representem as operações correspondentes.
 
-Uma possível representação intermediária do programa seria:
+Uma possível representação intermediária na forma de triplas do trecho do programa poderia ser:
 
-```
-a = 10
-b = 20
-t1 = a + b
-resultado = t1
-```
+| Índice | Operador (`op`) | Argumento 1 (`arg1`) | Argumento 2 (`arg2`) |
+| :--- | :--- | :--- | :--- |
+| **(0)** | `<-` | `10` | `a` |
+| **(1)** | `<-` | `20` | `b` |
+| **(2)** | `+` | `a` | `b` |
+| **(3)** | `<-` | `(2)` | `resultado` |
 
-Nessa representação, a expressão aritmética é calculada e seu resultado é armazenado em uma variável temporária, identificada por `t1`. O valor calculado é posteriormente atribuído à variável `resultado`.
+Nessa representação, a expressão aritmética é calculada e seu resultado é armazenado em uma variável temporária, identificada por **(2)**. O valor calculado é posteriormente atribuído à variável `resultado`.
 
 A representação intermediária não precisa reproduzir exatamente a sintaxe da linguagem original. Seu propósito é expressar as operações do programa de maneira mais simples e adequada às transformações realizadas pelo compilador.
 
@@ -119,31 +117,18 @@ Também é importante distinguir a geração de código da execução. Em um pro
 
 Uma questão importante no desenvolvimento de compiladores é como separar as características da linguagem de origem das particularidades da plataforma de destino. Uma tradução direta entre cada linguagem de programação e cada arquitetura pode exigir a implementação de muitos tradutores diferentes.
 
-Suponha que um compilador precise traduzir programas escritos em três linguagens de origem para três arquiteturas de destino. Se cada linguagem for traduzida diretamente para cada arquitetura, serão necessárias, potencialmente, nove combinações de tradutores.
+Suponha que um compilador precise traduzir programas escritos em duas linguagens de origem para três arquiteturas de destino. Se cada linguagem for traduzida diretamente para cada arquitetura, serão necessárias, potencialmente, seis combinações de tradutores,
+conforme ilustrado na @fig-representacao1.
 
-Com uma representação intermediária comum, cada linguagem pode ser traduzida para essa representação, e cada arquitetura pode receber um gerador específico capaz de convertê-la em seu próprio código. Nesse cenário simplificado, seriam necessários três tradutores para a representação intermediária e três geradores de código, totalizando seis componentes de tradução.
+![Sem representação intermediária](/chapters/images/representacao1.png){#fig-representacao1 width="80%"}
 
-Tradução direta
+Com uma representação intermediária comum, cada linguagem pode ser traduzida para essa representação, e cada arquitetura pode receber um gerador específico capaz de convertê-la em seu próprio código. Nesse cenário simplificado, seriam necessários dois tradutores para a representação intermediária e três geradores de código, totalizando cinco componentes de tradução.
 
-Linguagem A
+Com representação intermediária, os tradutores e os geradores podem ser desenvolvidos de forma independente, conforme ilustrado na @fig-representacao2.
 
-Linguagem B
+![Com representação intermediária](/chapters/images/representacao2.png){#fig-representacao2 width="80%"}
 
-Linguagem C
-
-Geradores específicos para cada destino
-
-O número de combinações cresce com a quantidade de linguagens e destinos.
-
-Com representação intermediária
-
-Linguagens A, B e C
-
-Representação intermediária
-
-Destinos X, Y e Z
-
-Os tradutores e os geradores podem ser desenvolvidos de forma independente.
+O número de combinações cresce com a quantidade de linguagens e destinos. Por exemplo, 3 linguagens e 5 destinos totalizam 15 componentes de tradução sem representação intermediária e 8 componentes com representação intermediária.
 
 Essa separação facilita a manutenção e a expansão de um compilador. Para adicionar uma nova linguagem de origem, pode-se implementar um tradutor para a representação intermediária existente. Para oferecer suporte a uma nova arquitetura, pode-se implementar um gerador de código correspondente, desde que ele seja compatível com essa representação.
 
@@ -153,16 +138,13 @@ Existem diferentes formas de representação intermediária. Entre elas, destaca
 
 - Árvore sintática abstrata: representa a estrutura essencial do programa, omitindo detalhes sintáticos desnecessários para as etapas posteriores.
 - Código de três endereços: representa operações simples, geralmente com um resultado e até dois operandos, utilizando variáveis temporárias quando necessário.
-- Representação em forma estática de atribuição única (SSA): organiza as atribuições de modo que cada variável virtual seja definida uma única vez, facilitando diversas otimizações.
 - Código para uma máquina virtual: utiliza instruções de uma máquina abstrata, que podem ser executadas por um interpretador ou traduzidas posteriormente para instruções de uma arquitetura real.
 
 Essas representações não são necessariamente alternativas excludentes. Um compilador pode utilizar uma árvore sintática abstrata, convertê-la em código de três endereços, aplicar otimizações e, posteriormente, produzir instruções para uma máquina virtual ou para um processador específico.
 
-Neste livro, utilizaremos uma abordagem gradual para estudar essas transformações. A análise semântica permitirá compreender como o compilador valida as construções de um programa, enquanto a representação intermediária ajudará a acompanhar a tradução das operações. Em seguida, a geração de código para a Máquina Virtual Simples (MVS) permitirá relacionar cada operação do programa às instruções executadas pela máquina abstrata.
+Neste livro, utilizaremos uma abordagem gradual para estudar essas transformações. A análise semântica permitirá compreender como o compilador valida as construções de um programa, que pode ser feito através de uma representação da árvore sintátia, por exemplo. Em seguida, a geração de código para a Máquina Virtual Simples (MVS) permitirá relacionar cada operação do programa às instruções executadas pela máquina abstrata.
 
 Dessa forma, será possível acompanhar o percurso completo de um programa: da estrutura sintática construída pelo analisador até o código gerado e seu comportamento durante a execução. Essa perspectiva integra os conceitos teóricos de compilação à observação prática dos algoritmos e das estruturas utilizadas em sua implementação.
-
-A seção pode ser incorporada ao capítulo após a apresentação da representação intermediária, estabelecendo a ligação entre as regras semânticas da gramática e a geração de instruções para a Máquina Virtual Simples (MVS). O desenvolvimento abaixo segue uma abordagem didática, com exemplos de expressões aritméticas, atributos, ações semânticas e implementação com Bison.
 
 ## Tradução dirigida por sintaxe
 
@@ -186,13 +168,13 @@ O operador `|` representa a concatenação de cadeias de caracteres. A regra est
 
 Por exemplo, para a expressão:
 
-```
+```{.simples}
 3 + 4
 ```
 
 a tradução pós-fixada produz:
 
-```
+```{.c}
 3 4 +
 ```
 
@@ -389,15 +371,15 @@ As instruções emitidas para uma expressão devem respeitar a ordem de execuç�
 
 Considere o comando:
 
-```
-resultado = 10 + 20;
+```{.simples}
+resultado <- 10 + 20
 ```
 
 Suponha que o analisador léxico associe o endereço `3` à variável `resultado`. Durante a análise sintática, a expressão `10 + 20` é reconhecida, e suas ações semânticas emitem as instruções correspondentes. Ao final, a ação da atribuição armazena o resultado no endereço da variável.
 
 O código gerado será semelhante a:
 
-```
+```{.mvs}
 CRCT    10
 CRCT    20
 SOMA
@@ -446,13 +428,13 @@ Uma alternativa consiste em construir uma representação intermediária entre a
 
 Por exemplo, para o comando:
 
-```
-resultado = 10 + 20;
+```{.simples}
+resultado <- 10 + 20
 ```
 
 a representação intermediária poderia ser:
 
-```
+```{.c}
 t1 = 10 + 20
 resultado = t1
 ```
@@ -506,7 +488,7 @@ O arquivo `utils.c` reúne os mecanismos necessários para armazenar informaçõ
 
 A tabela de símbolos é implementada por meio de um vetor de estruturas:
 
-```
+```{.c}
 #define TAM_TAB 100
 
 enum {
@@ -554,7 +536,7 @@ A tabela de símbolos desempenha, portanto, duas funções importantes: permite 
 
 A verificação dos tipos das expressões é realizada com o auxílio de uma pilha:
 
-```
+```{.c}
 #define TAM_PIL 100
 
 int Pilha[TAM_PIL];
@@ -567,7 +549,7 @@ A utilização de uma pilha é adequada à análise sintática ascendente realiz
 
 A função `testaTipo` implementa esse procedimento:
 
-```
+```{.c}
 void testaTipo(int tipo1, int tipo2, int ret)
 {
     int t1 = desempilha();
@@ -594,7 +576,7 @@ No início do arquivo, são incluídas bibliotecas da linguagem C e o arquivo `u
 
 Entre as variáveis globais, destacam-se:
 
-```
+```{.c}
 int contaVar = 0;
 int tipo;
 int rotulo = 0;
@@ -612,7 +594,7 @@ Também são declarados tokens para identificadores, números, tipos, operadores
 
 As declarações de precedência estabelecem a prioridade relativa dos operadores:
 
-```
+```{.c}
 %left T_E T_OU
 %left T_IGUAL
 %left T_MAIOR T_MENOR
@@ -624,7 +606,7 @@ A diretiva `%left` indica associatividade à esquerda. No Bison, as declaraçõe
 
 Essa organização permite interpretar expressões como:
 
-```
+```{.simples}
 3 + 4 * 5
 ```
 
@@ -634,13 +616,13 @@ de modo que a multiplicação seja realizada antes da adição. A precedência d
 
 A produção inicial é declarada pela diretiva:
 
-```
+```{.c}
 %start programa
 ```
 
 Isso estabelece `programa` como o símbolo inicial da gramática. A produção correspondente define a organização geral de um programa-fonte:
 
-```
+```{.c}
 programa
     : cabecalho
         { fprintf(yyout, "\tINPP\n"); }
@@ -672,7 +654,7 @@ As produções `variaveis`, `declaracao_variaveis`, `tipo` e `lista_variaveis` r
 
 A produção `tipo` identifica se as variáveis serão inteiras ou lógicas:
 
-```
+```{.c}
 tipo
     : T_LOGICO
         { tipo = LOG; }
@@ -683,20 +665,22 @@ tipo
 
 A ação semântica armazena o tipo reconhecido na variável global `tipo`. Em seguida, as produções responsáveis pelas listas de variáveis utilizam essa informação para registrar cada identificador:
 
-```
-strcpy(elemTab.id, atomo);
-elemTab.tip = tipo;
-elemTab.end = contaVar++;
-insereSimbolo(elemTab);
+```{.c}
+     {
+        strcpy(elemTab.id, atomo);
+        elemTab.tip = tipo;
+        elemTab.end = contaVar++;
+        insereSimbolo(elemTab);
+     }
 ```
 
 O nome do identificador é copiado de `atomo`, que contém o texto reconhecido pelo analisador léxico. O campo `tip` recebe o tipo da declaração e o campo `end` recebe o próximo endereço disponível. A variável `contaVar` é incrementada a cada declaração.
 
 Por exemplo, para as declarações:
 
-```
-inteiro a, b;
-logico ativo;
+```{.simples}
+inteiro a b
+logico ativo
 ```
 
 o compilador registra os identificadores na tabela de símbolos com seus respectivos tipos e endereços sequenciais. Essa informação será utilizada posteriormente para acessar as variáveis e verificar a compatibilidade das atribuições.
@@ -707,7 +691,7 @@ A chamada a `insereSimbolo` também permite detectar declarações duplicadas e 
 
 A produção `lista_comandos` permite que o programa contenha zero ou mais comandos:
 
-```
+```{.c}
 lista_comandos
     : /* vazio */
     | comando lista_comandos
@@ -716,7 +700,7 @@ lista_comandos
 
 A produção vazia permite que a lista não contenha comandos, enquanto a segunda alternativa reconhece um comando seguido de outra lista. A produção `comando`, por sua vez, reúne as diferentes categorias de instruções da linguagem:
 
-```
+```{.c}
 comando
     : leitura
     | escrita
@@ -734,7 +718,7 @@ Essa organização modular permite implementar a tradução de cada comando sepa
 
 A produção `leitura` reconhece um comando de entrada:
 
-```
+```{.c}
 leitura
     : T_LEIA T_IDENTIF
         {
@@ -749,15 +733,15 @@ Primeiro, o compilador procura o identificador na tabela de símbolos. Se ele n�
 
 Portanto, o comando de origem:
 
-```
+```{.simples}
 leia a
 ```
 
 pode produzir, supondo que `a` esteja associada ao endereço `0`:
 
-```
-LEIA
-ARZG    0
+```{.mvs}
+     LEIA
+     ARZG    0
 ```
 
 A tradução mostra como a análise semântica e a geração de código se complementam: a primeira determina qual variável será utilizada, enquanto a segunda produz as instruções necessárias para armazenar o valor lido.
@@ -766,7 +750,7 @@ A tradução mostra como a análise semântica e a geração de código se compl
 
 A produção `escrita` reconhece o comando de saída:
 
-```
+```{.c}
 escrita
     : T_ESCREVA expressao
         {
@@ -780,17 +764,17 @@ A expressão é reconhecida e suas ações semânticas geram as instruções nec
 
 Por exemplo, o comando:
 
-```
+```{.simples}
 escreva 10 + 20
 ```
 
 produz um código semelhante a:
 
-```
-CRCT    10
-CRCT    20
-SOMA
-ESCR
+```{.mvs}
+     CRCT    10
+     CRCT    20
+     SOMA
+     ESCR
 ```
 
 As instruções `CRCT` carregam as constantes na pilha de execução da MVS, `SOMA` calcula o resultado e `ESCR` apresenta o valor calculado.
@@ -801,7 +785,7 @@ A variável local `tip` recebe o tipo da expressão, mas não é utilizada nessa
 
 A produção `atribuicao` reconhece comandos de atribuição:
 
-```
+```{.c}
 atribuicao
     : T_IDENTIF
         {
@@ -830,17 +814,17 @@ Se os tipos forem diferentes, é chamado `yyerror`. Caso sejam compatíveis, é 
 
 Por exemplo, supondo que `a` seja uma variável inteira no endereço `0`, a atribuição:
 
-```
-a = 5 + 3
+```{.simples}
+a <- 5 + 3
 ```
 
 pode gerar:
 
-```
-CRCT    5
-CRCT    3
-SOMA
-ARZG    0
+```{.mvs}
+     CRCT    5
+     CRCT    3
+     SOMA
+     ARZG    0
 ```
 
 Esse exemplo ilustra uma verificação semântica essencial: o compilador não se limita a reconhecer a estrutura da atribuição, mas também verifica a compatibilidade entre o tipo da expressão e o tipo da variável que receberá o resultado.
@@ -851,7 +835,7 @@ A produção `expressao` reúne as operações disponíveis na linguagem. Cada a
 
 A multiplicação, por exemplo, é implementada da seguinte maneira:
 
-```
+```{.c}
 expressao
     : expressao T_VEZES expressao
         {
@@ -882,7 +866,7 @@ A tabela sintetiza as regras implementadas pelas ações semânticas. Por exempl
 
 A negação lógica também possui uma regra própria:
 
-```
+```{.c}
 | T_NAO termo
     {
         int tip = desempilha();
@@ -901,8 +885,8 @@ A produção `termo` também trata identificadores, números e constantes lógic
 
 Os parênteses são reconhecidos pela produção:
 
-```
-| T_ABRE expressao T_FECHA
+```{.c}
+    | T_ABRE expressao T_FECHA
 ```
 
 Essa alternativa não precisa de ação semântica adicional porque a expressão interna já realiza a verificação de tipos e a geração do código. Os parênteses afetam o agrupamento sintático, mas não exigem uma instrução própria na MVS.
@@ -923,6 +907,30 @@ A produção `repeticao` reconhece a estrutura `enquanto ... faca ... fimenquant
 
 O trecho responsável pela avaliação da condição verifica se a expressão é lógica. Caso contrário, o compilador informa que a condição da repetição deve ser lógica. Se o tipo estiver correto, emite `DSVF` com o rótulo de saída.
 
+```{.c} 
+repeticao:
+        T_ENQTO
+           { 
+             printf ("L%d\tNADA\n", ++ROTULO);
+             empilha (ROTULO);
+           } 
+        expressao 
+        T_FACA 
+           {
+             printf ("\tDSVF\tL%d\n",++ROTULO);
+             empilha (ROTULO);
+           }
+        lista_comandos 
+        T_FIMENQTO
+           {
+             aux = desempilha();
+             printf ("\tDSVS\tL%d\n", desempilha()); 
+             printf ("L%d\tNADA\n", aux);           
+           }
+      ;
+```
+
+
 Ao final do corpo, a ação semântica recupera os rótulos da pilha e emite o desvio para o início do laço. O rótulo de saída é então definido com `NADA`, uma instrução que funciona como destino do desvio.
 
 Essa estratégia traduz uma estrutura de alto nível em operações de controle de fluxo mais simples, que podem ser executadas pela máquina virtual.
@@ -942,6 +950,31 @@ Quando o bloco `entao` termina, o compilador emite `DSVS` para saltar o bloco `s
 Assim, os comandos condicionais são traduzidos por meio de desvios explícitos, sem exigir que a MVS tenha uma instrução única que represente toda a estrutura `se ... senao`.
 
 A utilização de rótulos permite que o código gerado represente a escolha entre dois caminhos de execução, preservando o comportamento definido pelo programa-fonte.
+
+```{.c}
+selecao:
+        T_SE 
+        expressao 
+           {
+             printf ("\tDSVF\tL%d\n", ++ROTULO); 
+             empilha (ROTULO);
+           }  
+        T_ENTAO 
+        lista_comandos 
+        T_SENAO 
+           {
+             printf ("\tDSVS\tL%d\n", ++ROTULO);
+             printf ("L%d\tNADA\n", desempilha()); 
+             empilha (ROTULO);
+           }
+        lista_comandos 
+        T_FIMSE
+           { 
+             printf ("L%d\tNADA\n", desempilha());    
+           }
+      ;
+```
+
 
 As ações semânticas incluídas nas regras de derivação para tradução da estrutura de seleção está representada na @fig-arvore-selecao.
 
