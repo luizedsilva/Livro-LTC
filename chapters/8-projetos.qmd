@@ -133,81 +133,111 @@ Cada nó da árvore representa uma ativação específica de uma rotina. Se, dur
 
 Considere o seguinte programa simplificado, que utiliza o algoritmo de ordenação quicksort:
 
-```
-int a[11];
+```{.c}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void readArray() {
-    int i;
-    /* leitura dos elementos */
-}
+#define DEBUG(x) x
+#define TAM 10
+int a[TAM + 1] = 
+  {95, 60, 10, 40, 30, 1, 20, 90, 70, 80, 50};
 
-int partition(int m, int n) {
-    /* particionamento do vetor */
-}
-
-void quicksort(int m, int n) {
-    int i;
-
-    if (n > m) {
-        i = partition(m, n);
-        quicksort(m, i - 1);
-        quicksort(i + 1, n);
+int partition(int p, int r)
+{
+    int x = a[r]; /* pivo */
+    int i = p - 1;
+    int j, temp;
+    for (j = p; j < r; j++)
+    {
+        if (a[j] <= x)
+        {
+            i++;
+            temp = a[i];
+            a[i] = a[j];
+            a[j] = temp;
+        }
     }
+    temp = a[i + 1];
+    a[i + 1] = a[r];
+    a[r] = temp;
+    return i + 1;
 }
 
-int main() {
-    readArray();
-    quicksort(0, 10);
-    return 0;
+void qSort(int m, int n, int level)
+{
+    char tab[40] = "";
+    for (int i = 0; i < level; i++)
+       strcat(tab,"...");
+    DEBUG(printf("%sEntra no qSort(%d,%d)\n", tab, m, n);)
+    if (m < n)
+    {
+        int i = partition(m, n);
+        qSort(m, i - 1, level+1);
+        qSort(i + 1, n, level+1);
+    }
+    DEBUG(printf("%sSai do qSort(%d,%d)\n", tab, m, n);)
+}
+
+int main()
+{
+    DEBUG(printf("Entra no main()\n");)
+    qSort(0, TAM, 1);
+    for (int i = 0; i < TAM+1; i++)
+      printf("%4d", a[i]);
+    puts("");
+    DEBUG(printf("Sai do main()\n");)
+    return (EXIT_SUCCESS);
 }
 ```
 
-O programa principal chama `readArray` para ler os elementos do vetor e, em seguida, chama `quicksort`. Durante a execução de `quicksort`, ocorre uma chamada a `partition` e, posteriormente, duas chamadas recursivas a `quicksort`.
+O programa principal chama `qSort`. Durante a execução de `qSort`, ocorre uma chamada a `partition` e, posteriormente, duas chamadas recursivas a `qSort`.
 
-Uma possível sequência simplificada de execução é:
+Uma possível sequência simplificada de execução, sem as chamadas a `partition` é:
 
 ```
-entra em main()
-    entra em readArray()
-    sai de readArray()
-
-    entra em quicksort(0, 10)
-        entra em partition(0, 10)
-        sai de partition(0, 10)
-
-        entra em quicksort(0, 3)
-            ...
-        sai de quicksort(0, 3)
-
-        entra em quicksort(5, 10)
-            ...
-        sai de quicksort(5, 10)
-
-    sai de quicksort(0, 10)
-sai de main()
+Entra no main()
+...Entra no qSort(0,10)
+......Entra no qSort(0,4)
+.........Entra no qSort(0,1)
+............Entra no qSort(0,-1)
+............Sai do qSort(0,-1)
+............Entra no qSort(1,1)
+............Sai do qSort(1,1)
+.........Sai do qSort(0,1)
+.........Entra no qSort(3,4)
+............Entra no qSort(3,2)
+............Sai do qSort(3,2)
+............Entra no qSort(4,4)
+............Sai do qSort(4,4)
+.........Sai do qSort(3,4)
+......Sai do qSort(0,4)
+......Entra no qSort(6,10)
+.........Entra no qSort(6,5)
+.........Sai do qSort(6,5)
+.........Entra no qSort(7,10)
+............Entra no qSort(7,9)
+...............Entra no qSort(7,7)
+...............Sai do qSort(7,7)
+...............Entra no qSort(9,9)
+...............Sai do qSort(9,9)
+............Sai do qSort(7,9)
+............Entra no qSort(11,10)
+............Sai do qSort(11,10)
+.........Sai do qSort(7,10)
+......Sai do qSort(6,10)
+...Sai do qSort(0,10)
+   1  10  20  30  40  50  60  70  80  90  95
+Sai do main()
 ```
 
-Os limites `0, 3` e `5, 10` são ilustrativos, supondo que a primeira partição tenha separado o vetor nesses intervalos. Os valores concretos dependem dos dados e da implementação de `partition`.
+A árvore de ativação correspondente pode ser representada da seguinte maneira:
 
-A árvore de ativação correspondente a esse trecho pode ser representada da seguinte maneira:
+![Árvore de ativação completa](/chapters/images/qsort1.png){#fig-qsort1 width="80%"}
 
-main
+Na árvore de ativação da @fig-qsort1 cada nó representa uma chamada específica, e os filhos são as ativações iniciadas durante a execução do nó pai.
 
-readArray()
-
-quicksort(0,10)
-
-partition(0,10)
-
-quicksort(0,3)
-
-quicksort(5,10)
-
-Chamadas recursivas sucessivas
-
-Esquema parcial da árvore de ativação. Cada nó representa uma chamada específica, e os filhos são as ativações iniciadas durante a execução do nó pai.
-
-Na árvore completa, as chamadas recursivas de `quicksort` também podem originar outras chamadas a `partition` e novas ativações de `quicksort`, até que os subvetores tenham tamanho suficiente para encerrar a recursão.
+Na árvore completa, as chamadas recursivas de `qSort` também podem originar outras chamadas a `partition` e novas ativações de `qSort`, até que os subvetores tenham tamanho suficiente para encerrar a recursão.
 
 A árvore de ativação permite distinguir duas representações importantes: a árvore descreve todas as relações de chamada ocorridas durante a execução considerada, enquanto a pilha representa apenas as ativações que permanecem vivas em um determinado instante.
 
@@ -219,17 +249,18 @@ De maneira análoga, a sequência de retornos corresponde a um percurso em pós-
 
 Em qualquer instante, as ativações vivas formam o caminho entre a raiz da árvore e o nó correspondente à rotina que está em execução. A pilha contém os registros dessas ativações, com o registro da rotina atual no topo.
 
-Por exemplo, enquanto `partition(0,10)` está sendo executada, o caminho de ativações é:
+A @fig-qsort2 apresenta as ativações já finalizadas (na cor verde), as ativações suspensas na pilha de execução (na cor azul), para a chamada ativa `qSort(3,2)`. As ativações que ainda não foram realizadas até este instantes estão representadas com linhas pontilhadas.
 
-```
-main
-  └── quicksort(0,10)
-        └── partition(0,10)
-```
+![Árvore de ativação até a chamada `qSort(3,2)` e a pilha de ativação correspondente](/chapters/images/qsort2.png){#fig-qsort2 width="90%"}
 
-A pilha contém os registros correspondentes a essas três ativações. Quando `partition` termina, seu registro é removido, e a execução retorna a `quicksort(0,10)`. O caminho ativo passa então a conter apenas `main` e `quicksort(0,10)`.
+A pilha contém os registros correspondentes a cinco ativações até a chamada  `qSort(3,2)`. Quando `partition(3,4)` termina, seu registro é removido, e a execução retorna a `qSort(3,4)` que então inicia a primeira chamada `qSort(3,2)`. A pilha de ativação passa então a conter as chamadas `qSort(3,2)`, `qSort(3,4)`, `qSort(0,4)`, `qSort(0,10)` e `main`.
 
 A árvore de ativação oferece, portanto, uma visão global da estrutura de chamadas, enquanto a pilha de execução representa o estado ativo dessa estrutura em um momento específico. Essa relação é fundamental para compreender o gerenciamento de funções, procedimentos e recursão.
+
+A simulação seguinte ilustra o processo de acompanhamento das chamadas recursivas:
+
+::: {.simulacao url="/p5js/ativTree/" height="400" image="/printscreen/ativTree.png" qrcode="/qrcode/ativTree.png"}
+:::
 
 ## Registro de ativação
 

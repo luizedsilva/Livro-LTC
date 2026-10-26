@@ -1,0 +1,294 @@
+
+digraph {
+    graph [
+        rankdir=TB,
+        nodesep=0.35,
+        ranksep=0.45,
+        compound=true,
+        newrank=true,
+        fontname="Arial"
+    ];
+
+    node [
+        shape=record,
+        height=.1,
+        width=.1,
+        fontname="Arial"
+    ];
+
+    edge [
+        arrowhead=none,
+        color="#555555"
+    ];
+
+    // ==========================================
+    // ÁRVORE DE CHAMADAS
+    // ==========================================
+
+    subgraph cluster_arvore {
+        label="Árvore de ativação";
+        style=invis;
+        // style="rounded";
+        //color="#888888";
+        margin=12;
+        
+        main [
+            label="main",
+            style="rounded,filled",
+            fillcolor="#dce8f8",
+            penwidth=2
+        ];
+
+        main -> q0_10;
+
+        q0_10 [
+            label="q(0,10)",
+            style="rounded,filled",
+            fillcolor="#dce8f8",
+            penwidth=2
+        ];
+
+        p0_10 [
+            label="p(0,10) = 5",
+            style="rounded,filled",
+            fillcolor="#e8f2df"
+        ];
+
+        q0_10 -> p0_10;
+        q0_10 -> q0_4;
+        q0_10 -> q6_10 [style=dotted];
+
+        q0_4 [
+            label="q(0,4)",
+            style="rounded,filled",
+            fillcolor="#dce8f8",
+            penwidth=2
+        ];
+
+        p0_4 [
+            label="p(0,4) = 2",
+            style="rounded,filled",
+            fillcolor="#e8f2df"
+        ];
+
+        q0_4 -> p0_4;
+        q0_4 -> q0_1;
+        q0_4 -> q3_4;
+
+        q0_1 [
+            label="q(0,1)",
+            style="rounded,filled",
+            fillcolor="#e8f2df"
+        ];
+
+        p0_1 [
+            label="p(0,1) = 0",
+            style="rounded,filled",
+            fillcolor="#e8f2df"
+        ];
+
+        q0_1 -> p0_1;
+        q0_1 -> q0_m1;
+        q0_1 -> q1_1;
+
+        q0_m1 [
+            label="q(0,-1)",
+            style="rounded,filled",
+            fillcolor="#e8f2df"
+        ];
+
+        q1_1 [
+            label="q(1,1)",
+            style="rounded,filled",
+            fillcolor="#e8f2df"
+        ];
+
+        q3_4 [
+            label="q(3,4)",
+            style="rounded,filled",
+            fillcolor="#dce8f8",
+            penwidth=2
+        ];
+
+        p3_4 [
+            label="p(3,4) = 3",
+            style="rounded,filled",
+            fillcolor="#e8f2df"
+        ];
+
+        q3_4 -> p3_4;
+        q3_4 -> q3_2;
+        q3_4 -> q4_4 [style=dotted];
+
+        q3_2 [
+            label="q(3,2)",
+            style="rounded,filled",
+            fillcolor="#e1e8a5",
+            penwidth=2
+        ];
+
+        q4_4 [
+            label="q(4,4)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        q6_10 [
+            label="q(6,10)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        p6_10 [
+            label="p(6,10) = 6",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        q6_10 -> p6_10 [style=dotted];
+        q6_10 -> q6_5 [style=dotted];
+        q6_10 -> q7_10 [style=dotted];
+
+        q6_5 [
+            label="q(6,5)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        q7_10 [
+            label="q(7,10)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        p7_10 [
+            label="p(7,10) = 10",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        q7_10 -> p7_10 [style=dotted];
+        q7_10 -> q7_9 [style=dotted];
+        q7_10 -> q11_10 [style=dotted];
+
+        q7_9 [
+            label="q(7,9)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        p7_9 [
+            label="p(7,9) = 8",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        q7_9 -> p7_9 [style=dotted];
+        q7_9 -> q7_7 [style=dotted];
+        q7_9 -> q9_9 [style=dotted];
+
+        q7_7 [
+            label="q(7,7)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        q9_9 [
+            label="q(9,9)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+
+        q11_10 [
+            label="q(11,10)",
+            style="dotted,rounded,filled",
+            fillcolor="#dce8f8"
+        ];
+    }
+
+    // ==========================================
+    // PILHA DE ATIVAÇÃO
+    // ==========================================
+
+    subgraph cluster_pilha {
+        label="Pilha de ativação";
+        style=invis;
+        //style="rounded";
+        //color="#888888";
+        margin=12;
+
+        node [
+            shape=record,
+            style="rounded,filled",
+            fillcolor="#dce8f8",
+            //color="#9b7b36",
+            margin="0.12,0.08"
+        ];
+
+        topo [
+            label="topo",
+            fillcolor=invis,
+            color=invis
+        ]
+
+        frame_main [
+            label="{main|Inicial}"
+        ];
+
+        frame_q010 [
+            label="{q(0,10)|p = 5}"
+        ];
+
+        frame_q04 [
+            label="{q(0,4)|p = 2}"
+        ];
+
+        frame_q34 [
+            label="{q(3,4)|p = 3}"
+        ];
+
+        frame_q32 [
+            label="{q(3,2)|Ativa}",
+            fillcolor="#e1e8a5",
+            penwidth=2
+        ];
+
+        // Ordem dos registros na pilha:
+        // topo -> base
+        topo -> frame_q32 [
+             style=solid,
+             color="#555555",
+             arrowhead=normal
+        ];
+        frame_q32 -> frame_q34[
+             style=solid,
+             color="#555555",
+             arrowhead=normal
+        ];
+        frame_q34 -> frame_q04[
+             style=solid,
+             color="#555555",
+             arrowhead=normal
+        ];
+        frame_q04 -> frame_q010[
+             style=solid,
+             color="#555555",
+             arrowhead=normal
+        ];
+        frame_q010 -> frame_main[
+             style=solid,
+             color="#555555",
+             arrowhead=normal
+        ];
+
+    }
+
+    // ==========================================
+    // POSICIONAMENTO LADO A LADO
+    // ==========================================
+
+    // Alinha o início da árvore com o início da pilha.
+    { rank=same; main; frame_q32; }
+
+}
+

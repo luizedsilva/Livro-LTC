@@ -8,4 +8,5 @@ qrencode -o lr.png "${BASE_URL}/p5js/lr/"
 qrencode -o cyk.png "${BASE_URL}/p5js/cyk/"
 qrencode -o mt.png "${BASE_URL}/p5js/mt/"
 qrencode -o mvs.png "${BASE_URL}/p5js/mvs/"
+qrencode -o ativTree.png "${BASE_URL}/p5js/ativTree/"
 

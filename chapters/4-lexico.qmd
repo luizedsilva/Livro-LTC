@@ -2386,17 +2386,21 @@ A análise léxica constitui a primeira etapa do processo de compilação e tem 
 
 Os elementos reconhecidos pelo analisador léxico são denominados **símbolos léxicos** ou **lexemas**. Entre eles encontram-se palavras reservadas, operadores, identificadores, constantes literais, constantes numéricas e delimitadores, entre outros elementos definidos pela linguagem de programação. Também fazem parte do texto de entrada elementos que, embora possam ser importantes para a organização e documentação do programa, não necessariamente participam das demais fases da compilação, como comentários, espaços em branco, tabulações e, em determinadas linguagens, caracteres utilizados para formatação e indentação.
 
-Durante o processo de reconhecimento, o analisador léxico identifica cada lexema e associa a ele um *token*, que representa sua categoria léxica. Por exemplo, ao encontrar a sequência de caracteres `while`, o analisador pode reconhecê-la como uma palavra reservada e produzir um *token* `T_WHILE`. Da mesma forma, uma sequência de caracteres que corresponda a um identificador pode produzir um *token* `T_IDENTIF`, enquanto uma sequência numérica pode ser classificada como um *token* correspondente a um número inteiro ou real. O *token* funciona, portanto, como uma representação abstrata do elemento encontrado no programa-fonte, permitindo que as etapas seguintes trabalhem com categorias léxicas em vez de manipular diretamente cada caractere do texto.
+Durante o processo de reconhecimento, o analisador léxico identifica cada lexema e associa a ele um *token*, que representa sua categoria léxica. Por exemplo, ao encontrar a sequência de caracteres `enquanto`, o analisador pode reconhecê-la como uma palavra reservada e produzir um *token* `T_ENQTO`. Da mesma forma, uma sequência de caracteres que corresponda a um identificador pode produzir um *token* `T_IDENTIF`, enquanto uma sequência numérica pode ser classificada como um *token* correspondente a um número inteiro ou real. O *token* funciona, portanto, como uma representação abstrata do elemento encontrado no programa-fonte, permitindo que as etapas seguintes trabalhem com categorias léxicas em vez de manipular diretamente cada caractere do texto.
+
+A @fig-analise-lexica ilustra o processo de transformação dos lexemas em tokens.
+
+![Ilustração da fase de análise léxica](/chapters/images/analise-lexica.png){#fig-analise-lexica width="80%"}
 
 É importante distinguir o *token* do **lexema** que lhe deu origem. O lexema corresponde à sequência concreta de caracteres encontrada no programa-fonte, enquanto o *token* representa a categoria a que essa sequência pertence. Assim, em uma instrução como
 
-``` text
-soma := a + 10;
+```{.simples}
+soma <- a + 10
 ```
 
-as sequências `soma`, `a` e `10` são lexemas encontrados no texto, enquanto seus respectivos *tokens* podem ser classificados como identificadores e constante numérica. O operador `:=`, o operador `+` e o delimitador `;` também são reconhecidos e representados por seus respectivos *tokens*. Essa separação entre a representação concreta e sua categoria léxica simplifica o trabalho das fases posteriores do compilador.
+as sequências `soma`, `a` e `10` são lexemas encontrados no texto, enquanto seus respectivos *tokens* podem ser classificados como identificadores e constante numérica. O operador `<-` e o operador `+` também são reconhecidos e representados por seus respectivos *tokens*. Essa separação entre a representação concreta e sua categoria léxica simplifica o trabalho das fases posteriores do compilador.
 
-Nem todos os elementos encontrados durante a leitura do programa precisam ser transformados em *tokens*. Comentários, espaços em branco e tabulações, por exemplo, normalmente são utilizados para facilitar a leitura, a organização e a documentação do código-fonte, mas são descartados pelo analisador léxico quando não possuem significado para a sintaxe da linguagem. Essa regra, entretanto, depende das características da linguagem de programação. Em algumas linguagens, por exemplo, a indentação possui significado sintático e, nesse caso, o analisador léxico deve produzir informações que permitam às etapas posteriores considerar as mudanças de nível de indentação.
+Nem todos os elementos encontrados durante a leitura do programa precisam ser transformados em *tokens*. Comentários, espaços em branco e tabulações, por exemplo, normalmente são utilizados para facilitar a leitura, a organização e a documentação do código-fonte, mas são descartados pelo analisador léxico quando não possuem significado para a sintaxe da linguagem. Essa regra, entretanto, depende das características da linguagem de programação. Em algumas linguagens, como Python por exemplo, a indentação possui significado sintático e, nesse caso, o analisador léxico deve produzir informações que permitam às etapas posteriores considerar as mudanças de nível de indentação.
 
 Outro aspecto importante da análise léxica é sua interação com a **tabela de símbolos**. Os identificadores reconhecidos pelo analisador léxico podem estar associados a informações que serão utilizadas durante as demais fases da compilação. Quando um identificador é encontrado, o compilador pode verificar sua existência na tabela de símbolos e, quando necessário, cadastrá-lo. A tabela de símbolos mantém informações sobre entidades presentes no programa, como identificadores de variáveis, procedimentos, funções e outros elementos definidos pela linguagem. Embora a construção e o gerenciamento completo dessa tabela envolvam outras fases do compilador, o reconhecimento dos identificadores durante a análise léxica constitui uma das primeiras oportunidades de interação com essa estrutura.
 
@@ -2404,51 +2408,23 @@ Como resultado de seu processamento, o analisador léxico produz uma sequência 
 
 Considere, por exemplo, uma instrução simplificada como:
 
-``` text
-a := b + 10;
+```{.simples}
+a <- b + 10
 ```
 
 O analisador léxico pode produzir uma sequência semelhante a:
 
 ``` text
-T_IDENTIF  T_ATRIB  T_IDENTIF  T_SOMA  T_INTEIRO  T_PONTO_VIRGULA
+T_IDENTIF  T_ATRIB  T_IDENTIF  T_SOMA  T_NUMERO
 ```
 
-A análise sintática não precisa mais trabalhar diretamente com os caracteres `a`, `:`, `=`, `b`, `+`, `1`, `0` e `;`. Ela recebe a sequência de *tokens* e verifica se essa sequência pode ser derivada de acordo com as produções da gramática da linguagem. Essa divisão de responsabilidades torna o processo de compilação mais organizado e permite que cada fase utilize mecanismos formais apropriados ao problema que deve resolver.
+A análise sintática não precisa mais trabalhar diretamente com os caracteres `a`, `<`, `-`, `b`, `+`, `1` e `0`. Ela recebe a sequência de *tokens* e verifica se essa sequência pode ser derivada de acordo com as produções da gramática da linguagem. Essa divisão de responsabilidades torna o processo de compilação mais organizado e permite que cada fase utilize mecanismos formais apropriados ao problema que deve resolver.
 
 Para especificar os elementos que devem ser reconhecidos na análise léxica, utilizam-se **linguagens regulares**. Palavras reservadas, identificadores, números, operadores e diversos outros elementos léxicos podem ser descritos por meio de padrões regulares. As **expressões regulares** fornecem uma notação conveniente para representar esses padrões e constituem uma das principais formas de especificação utilizadas na construção de analisadores léxicos.
 
 A relação entre expressões regulares e **autômatos finitos** é particularmente importante para a implementação do analisador léxico. Uma expressão regular pode ser utilizada para especificar uma linguagem regular e, a partir dela, pode-se construir um autômato finito capaz de reconhecer as sequências de caracteres pertencentes a essa linguagem. Assim, existe uma relação direta entre a especificação declarativa dos elementos léxicos e o mecanismo computacional responsável por reconhecê-los.
 
-Essa relação é explorada por ferramentas de geração automática de analisadores léxicos, como o *Flex*. Nessa abordagem, o programador especifica os padrões correspondentes aos diferentes *tokens*, normalmente utilizando expressões regulares, e associa a cada padrão uma ação a ser executada quando ele for reconhecido. A ferramenta utiliza essas especificações para gerar um programa capaz de realizar o reconhecimento dos elementos léxicos do programa-fonte. Dessa forma, o desenvolvedor não precisa implementar manualmente todas as estruturas necessárias para percorrer o texto e reconhecer cada padrão.
-
-De maneira semelhante, a construção do **analisador sintático** pode ser automatizada a partir de uma especificação formal da sintaxe da linguagem. Nesse caso, em vez de linguagens regulares e expressões regulares, são utilizadas **gramáticas livres de contexto (GLC)** para descrever as estruturas sintáticas que podem ser formadas a partir dos *tokens*. Ferramentas como o *Bison* recebem uma especificação gramatical e geram um analisador sintático capaz de reconhecer as estruturas válidas da linguagem e identificar construções que não estejam de acordo com sua gramática.
-
-A diferença entre essas duas etapas está, portanto, relacionada ao tipo de estrutura que cada uma procura reconhecer. A análise léxica identifica unidades elementares do programa, como identificadores, números, palavras reservadas e operadores, utilizando principalmente mecanismos associados às linguagens regulares e aos autômatos finitos. A análise sintática, por sua vez, trabalha sobre a sequência de *tokens* produzida pelo analisador léxico e procura reconhecer estruturas mais complexas, descritas por uma gramática livre de contexto.
-
-Essa divisão pode ser representada de forma simplificada pelo seguinte fluxo:
-
-``` text
-Programa-fonte
-      │
-      ▼
-Analisador léxico
-      │
-      │  reconhecimento de lexemas
-      │  por padrões regulares
-      ▼
-Sequência de tokens
-      │
-      ▼
-Analisador sintático
-      │
-      │  reconhecimento segundo
-      │  uma gramática livre de contexto
-      ▼
-Estrutura sintática
-```
-
-Na próxima seção será apresentada a ferramenta Flex, amplamente utilizada na construção de analisadores léxicos. A partir das expressões regulares utilizadas para especificar os padrões léxicos da linguagem, o Flex implementa os mecanismos necessários para realizar sua conversão em autômatos finitos determinísticos, responsáveis pelo reconhecimento eficiente dos tokens no programa-fonte. Essa ferramenta será utilizada no desenvolvimento da primeira etapa do compilador apresentado neste livro, permitindo implementar de forma sistemática o analisador léxico e estabelecer a interface entre o programa-fonte e as etapas posteriores do processo de compilação.
+Na próxima seção será apresentada a ferramenta `Flex`, amplamente utilizada na construção de analisadores léxicos. A partir das expressões regulares utilizadas para especificar os padrões léxicos da linguagem, o Flex implementa os mecanismos necessários para realizar sua conversão em autômatos finitos determinísticos, responsáveis pelo reconhecimento eficiente dos tokens no programa-fonte. Essa ferramenta será utilizada no desenvolvimento da primeira etapa do compilador apresentado neste livro, permitindo implementar de forma sistemática o analisador léxico e estabelecer a interface entre o programa-fonte e as etapas posteriores do processo de compilação.
 
 ## Lex/Flex - Geradores de Analisadores Léxicos
 
@@ -2458,14 +2434,14 @@ A ferramenta lex funciona basicamente implementando os algoritmos de Conversão 
 
 ### Metacaracteres Lex
 
-Alguns carateres tem um significado especial nas expressões regulares escritas para Lex. Os principais são apresentados na Tabela [1.2](@tbl-metacaracteres){reference-type="ref" reference="tab:metacaracteres"}.
+Alguns carateres tem um significado especial nas expressões regulares escritas para Lex. Os principais são apresentados na @tbl-metacaracteres.
 
 ::: {#tbl-metacaracteres}
 | **Metacaracter** | **Correspondência**                          |
 |:----------------:|:---------------------------------------------|
 |        x         | caracter 'x', exceto nova linha              |
 |        .         | Qualquer caracter exceto nova linha          |
-| $\ n$ Nova linh  | a                                            |
+|      $\backslash n$       | Nova linha                                   |
 |        \*        | Zero ou mais cópias da expressão precedente  |
 |        \+        | Uma ou mais cópias da expressão precedente   |
 |        ?         | Zero ou uma cópia da expressão precedente    |
@@ -2474,12 +2450,12 @@ Alguns carateres tem um significado especial nas expressões regulares escritas 
 |       a b        | Alternativa "a ou b"                         |
 |      (ab)+       | Uma ou mais cópias de ab (agrupamento)       |
 |      "a+b"       | Literal "a+b"                                |
-|                  | Classe de caracteres. Nesse caso, a, b ou c. |
+|      [abc]       | Classe de caracteres. Nesse caso, a, b ou c. |
 
 : Metacaracteres de Lex
 :::
 
-Alguns exemplos de correspondências entre expressões regulares para Lex e os símbolos que são reconhecidos estão representados na Tabela [1.3](@tbl-exemplosLex){reference-type="ref" reference="tab:exemplosLex"}.
+Alguns exemplos de correspondências entre expressões regulares para Lex e os símbolos que são reconhecidos estão representados na @tbl-exemplosLex.
 
 ::: {#tbl-exemplosLex}
 | **Expressão Regular** | **Símbolos Reconhecidos**            |
@@ -2489,12 +2465,12 @@ Alguns exemplos de correspondências entre expressões regulares para Lex e os s
 |         abc+          | abc, abcc, abccc, ...                |
 |        a(bc)+         | abc, abcbc, abcbcbc, ...             |
 |        a(bc)?         | a, abc                               |
-|                       | a ou b ou c                          |
-|                       | qualquer letra no intervalo a até z. |
-|                       | a ou - ou z                          |
-|                       | qualquer símbolo exceto a ou b.      |
-|                       | a ou \^ou b                          |
-|                       | a ou ou b                            |
+|        [abc]          | a ou b ou c                          |
+|        [a-z]          | qualquer letra no intervalo a até z. |
+|        [-az]          | - ou a ou z                          |
+|        [^ab]          | qualquer símbolo exceto a ou b.      |
+|        [a^b]          | a ou \^ ou b                          |
+|        [a\|b]         | a ou \| ou b                            |
 |          ab           | a ou b                               |
 
 : Exemplos de Expressões Regulares para Lex
