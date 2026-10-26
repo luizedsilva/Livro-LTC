@@ -21,13 +21,6 @@
         <label for="arrayInput">Vetor inicial (separe os valores por vírgula)</label>
         <input id="arrayInput" value="95, 60, 10, 40, 30, 1, 20, 90, 70, 80, 50">
       </div>
-      <div class="buttons">
-        <button id="resetBtn">Reiniciar</button>
-        <button id="prevBtn" disabled>← Anterior</button>
-        <button id="nextBtn">Próximo passo →</button>
-        <button id="runBtn">Executar tudo</button>
-      </div>
-      <p class="hint">Cada clique em <strong>Próximo passo</strong> executa a partição e avança até a próxima chamada <code>qSort(m,n)</code>, quando um novo registro é empilhado. As chamadas à esquerda terminam antes das chamadas à direita.</p>
     </section>
 
     <section class="status-grid">
@@ -62,6 +55,13 @@
         </div>
         <p class="hint">A chamada atual fica no topo. Cada registro mostra os parâmetros <code>m</code> e <code>n</code>, o estado da chamada e, quando aplicável, o índice do pivô.</p>
       </article>
+      <div class="buttons">
+        <button id="resetBtn">Reiniciar</button>
+        <button id="prevBtn" disabled>Anterior</button>
+        <button id="nextBtn">Próximo passo</button>
+        <button id="runBtn">Executar tudo</button>
+      </div>
+      <p class="hint">Cada clique em <strong>Próximo passo</strong> executa a partição e avança até a próxima chamada <code>qSort(m,n)</code>, quando um novo registro é empilhado. As chamadas à esquerda terminam antes das chamadas à direita.</p>
     </section>
 
     <section class="panel">

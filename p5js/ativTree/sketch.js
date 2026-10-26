@@ -8,12 +8,15 @@ let finalValues = [];
 let nodeMap = new Map();
 let canvasWidth = 700;
 let canvasHeight = 360;
+let showExecutionEvents = true;
 
 function setup() {
   const holder = document.getElementById("treeCanvas");
   canvasWidth = Math.max(500, holder.clientWidth || 700);
   const canvas = createCanvas(canvasWidth, canvasHeight);
   canvas.parent("treeCanvas");
+  canvas.elt.tabIndex = 0;
+  canvas.elt.setAttribute("aria-label", "Árvore de ativação do Quicksort");
   pixelDensity(1);
   textFont("sans-serif");
   noLoop();
@@ -22,8 +25,55 @@ function setup() {
   document.getElementById("prevBtn").addEventListener("click", previousStep);
   document.getElementById("nextBtn").addEventListener("click", nextStep);
   document.getElementById("runBtn").addEventListener("click", runAll);
+  installEventToggle();
   window.addEventListener("resize", handleResize);
   resetSimulation();
+}
+
+function installEventToggle() {
+  const eventList = document.getElementById("eventLog");
+  if (!eventList) return;
+
+  // Cria o controle automaticamente; não é necessário alterar o HTML.
+  let toggle = document.getElementById("toggleEvents");
+  if (!toggle) {
+    const label = document.createElement("label");
+    label.id = "eventToggleLabel";
+    label.style.display = "inline-flex";
+    label.style.alignItems = "center";
+    label.style.gap = "0.45rem";
+    label.style.margin = "0.5rem 0";
+    label.style.cursor = "pointer";
+
+    toggle = document.createElement("input");
+    toggle.type = "checkbox";
+    toggle.id = "toggleEvents";
+    toggle.checked = showExecutionEvents;
+    toggle.addEventListener("change", () => {
+      showExecutionEvents = toggle.checked;
+      eventList.hidden = !showExecutionEvents;
+      renderEventLog();
+    });
+
+    const text = document.createElement("span");
+    text.textContent = "Mostrar eventos da execução";
+    label.append(toggle, text);
+    eventList.parentElement.insertBefore(label, eventList);
+  }
+  eventList.hidden = !showExecutionEvents;
+}
+
+function focusActivationTree() {
+  const holder = document.getElementById("treeCanvas");
+  const canvas = holder && holder.querySelector("canvas");
+  if (!canvas) return;
+
+  if (!canvas.hasAttribute("tabindex")) canvas.tabIndex = 0;
+  try {
+    canvas.focus({ preventScroll: true });
+  } catch (_) {
+    canvas.focus();
+  }
 }
 
 function handleResize() {
@@ -130,6 +180,7 @@ function resetSimulation() {
   renderStack([], null);
   renderEventLog();
   renderVisualState();
+  focusActivationTree();
 }
 
 function nextStep() {
@@ -173,6 +224,7 @@ function updateInterface() {
   renderStack(ev ? ev.stack : [], ev);
   renderEventLog();
   renderVisualState();
+  focusActivationTree();
 }
 
 function renderArray(values) {
@@ -227,7 +279,12 @@ function renderStack(stackIds, event) {
 
 function renderEventLog() {
   const list = document.getElementById("eventLog");
+  if (!list) return;
+
+  list.hidden = !showExecutionEvents;
   list.innerHTML = "";
+  if (!showExecutionEvents) return;
+
   executionEvents.forEach((ev, index) => {
     const item = document.createElement("li");
     item.textContent = ev.message;
@@ -235,8 +292,8 @@ function renderEventLog() {
     else if (index > stepIndex) item.classList.add("future");
     list.appendChild(item);
   });
-  const selected = list.children[stepIndex];
-  if (selected) selected.scrollIntoView({block: "nearest"});
+
+  // Não desloca a página para a lista de eventos: o foco permanece na árvore.
 }
 
 function renderVisualState() {
