@@ -162,7 +162,7 @@ Nessa produção, \\(E\\) representa a expressão reconhecida, enquanto \\(E_1\\
 
 Podemos associar à produção uma regra semântica que constrói a representação pós-fixada da expressão:
 
-$$ E.code = E_1.code \mathbin{\\|} T.code \mathbin{\\|} "+" $$
+$$ E.code = E_1.code \mathbin{\\|} T.code \mathbin{\\|} \text{"+"} $$
 
 O operador `|` representa a concatenação de cadeias de caracteres. A regra estabelece que a representação da expressão resultante é formada pela concatenação do código de $E_1$, do código de $T$ e do operador de adição.
 
@@ -196,7 +196,7 @@ $$ E \rightarrow E_1 + T $$
 
 Uma definição dirigida por sintaxe pode especificar a construção do código pós-fixado por meio da regra:
 
-$$ E.code = E_1.code \mathbin{\\|} T.code \mathbin{\\|} "+" $$
+$$ E.code = E_1.code \mathbin{\\|} T.code \mathbin{\\|} \text{"+"} $$
 
 Já um esquema de tradução pode executar uma ação que imprime o operador quando a produção é reconhecida, desde que os códigos dos operandos já tenham sido produzidos na ordem apropriada.
 
@@ -204,7 +204,7 @@ Por exemplo, em uma gramática adequada à análise ascendente, a ação pode se
 
 ```
 E : E1 '+' T
-    { printf("+ "); }
+    { printf("+"); }
 ```
 
 Nesse exemplo, a ação imprime o operador. Para obter a tradução completa, as produções correspondentes aos operandos também precisam produzir suas representações. A posição da ação em relação aos símbolos da produção determina quando ela será executada.
@@ -954,12 +954,12 @@ A utilização de rótulos permite que o código gerado represente a escolha ent
 ```{.c}
 selecao:
         T_SE 
-        expressao 
+        expressao
+        T_ENTAO 
            {
              printf ("\tDSVF\tL%d\n", ++ROTULO); 
              empilha (ROTULO);
            }  
-        T_ENTAO 
         lista_comandos 
         T_SENAO 
            {

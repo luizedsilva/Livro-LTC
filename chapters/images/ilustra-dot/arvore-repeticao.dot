@@ -19,7 +19,7 @@ digraph ArvoreDerivacao {
     expressao [label="expressão", style="rounded,filled", fillcolor="#e8f2df"];
     t_faca [label="T_FACA"];
     
-    acao2 [label="printf(\"DSVS Ly\");\lempilha(y);\l",shape=plaintext, fontcolor=red];
+    acao2 [label="printf(\"DSVF Ly\");\lempilha(y);\l",shape=plaintext, fontcolor=red];
     
     lista [label="lista-comando", style="rounded,filled", fillcolor="#e8f2df"];
     t_fimenquanto [label="T_FIMENQUANTO"];

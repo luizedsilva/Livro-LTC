@@ -1,0 +1,6 @@
+Fazer:
+1. acrescentar algoritmo para minimização de AFD
+2. mudar o exemplo da calculadora para o capítulo de análise semântica
+3. acrescentar exemplos de tradução de procedimento e função
+4. acrescentar exercícios
+5. acrescentar atividades

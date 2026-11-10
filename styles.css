@@ -153,3 +153,22 @@
     page-break-inside: avoid;
   }
 }
+
+/* ---------------------------------------------------------
+   TABELAS
+   --------------------------------------------------------- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th,
+table td {
+  border: 1px solid #999;
+  padding: 6px 10px;
+}
+
+table th {
+  background-color: #eeeeee;
+  text-align: center;
+}

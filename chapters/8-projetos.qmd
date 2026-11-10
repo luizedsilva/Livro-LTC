@@ -283,37 +283,9 @@ Nem todos os registros de ativação contêm necessariamente todos esses campos.
 
 ### Organização de um registro de ativação
 
-A figura a seguir apresenta uma organização conceitual possível.
+A @fig-registro-conceitual apresenta uma organização conceitual possível.
 
-Registro de ativação de uma rotina
-
-Parâmetros
-
-Argumentos recebidos na chamada
-
-Valor de retorno
-
-Resultado da função, se necessário
-
-Endereço de retorno
-
-Ponto de continuação do chamador
-
-Elo de controle
-
-Registro da rotina chamadora
-
-Elo de acesso
-
-Acesso a um escopo externo, quando necessário
-
-Variáveis locais
-
-Dados privados da ativação
-
-Temporários
-
-Resultados intermediários das expressões
+![Registro de ativação conceitual](/chapters/images/registro-ativacao-conceitual.png){#fig-registro-conceitual width="60%"}
 
 Os campos são ilustrativos. Sua ordem, presença e forma de armazenamento variam conforme a implementação.
 
@@ -321,47 +293,6 @@ O registro é criado quando uma ativação começa e permanece disponível enqua
 
 Essa organização permite que o compilador utilize deslocamentos relativos para acessar os dados locais. Por exemplo, uma variável pode ser localizada a partir de um registrador que aponta para uma posição de referência do registro de ativação. O deslocamento da variável pode permanecer constante em diferentes chamadas, mesmo que cada registro esteja localizado em uma posição diferente da memória.
 
-### Exemplo de registros de ativação
-
-Considere o seguinte programa:
-
-```
-int soma(int a, int b) {
-    int resultado;
-    resultado = a + b;
-    return resultado;
-}
-
-int main() {
-    int x;
-    x = soma(10, 20);
-    return 0;
-}
-```
-
-Quando `main` chama `soma(10,20)`, o ambiente de execução precisa disponibilizar os valores `10` e `20` para os parâmetros `a` e `b`. A função utiliza esses valores para calcular `resultado`, cujo valor final é `30`.
-
-Durante a execução de `soma`, a pilha contém, conceitualmente, os registros de ativação de `main` e `soma`:
-
-Estado da pilha durante a execução de soma
-
-Registro de soma — topo
-
-a = 10
-
-b = 20
-
-resultado = 30
-
-Endereço de retorno e informações de controle
-
-Registro de main
-
-x e informações de controle de main
-
-Quando `soma` termina, o resultado é disponibilizado ao chamador de acordo com a convenção de retorno. O registro de ativação de `soma` é removido, e a execução continua em `main`, que atribui o valor retornado à variável `x`.
-
-Se `soma` fosse chamada novamente, seria criado outro registro de ativação, com novos valores para `a`, `b` e `resultado`. Essa independência entre ativações permite que a mesma função seja executada repetidas vezes sem misturar seus dados locais.
 
 ### Elo de controle e elo de acesso
 
@@ -396,7 +327,157 @@ A pilha de execução, a árvore de ativação e o registro de ativação descre
 
 Esses conceitos completam o estudo da geração de código ao mostrar que traduzir uma função não significa apenas produzir suas instruções. É necessário também definir como ela recebe argumentos, mantém seu estado durante a execução e devolve o controle ao programa que a chamou.
 
-Segue uma proposta de texto para o último capítulo do livro, dedicado à ampliação do projeto de compilador. A seção parte do compilador já desenvolvido para a MVS e apresenta, de forma progressiva, os conceitos e as modificações necessárias para incorporar funções, procedimentos, parâmetros e chamadas de subprogramas.
+### Registro de ativação para a MVS
+
+A @fig-registro-mvs mostra uma configuração para construção do registro de ativação para a MVS.
+
+![Registro de ativação da MVS](/chapters/images/registro-ativacao-mvs.png){#fig-registro-mvs width="60%"}
+
+A construção do registro de ativação na MVS começa com a reserva de uma posição na pilha de execução para armazenar o valor de retorno da rotina. Essa posição é necessária quando a rotina é uma função que retorna um resultado ao seu chamador. No caso de um procedimento, que não retorna valor, essa reserva não é necessária.
+
+Em seguida, os valores dos argumentos da chamada são empilhados, na ordem estabelecida pela implementação da MVS. Esses valores serão utilizados para inicializar os parâmetros formais da rotina chamada. Dessa maneira, os argumentos ficam disponíveis na pilha para serem acessados durante a execução da rotina.
+
+Antes de transferir o controle para a rotina, é necessário preservar as informações que permitem retomar a execução no ponto em que a chamada ocorreu. Para isso, o endereço de retorno — isto é, o endereço da instrução que deverá ser executada após o término da rotina — é armazenado na pilha. Também é preservado o valor anterior do registrador `D`, que representa o contexto da rotina chamadora. Essas informações possibilitam restaurar o estado de execução anterior quando a rotina terminar.
+
+Após salvar essas informações, o registrador `D` é atualizado para apontar para a posição da pilha que servirá como referência para o novo registro de ativação. A partir desse ponto, são organizadas as variáveis locais, os parâmetros e os valores temporários necessários à execução da rotina. Os temporários são utilizados, por exemplo, para armazenar resultados intermediários produzidos durante a avaliação de expressões.
+
+Ao final da execução da rotina, o processo de encerramento recupera as informações preservadas durante a chamada. O valor do registrador `D` correspondente ao contexto anterior pode ser recuperado da posição `M[D-1]`, enquanto o endereço de retorno do programa é recuperado da posição `M[D-2]`. Em seguida, a pilha é ajustada para remover os elementos utilizados pelo registro de ativação, incluindo os dados de controle e os demais valores associados à execução da rotina.
+
+Considerando que esses elementos ocupam as posições previstas pela convenção de chamada da MVS, a remoção de `n-2` valores permite descartar os elementos do registro de ativação sem eliminar o valor de retorno, quando houver. Assim, se a rotina for uma função, o resultado permanece no topo da pilha, disponível para ser utilizado pela expressão que contém a chamada. Se a rotina for um procedimento, não há valor de retorno a preservar.
+
+Esse mecanismo permite que chamadas de rotinas sejam executadas de maneira aninhada e recursiva. Cada chamada estabelece um novo contexto de execução, preservando as informações necessárias para que, ao terminar, o controle retorne corretamente à rotina chamadora.
+
+### Extensão da Máquina Virtual para Suporte a Subprogramas
+
+A tradução de programas que utilizam funções e procedimentos exige que a máquina virtual ofereça mecanismos para realizar chamadas de subprogramas, transferir argumentos, preservar o contexto de execução e retornar ao ponto em que a chamada foi realizada.
+
+Para implementar essas funcionalidades, a máquina virtual MVS é estendida com um conjunto de instruções específicas para manipulação de variáveis locais, acesso indireto à memória, gerenciamento dos registros de ativação e controle da execução de subprogramas.
+
+A implementação utiliza a pilha de execução para armazenar informações necessárias às chamadas de funções e procedimentos. Cada chamada estabelece um novo contexto de execução, denominado **registro de ativação**, que contém informações associadas à execução da rotina, como parâmetros, variáveis locais e informações de controle.
+
+Nesse mecanismo, três registradores desempenham papel fundamental:
+
+- `s`: indica o topo da pilha de execução;
+- `d`: contém o endereço-base do registro de ativação corrente;
+- `i`: indica a posição da próxima instrução a ser executada no programa.
+
+A memória da máquina virtual é representada por `M`, sendo `M[x]` o conteúdo da posição de memória `x`.
+
+#### Novas instruções da MVS
+
+A Tabela apresenta as instruções acrescentadas à máquina virtual para permitir a tradução de funções e procedimentos.
+
+| Instrução | Descrição | Microcódigo |
+|:---|:---|:---|
+| `CRVL n` | Carrega valor local | $s \leftarrow s + 1$ <br> $M[s] \leftarrow M[d + n]$ |
+| `ARZL n` | Armazena valor em variável local | $M[d + n] \leftarrow M[s]$ <br> $s \leftarrow s − 1$ |
+| `CREL n` | Carrega endereço local | $s \leftarrow s + 1$ <br> $M[s] \leftarrow d + n$ |
+| `CREG n` | Carrega endereço global | $s \leftarrow s + 1$ <br> $M[s] \leftarrow n$ |
+| `CRVI n` | Carrega valor indireto | $s \leftarrow s + 1$ <br> $M[s] \leftarrow M[M[d + n]]$ |
+| `ARMI n` | Armazena valor indireto | $M[M[d + n]] \leftarrow M[s]$ <br> $s \leftarrow s − 1$ |
+| `SVCPS` | Salva contador do programa | $s \leftarrow s + 1$ <br> $M[s] \leftarrow i + 2$ |
+| `ENSP` | Entrada em subprograma | $s \leftarrow s + 1$ <br> $M[s] \leftarrow d$ <br> $d \leftarrow s + 1$ |
+| `RTSP n` | Retorno de subprograma | $d \leftarrow M[s]$ <br> $i \leftarrow M[s − 1]$ <br> $s \leftarrow s − (n + 2)$ |
+
+: {tbl-colwidths="[20,40,40]"}
+
+#### Descrição das instruções
+
+##### Manipulação de variáveis locais
+
+As instruções `CRVL`, `ARZL` e `CREL` permitem acessar variáveis locais e seus endereços, utilizando o registrador `d` como referência para o registro de ativação corrente.
+
+**CRVL n – Carrega valor local**
+
+Obtém o conteúdo da variável localizada no deslocamento `n`, relativo ao endereço-base do registro de ativação, e coloca esse valor no topo da pilha.
+
+A instrução realiza duas operações: incrementa o ponteiro da pilha e copia o conteúdo de `M[d+n]` para a nova posição.
+
+**ARZL n – Armazena valor local**
+
+Armazena o valor que está no topo da pilha na posição correspondente à variável local identificada pelo deslocamento `n`.
+
+Após realizar a atribuição, decrementa o ponteiro da pilha, removendo o valor utilizado.
+
+**CREL n – Carrega endereço local**
+
+Obtém o endereço de uma variável local, calculado por `d+n`, e coloca esse endereço no topo da pilha.
+
+Diferentemente de `CRVL`, essa instrução não carrega o conteúdo da variável, mas seu endereço. Isso permite implementar operações que necessitam de referências a variáveis, como passagem de parâmetros por referência.
+
+##### Acesso a variáveis globais e indiretas
+
+As instruções `CREG`, `CRVI` e `ARMI` complementam os mecanismos de acesso à memória.
+
+**CREG n – Carrega endereço global**
+
+Coloca no topo da pilha o endereço `n` de uma variável global.
+
+O endereço é armazenado diretamente na pilha, sem realizar a leitura do conteúdo da posição de memória correspondente.
+
+**CRVI n – Carrega valor indireto**
+
+Obtém o conteúdo de uma posição de memória cujo endereço está armazenado na posição `M[d+n]`.
+
+A operação utiliza dois níveis de acesso à memória:
+
+1. Obtém o endereço armazenado em `M[d+n]`.
+2. Recupera o conteúdo da posição indicada por esse endereço e o coloca no topo da pilha.
+
+Essa instrução é particularmente útil para implementar o acesso a parâmetros passados por referência.
+
+**ARMI n – Armazena valor indireto**
+
+Realiza uma atribuição indireta. O valor que está no topo da pilha é armazenado na posição de memória cujo endereço está armazenado em `M[d+n]`.
+
+Após a operação, o ponteiro da pilha é decrementado.
+
+##### Controle de chamadas de subprogramas
+
+As instruções `SVCP`, `ENSP` e `RTSP` implementam o mecanismo de chamada e retorno de funções e procedimentos.
+
+**SVCP – Salva contador do programa**
+
+Salva na pilha o endereço da instrução que deverá ser executada após o retorno do subprograma.
+
+A operação utiliza `i+2`, considerando que a instrução de chamada e a instrução de entrada no subprograma ocupam posições consecutivas no programa.
+
+Esse endereço permite que a execução retorne ao ponto imediatamente posterior à chamada.
+
+**ENSP – Entrada em subprograma**
+
+Realiza a preparação do novo registro de ativação.
+
+Inicialmente, salva na pilha o valor corrente de `d`, preservando o endereço-base do registro de ativação do programa chamador. Em seguida, atualiza `d`, estabelecendo a referência para o novo registro de ativação.
+
+Dessa maneira, cada chamada passa a possuir seu próprio contexto de execução, permitindo a existência de chamadas aninhadas e recursivas.
+
+**RTSP n – Retorno de subprograma**
+
+Realiza o encerramento da execução de uma função ou procedimento.
+
+A instrução executa três operações:
+
+1. Recupera o endereço-base do registro de ativação anterior, restaurando o valor de `d`.
+2. Recupera o endereço de retorno e o coloca no registrador `i`, transferindo o controle para a instrução seguinte à chamada.
+3. Atualiza o ponteiro da pilha, removendo os elementos associados à chamada, incluindo os parâmetros e as informações de controle.
+
+O operando `n` representa a quantidade de parâmetros utilizada no cálculo da desalocação. O termo `n+2` considera os parâmetros e as duas posições de controle utilizadas pelo mecanismo de chamada: endereço de retorno e endereço-base anterior.
+
+#### Funcionamento de uma chamada de subprograma
+
+O processo de chamada de uma função ou procedimento envolve a preparação dos argumentos, o armazenamento das informações de controle e a criação de um novo registro de ativação.
+
+De maneira geral, o processo pode ser dividido nas seguintes etapas:
+
+1. **Preparação dos parâmetros:** os argumentos da chamada são avaliados e disponibilizados na pilha, conforme a convenção de passagem de parâmetros adotada pelo compilador.
+2. **Salvamento do endereço de retorno:** a instrução `SVCPS` armazena na pilha o endereço da próxima instrução a ser executada após o retorno.
+3. **Criação do registro de ativação:** a instrução `ENSP` salva o endereço-base anterior e estabelece um novo valor para o registrador `d`.
+4. **Execução do subprograma:** as instruções da rotina acessam seus parâmetros e variáveis locais utilizando os deslocamentos relativos a `d`.
+5. **Retorno ao programa chamador:** a instrução `RTSP n` restaura o contexto anterior, recupera o endereço de retorno e libera o espaço ocupado pelos parâmetros e informações de controle.
+
+A utilização de registros de ativação na pilha permite que uma mesma rotina seja chamada várias vezes, inclusive durante sua própria execução. Essa característica é fundamental para implementar procedimentos aninhados e algoritmos recursivos.
+
 
 ### Projeto de compilador com funções, procedimentos e passagem de parâmetros
 
@@ -418,22 +499,22 @@ Uma função ou um procedimento é uma unidade de programa identificada por um n
 
 Uma declaração de função especifica o tipo do valor que será devolvido. Por exemplo:
 
-```
-funcao soma(inteiro a, inteiro b): inteiro
+```{.simples}
+func inteiro soma(inteiro a inteiro b)
 inicio
-    retorne a + b;
-fim
+    soma <- a + b
+fimfunc
 ```
 
 A função `soma` recebe dois parâmetros inteiros, `a` e `b`, e retorna a soma de seus valores. O tipo declarado após os parâmetros indica que o resultado da função é inteiro.
 
 Um procedimento pode ser declarado da seguinte forma:
 
-```
-procedimento imprime(inteiro valor)
+```{.simples}
+proc imprime(inteiro valor)
 inicio
-    escreva valor;
-fim
+    escreva valor
+fimproc
 ```
 
 Nesse exemplo, o procedimento `imprime` recebe um parâmetro inteiro e apresenta seu valor. Não há um resultado a ser utilizado em uma expressão, embora a execução do procedimento possa produzir efeitos, como a escrita de dados.
@@ -459,8 +540,8 @@ Os **parâmetros formais** são os identificadores declarados na definição da 
 
 Os **argumentos efetivos** são os valores ou as expressões fornecidos no momento da chamada. Por exemplo:
 
-```
-resultado = soma(10, 20);
+```{.simples}
+resultado <- soma(10, 20)
 ```
 
 Nessa chamada, `10` e `20` são os argumentos efetivos correspondentes aos parâmetros formais `a` e `b`.
@@ -475,8 +556,8 @@ A verificação envolve pelo menos três propriedades:
 
 Considere a seguinte chamada:
 
-```
-resultado = soma(10);
+```{.simples}
+resultado <- soma(10)
 ```
 
 Se a função exigir dois parâmetros, a chamada apresenta um erro semântico, pois a quantidade de argumentos é insuficiente. Da mesma forma, uma chamada como `soma(10, verdadeiro)` será inválida se o segundo parâmetro exigir um valor inteiro e a linguagem não permitir a conversão do valor lógico.
@@ -493,19 +574,19 @@ Na passagem por valor, o subprograma recebe uma cópia do valor do argumento. Al
 
 Considere o procedimento:
 
-```
-procedimento incrementa(inteiro x)
+```{.simples}
+proc incrementa(inteiro x)
 inicio
-    x = x + 1;
-fim
+    x <- x + 1
+fimproc
 ```
 
 Suponha que o programa principal execute:
 
-```
-inteiro a;
-a = 5;
-incrementa(a);
+```{.simples}
+inteiro a
+a <- 5
+incrementa(a)
 ```
 
 Com passagem por valor, o procedimento recebe uma cópia do valor `5`. Ao executar `x = x + 1`, o parâmetro local passa a valer `6`, mas a variável `a` permanece com o valor `5`.
@@ -520,19 +601,19 @@ Na passagem por referência, o parâmetro formal permite acessar a própria vari
 
 Considere o mesmo procedimento `incrementa`, agora com o parâmetro declarado por referência:
 
-```
-procedimento incrementa(referencia inteiro x)
+```{.simples}
+proc incrementa(ref inteiro x)
 inicio
-    x = x + 1;
-fim
+    x <- x + 1
+fimproc
 ```
 
 Ao executar:
 
-```
-inteiro a;
-a = 5;
-incrementa(a);
+```{.simples}
+inteiro a
+a <- 5
+incrementa(a)
 ```
 
 o procedimento acessa a variável original. Ao final da chamada, `a` passa a valer `6`.
@@ -590,11 +671,11 @@ A organização exata depende da máquina virtual e da convenção de chamada ad
 
 Considere:
 
-```
-funcao quadrado(inteiro x): inteiro
+```{.simples}
+func inteiro quadrado(inteiro x)
 inicio
-    retorne x * x;
-fim
+    quadrado <- x * x
+fimfunc
 ```
 
 Quando o programa executa `quadrado(5)`, o ambiente de execução disponibiliza o parâmetro `x`, executa a multiplicação e devolve o resultado `25` ao ponto da chamada.
@@ -609,8 +690,8 @@ A geração de código deve traduzir a chamada de uma função ou procedimento e
 
 Para uma chamada como:
 
-```
-resultado = soma(10, 20);
+```{.simples}
+resultado <- soma(10 20)
 ```
 
 o compilador deverá gerar código que, conceitualmente, realize as seguintes operações:
@@ -630,13 +711,13 @@ Para evitar que o programa execute o corpo de uma função apenas por ele aparec
 
 #### Retorno de funções
 
-Uma função precisa devolver um valor compatível com o tipo declarado. O comando `retorne` pode ser utilizado para indicar o resultado:
+Uma função precisa devolver um valor compatível com o tipo declarado. O comando de atribuição para variável com o nome da função pode ser utilizado para indicar o resultado:
 
-```
-funcao soma(inteiro a, inteiro b): inteiro
+```{.simples}
+func inteiro soma(inteiro a, inteiro b)
 inicio
-    retorne a + b;
-fim
+    soma <- a + b
+fimfunc
 ```
 
 O compilador deverá verificar se a expressão retornada é compatível com o tipo da função. Também deverá definir as regras para funções que terminam sem executar um comando de retorno, incluindo a possibilidade de rejeitar essas situações durante a análise semântica.
@@ -649,11 +730,11 @@ Um procedimento não precisa devolver um valor para ser utilizado em uma express
 
 Por exemplo:
 
-```
-procedimento mensagem()
+```{.simples}
+proc mensagem()
 inicio
-    escreva 1;
-fim
+    escreva 1
+fimproc
 ```
 
 Uma chamada a `mensagem()` executa o corpo do procedimento e, ao final, retorna ao comando seguinte. O compilador deverá garantir que o retorno não deixe valores indevidos na pilha e que a memória temporária utilizada durante a ativação seja liberada de acordo com a convenção adotada.

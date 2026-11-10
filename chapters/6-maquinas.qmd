@@ -986,6 +986,7 @@ As instruções da MVS são operações elementares que o compilador combina par
 | `CRVG n` | Lê o valor armazenado em `M[n]` e o insere na pilha. |
 | `ARZG n` | Armazena em `M[n]` o valor do topo da pilha e remove esse valor da pilha. |
 | `AMEM n` | Reserva espaço para `n` posições de dados, avançando o topo da pilha. |
+| `DMEM n` | Desaloca `n` posições de dados na memória |
 
 A instrução `CRCT k` executa as operações:
 
@@ -1017,7 +1018,10 @@ $$
 s \leftarrow s-1
 $$
 
-Essas três instruções são suficientes para carregar constantes, consultar variáveis e armazenar resultados em variáveis. A instrução `AMEM n` é usada na preparação do espaço de dados necessário para as variáveis do programa.
+Essas três instruções são suficientes para carregar constantes, consultar variáveis e armazenar resultados em variáveis. A instrução `AMEM n` é usada na preparação do espaço de dados necessário para as variáveis do programa. E por fim, a instrução `DMEM n` decrementa o ponteiro da pilha em n posições, liberando o espaço anteriormente utilizado por variáveis locais ou globais associados à execução de um bloco (corpo principal do programa ou contexto local de uma rotina).
+
+Essa instrução permite controlar explicitamente o espaço ocupado pelos dados durante a execução do programa.
+
 
 #### Instruções aritméticas
 

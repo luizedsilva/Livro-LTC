@@ -9,6 +9,7 @@ number-depth: 2
 
 filters:
   - simulacao.lua
+  - quebra.lua
 
 resources:
   - p5js

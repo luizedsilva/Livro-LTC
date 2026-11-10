@@ -12,12 +12,8 @@
       <item>programa</item>
       <item>fimprograma</item>
       <item>inicio</item>
-      <item>fim</item>
       <item>inteiro</item>
-      <item>real</item>
       <item>logico</item>
-      <item>caractere</item>
-      <item>booleano</item>
       <item>se</item>
       <item>entao</item>
       <item>senao</item>
@@ -25,13 +21,6 @@
       <item>enquanto</item>
       <item>faca</item>
       <item>fimenquanto</item>
-      <item>para</item>
-      <item>de</item>
-      <item>ate</item>
-      <item>passo</item>
-      <item>fimpara</item>
-      <item>repita</item>
-      <item>fimrepita</item>
       <item>leia</item>
       <item>escreva</item>
       <item>verdadeiro</item>
@@ -40,7 +29,10 @@
       <item>ou</item>
       <item>nao</item>
       <item>div</item>
-      <item>mod</item>
+      <item>proc</item>
+      <item>fimproc</item>
+      <item>func</item>
+      <item>fimfunc</item>
     </list>
 
     <contexts>

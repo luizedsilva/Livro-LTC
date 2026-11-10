@@ -183,3 +183,15 @@
   before skip=10pt,
   after skip=10pt
 }
+
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+
+\setlength{\arrayrulewidth}{0.4pt}
+
+\usepackage{etoolbox}
+
+\makeatletter
+\apptocmd{\LT@tabularcr}{\hline}{}{}
+\makeatother
