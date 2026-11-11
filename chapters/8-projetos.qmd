@@ -827,6 +827,682 @@ fimproc
 
 Uma chamada a `mensagem()` executa o corpo do procedimento e, ao final, retorna ao comando seguinte. O compilador deverá garantir que o retorno não deixe valores indevidos na pilha e que a memória temporária utilizada durante a ativação seja liberada de acordo com a convenção adotada.
 
+### Exemplos de tradução
+
+Apresentamos, a seguir, alguns exemplos de tradução que podem servir de referência para o desenvolvimento do compilador, contemplando a tradução de procedimentos e funções com passagem de parâmetros por valor ou por referência. Para ilustrar esse processo, as imagens seguintes apresentam os valores registrados na tabela de símbolos durante a declaração das rotinas e após sua conclusão, quando o compilador retorna ao contexto global.
+
+**Exemplo 1**
+
+```{.simples}
+programa parametros
+  proc somatudo(inteiro a 
+                 inteiro b 
+                 inteiro c 
+                 inteiro d)
+  inicio
+    escreva a + b + c + d
+  fimproc
+  
+inicio
+  somatudo(10 3 4 8)
+fimprograma
+```
+A Figura @fig-exemplo1 ilustra o comportamento da tabela de símbolos durante a compilação da declaração do procedimento `somatudo`. Inicialmente, ao identificar a declaração da rotina, o compilador registra uma entrada correspondente ao procedimento e, em seguida, inclui os seus quatro parâmetros (`a`, `b`, `c` e `d`). Para cada parâmetro, são armazenadas informações como nome, tipo, endereço relativo, escopo, categoria e mecanismo de passagem. Nesse exemplo, todos os parâmetros são do tipo inteiro e são passados por valor (`val`).
+
+Durante a compilação do corpo do procedimento, os parâmetros permanecem registrados na tabela de símbolos e associados ao escopo local da rotina (`L`). Os endereços relativos atribuídos aos parâmetros são utilizados pelo compilador para orientar o acesso aos respectivos valores durante a execução. Além disso, a entrada do procedimento contém informações sobre sua identificação, seu rótulo (`L1`) para onde deve ser desviada a execução na chamada da rotina, a quantidade de parâmetros (`npar = 4`) e suas respectivas características de passagem, representadas na coluna lista de parâmetros `lpar` (onde `i` ou `l` indica o tipo do parâmetro, inteiro ou lógico, respectivamente e `v` ou `r`, indica o tipo de passagem, valor ou referência, respectivamente).
+
+Após a compilação do procedimento, ao encontrar a instrução `fimproc`, o compilador encerra o escopo local e remove da tabela de símbolos as entradas correspondentes aos parâmetros. Entretanto, a entrada do procedimento é preservada no escopo global (`G`), mantendo as informações necessárias para sua identificação e posterior utilização no restante do programa. Dessa forma, quando o compilador encontra a chamada `somatudo(10 3 4 8)`, pode consultar a tabela de símbolos para verificar a existência da rotina, a quantidade de argumentos esperados e as características de passagem dos parâmetros, orientando a geração do código correspondente à chamada.
+
+![Exemplo de compilação de um procedimento](/chapters/images/exemplo1.png){#fig-exemplo1 width="90%"}
+
+O resultado da compilação é:
+
+```{.mvs}
+	INPP
+	DSVS	L0
+L1	ENSP
+	CRVL	-6
+	CRVL	-5
+	SOMA
+	CRVL	-4
+	SOMA
+	CRVL	-3
+	SOMA
+	ESCR
+	RTSP	4
+L0	NADA
+	CRCT	10
+	CRCT	3
+	CRCT	4
+	CRCT	8
+	SVCP
+	DSVS	L1
+	FIMP
+```
+
+O código apresentado corresponde à tradução do programa que declara e utiliza o procedimento `somatudo`, responsável por receber quatro parâmetros inteiros, calcular a soma de seus valores e apresentar o resultado na saída padrão. A tradução é organizada em duas partes: a implementação do procedimento e o programa principal, que realiza sua chamada.
+
+_Inicialização e desvio para o programa principal_
+
+```
+INPP
+DSVS    L0
+```
+
+A instrução `INPP` inicializa a execução do programa, preparando as estruturas necessárias para o seu funcionamento. Em seguida, `DSVS L0` realiza um desvio incondicional para o rótulo `L0`, evitando que o fluxo de execução passe diretamente pelo código do procedimento. Essa estratégia permite que a execução comece pelo programa principal, deixando o corpo do procedimento disponível para ser executado somente quando ocorrer uma chamada.
+
+_Implementação do procedimento `somatudo`_
+
+```
+L1  ENSP
+    CRVL    -6
+    CRVL    -5
+    SOMA
+    CRVL    -4
+    SOMA
+    CRVL    -3
+    SOMA
+    ESCR
+    RTSP    4
+```
+
+O rótulo `L1` identifica o ponto de entrada do procedimento. A instrução `ENSP` inicia a execução da rotina, preparando o ambiente necessário para seu processamento.
+
+As instruções `CRVL` recuperam os valores dos parâmetros armazenados na memória, utilizando seus endereços relativos. Nesse exemplo, os deslocamentos `-6`, `-5`, `-4` e `-3` correspondem, respectivamente, aos parâmetros `a`, `b`, `c` e `d`.
+
+A instrução `SOMA` realiza a adição dos dois valores disponíveis no topo da pilha. Dessa maneira, o código executa sucessivamente as operações necessárias para calcular:
+
+```{.msv} 
+a+b+c+d
+```
+
+Após o cálculo, a instrução `ESCR` apresenta o resultado na saída padrão. Finalmente, `RTSP 4` encerra a execução do procedimento e retorna ao ponto de chamada, considerando a quantidade de quatro parâmetros utilizados pela rotina.
+
+_Execução do programa principal_
+
+```
+L0  NADA
+    CRCT    10
+    CRCT    3
+    CRCT    4
+    CRCT    8
+    SVCP
+    DSVS    L1
+    FIMP
+```
+
+O rótulo `L0` marca o início do programa principal. A instrução `NADA` não realiza nenhuma operação, sendo utilizada apenas como referência para o desvio efetuado anteriormente.
+
+As quatro instruções `CRCT` empilham os valores constantes `10`, `3`, `4` e `8`, que serão utilizados como argumentos na chamada do procedimento. Em seguida, `SVCP` salva o endereço da instrução que deverá ser executada quando a chamada do procedimento for encerrado e a execução retornar para o programa principal, de acordo com a convenção de passagem de parâmetros adotada pela máquina.
+
+A instrução `DSVS L1` transfere o fluxo de execução para o endereço identificado pelo rótulo `L1`, iniciando a execução do procedimento `somatudo`. Após a conclusão da rotina, a instrução `RTSP 4` realiza o retorno ao programa principal, permitindo que a execução prossiga na instrução seguinte à chamada, que, nesse caso, é `FIMP`.
+
+Por fim, `FIMP` indica o término da execução do programa.
+
+_Resultado da execução_
+
+Considerando a chamada:
+
+```
+somatudo(10 3 4 8)
+```
+
+o procedimento recebe os valores correspondentes aos seus quatro parâmetros e realiza as seguintes operações:
+
+$$ 10+3=13 $$
+
+$$ 13+4=17 $$
+
+$$ 17+8=25 $$
+
+Saída esperada
+
+```
+25
+```
+
+Esse exemplo demonstra como o compilador traduz a declaração de um procedimento e sua respectiva chamada, incluindo a organização dos parâmetros na pilha, o acesso aos valores por meio de endereços relativos, o desvio para a rotina e o retorno ao fluxo de execução do programa principal.
+
+**Exemplo 2**
+
+```{.simples}
+programa rotina
+  inteiro x y
+  
+  proc p(ref inteiro s)
+    inteiro z
+  inicio
+    se s > 1
+       entao y <- 1
+       senao z <- s - 1
+             p(z)
+             y <- y * s
+    fimse
+  fimproc
+
+inicio
+   x <- 4
+   p(x)
+   escreva x
+   escreva y
+fimprograma
+```
+
+A Figura @fig-exemplo2 apresenta a organização da tabela de símbolos durante a compilação da declaração do procedimento `p`, que possui um parâmetro passado por referência e uma variável local. O exemplo permite observar como o compilador registra as variáveis globais, as informações da rotina, os parâmetros e as variáveis locais, bem como o comportamento da tabela de símbolos após o encerramento da declaração do procedimento.
+
+_Variáveis globais e declaração do procedimento_
+
+Inicialmente, o programa declara duas variáveis inteiras, `x` e `y`, que são registradas na tabela de símbolos com os seguintes valores:
+
+- `x`: variável do tipo inteiro, com endereço real `0`, escopo global (`G`) e categoria `var`.
+- `y`: variável do tipo inteiro, com endereço real `1`, escopo global (`G`) e categoria `var`.
+
+Essas variáveis permanecem disponíveis durante toda a execução do programa, inclusive dentro dos procedimentos e funções declarados.
+
+Na sequência, o compilador identifica a declaração do procedimento `p`, cujo parâmetro `s` é do tipo inteiro e utiliza passagem por referência. A entrada correspondente ao procedimento apresenta as seguintes informações:
+
+- **nome**: identificação da rotina (`p`).
+- **tipo**: não se aplica, pois se trata de um procedimento, que não possui valor de retorno.
+- **esc**: escopo global (`G`), indicando que a rotina foi declarada no nível global do programa.
+- **cat**: categoria `pro`, identificando uma declaração de procedimento.
+- **rot**: rótulo `L1`, que identifica o endereço de entrada do código gerado para a rotina.
+- **npar**: quantidade de parâmetros, nesse caso, `1`.
+- **lpar**: informações sobre os parâmetros, representadas por `(i,r)`, indicando que o parâmetro é do tipo inteiro (`i`) e utiliza passagem por referência (`r`).
+
+_Parâmetros e variáveis locais do procedimento_
+
+Durante a compilação do corpo do procedimento, o compilador registra também os identificadores pertencentes ao escopo local (`L`). Nesse exemplo, são registradas duas entradas:
+
+- `s`: parâmetro do tipo inteiro, com endereço relativo `-3`, escopo local (`L`), categoria `par` e mecanismo de passagem `ref`, indicando que seu valor é acessado por referência. O endereço relativo negativo decorre da convenção de organização dos parâmetros no ambiente de execução da MVS.
+- `z`: variável local do tipo inteiro, com endereço relativo `0`, escopo local (`L`) e categoria `var`. Como se trata de uma variável declarada dentro do procedimento, seu armazenamento pertence ao ambiente de execução da rotina.
+
+É importante observar que, embora `s` seja um parâmetro formal, ele também é registrado na tabela de símbolos como uma entidade pertencente ao escopo local do procedimento. A informação sobre o mecanismo de passagem é armazenada separadamente, permitindo ao compilador distinguir parâmetros passados por valor daqueles passados por referência.
+
+_Tabela de símbolos após o encerramento do procedimento_
+
+A segunda tabela apresenta a situação após a compilação da declaração do procedimento, quando o compilador encontra a instrução `fimproc`.
+
+Nesse momento, as entradas correspondentes ao parâmetro `s` e à variável local `z` são removidas, pois pertencem ao escopo local da rotina, que foi encerrado.
+
+Entretanto, permanecem na tabela as entradas referentes às variáveis globais `x` e `y` e ao procedimento `p`. A entrada do procedimento conserva suas informações de identificação, seu rótulo de código (`L1`), a quantidade de parâmetros (`npar = 1`) e suas características de passagem (`par = (i,r)`).
+
+Essa preservação é necessária porque o procedimento poderá ser chamado em diferentes pontos do programa, e o compilador precisa consultar suas informações para verificar a quantidade, os tipos e os mecanismos de passagem dos argumentos utilizados nas chamadas.
+
+_A passagem por referência_
+
+O exemplo também ilustra a diferença entre o registro de um parâmetro passado por referência e o de uma variável local. Enquanto o parâmetro `s` possui o mecanismo `ref` e utiliza um endereço relativo negativo, a variável `z` é armazenada diretamente no ambiente local do procedimento.
+
+Essa distinção é particularmente importante para a geração de código. Quando o procedimento modifica o parâmetro `s`, a alteração deve refletir diretamente na variável utilizada como argumento na chamada. Por outro lado, as operações realizadas sobre `z` afetam apenas a variável local da execução corrente do procedimento.
+
+Assim, a tabela de símbolos mantém as informações necessárias para que o compilador gere corretamente o código de acesso às variáveis, respeitando seus escopos e os mecanismos de passagem de parâmetros.
+
+Observação sobre o exemplo: na chamada `p(x)`, o parâmetro formal `s` recebe uma referência à variável global `x`. Portanto, quando o procedimento executa `s <- 1`, está modificando diretamente o conteúdo de `x`. Essa característica permite ilustrar o efeito da passagem por referência sobre as variáveis do programa chamador.
+
+![Exemplo de compilação de rotina com passagem de parâmetro por referência](/chapters/images/exemplo2.png){#fig-exemplo2 width="90%"}
+
+E o resultado do código compilado para MVS é:
+
+```{.mvs}
+    INPP
+	AMEM	2
+	DSVS	L0
+L1	ENSP
+	AMEM	1
+	CRVI	-3
+	CRCT	1
+	CMMA
+	DSVF	L2
+	CRCT	1
+	ARZG	1
+	DSVS	L3
+L2	NADA
+	CRVI	-3
+	CRCT	1
+	SUBT
+	ARZL	0
+	CREL	0
+	SVCP
+	DSVS	L1
+	CRVG	1
+	CRVI	-3
+	MULT
+	ARZG	1
+L3	NADA
+	DMEM	1
+	RTSP	1
+L0	NADA
+	CRCT	4
+	ARZG	0
+	CREG	0
+	SVCP
+	DSVS	L1
+	CRVG	0
+	ESCR
+	CRVG	1
+	ESCR
+	DMEM	2
+	FIMP
+```
+
+O código apresentado corresponde à tradução para a máquina virtual MVS de um programa que declara um procedimento recursivo `p`, cujo parâmetro inteiro `s` é passado por referência. O procedimento também utiliza uma variável local `z` e uma variável global `y`.
+
+A implementação contém uma estrutura condicional que verifica se o parâmetro `s` é maior que um. Caso a condição seja verdadeira, atribui o valor um à variável global `y`. Caso contrário, calcula um novo valor para `z`, realiza uma chamada recursiva e, após o retorno, multiplica o resultado armazenado em `y` pelo valor de `s`.
+
+_Inicialização do programa_
+
+```
+INPP
+AMEM    2
+DSVS    L0
+```
+
+A instrução `INPP` inicializa a execução do programa. Em seguida, `AMEM 2` reserva duas posições de memória para as variáveis globais `x` e `y`. A instrução `DSVS L0` realiza um desvio incondicional para o início do programa principal, evitando que a execução passe diretamente pelo código do procedimento.
+
+_Implementação do procedimento recursivo_
+
+O procedimento é identificado pelo rótulo `L1` e possui um parâmetro inteiro `s`, passado por referência, e uma variável local `z`.
+
+```
+L1  ENSP
+    AMEM    1
+    CRVI    -3
+    CRCT    1
+    CMMA
+    DSVF    L2
+```
+
+A instrução `ENSP` inicia a execução do procedimento, preparando o ambiente necessário para a chamada. Em seguida, `AMEM 1` reserva uma posição de memória para a variável local `z`.
+
+As instruções `CRVI -3` e `CRCT 1` carregam na pilha o valor do parâmetro `s` e a constante um, respectivamente. Como o parâmetro é passado por referência, `CRVI` realiza o acesso indireto à memória para recuperar seu conteúdo.
+
+A instrução `CMMA` compara os dois valores, verificando se `s` é maior que um. O resultado é utilizado pela instrução `DSVF L2`, que realiza um desvio para o rótulo `L2` caso a condição seja falsa.
+
+Dessa maneira, o procedimento apresenta dois caminhos de execução, determinados pelo resultado da comparação.
+
+_Primeiro caminho: quando s é maior que 1_
+
+```
+CRCT    1
+ARZG    1
+DSVS    L3
+```
+
+Quando a condição `s > 1` é verdadeira, a execução prossegue nesse trecho.
+
+A instrução `CRCT 1` carrega a constante um na pilha, enquanto `ARZG 1` armazena esse valor na posição global correspondente à variável `y`.
+
+Portanto, nesse caminho, o procedimento executa a atribuição:
+
+$$ y \leftarrow 1 $$
+
+Em seguida, `DSVS L3` realiza um desvio para o rótulo `L3`, evitando a execução do trecho correspondente ao outro caminho da condição.
+
+_Segundo caminho: quando s é menor ou igual a 1_
+
+Quando a condição `s > 1` é falsa, a execução é direcionada para o rótulo `L2`.
+
+```
+L2  NADA
+    CRVI    -3
+    CRCT    1
+    SUBT
+    ARZL    0
+    CREL    0
+    SVCP
+    DSVS    L1
+```
+
+A instrução `NADA` identifica o início desse trecho. Em seguida, `CRVI -3` recupera o valor do parâmetro `s`, enquanto `CRCT 1` carrega a constante um. A instrução `SUBT` calcula a diferença entre os valores:
+
+$$ z \leftarrow s-1 $$
+
+O resultado é armazenado na variável local `z` por meio de `ARZL 0`.
+
+Na sequência, o código prepara uma chamada recursiva. A instrução `CREL 0` recupera o endereço da variável local `z`, e `SVCP` prepara a passagem do parâmetro por referência. Finalmente, `DSVS L1` transfere o fluxo de execução para o início do próprio procedimento.
+
+Observe que a chamada recursiva recebe uma referência à variável local `z`, e não uma cópia de seu conteúdo.
+
+Após o retorno da chamada recursiva, a execução prossegue com:
+
+```
+CRVG    1
+CRVI    -3
+MULT
+ARZG    1
+```
+
+A instrução `CRVG 1` recupera o conteúdo da variável global `y`, enquanto `CRVI -3` recupera o valor do parâmetro `s` da chamada corrente.
+
+A instrução `MULT` realiza a multiplicação dos valores, e `ARZG 1` armazena o resultado novamente na variável global `y`.
+
+A operação realizada corresponde a:
+
+$$ y \leftarrow y \times s $$
+
+Esse trecho demonstra como uma operação pode ser executada após o retorno de uma chamada recursiva.
+
+_Encerramento do procedimento_
+
+```
+L3  NADA
+    DMEM    1
+    RTSP    1
+```
+
+Os dois caminhos da estrutura condicional convergem para o rótulo `L3`.
+
+A instrução `NADA` identifica esse ponto de convergência. Em seguida, `DMEM 1` libera a posição de memória reservada para a variável local `z`.
+
+Finalmente, `RTSP 1` encerra a execução da chamada corrente do procedimento e retorna ao ponto imediatamente posterior à chamada, considerando a existência de um parâmetro.
+
+Esse mecanismo permite que cada instância do procedimento mantenha seu próprio ambiente de execução, preservando os valores necessários para a continuidade das chamadas anteriores.
+
+_Programa principal_
+
+Após a implementação do procedimento, o código apresenta o programa principal:
+
+```
+L0  NADA
+    CRCT    4
+    ARZG    0
+    CREG    0
+    SVCP
+    DSVS    L1
+    CRVG    0
+    ESCR
+    CRVG    1
+    ESCR
+    DMEM    2
+    FIMP
+```
+
+O rótulo `L0` identifica o início do programa principal. A instrução `NADA` funciona como ponto de referência para a execução.
+
+Inicialmente, `CRCT 4` carrega o valor quatro na pilha, enquanto `ARZG 0` armazena esse valor na posição global correspondente à variável `x`. Portanto:
+
+$$ x=4$$
+
+Em seguida, ocorre a preparação da chamada do procedimento `p(x)`:
+
+- `CREG 0`: recupera o endereço da variável global `x`, preparando sua passagem por referência.
+- `SVCP`: guarda o endereço da instrução de retorno para a chamada do procedimento.
+- `DSVS L1`: transfere o fluxo de execução para o início do procedimento.
+
+Após o retorno da chamada, o programa principal apresenta os valores das variáveis globais. A instrução `CRVG 0` recupera o valor de `x`, e `ESCR` apresenta esse valor na saída padrão. Na sequência, `CRVG 1` recupera o valor de `y`, que também é apresentado por meio de `ESCR`.
+
+Finalmente, `DMEM 2` libera as posições de memória reservadas para as variáveis globais, e `FIMP` encerra a execução.
+
+_Análise do comportamento do programa_
+
+Considerando a entrada inicial `x = 4`, a execução segue o seguinte caminho:
+
+1. O programa armazena o valor quatro na variável global `x`.
+2. Realiza a chamada `p(x)`, passando uma referência à variável global.
+3. O procedimento verifica a condição `s > 1`.
+4. Como `s = 4`, a condição é verdadeira.
+5. A variável global `y` recebe o valor um.
+6. O procedimento retorna ao programa principal.
+7. Os valores de `x` e `y` são apresentados.
+
+Resultado da execução para x = 4
+
+| Variável | Valor |
+| -------- | ----- |
+| x        | 4     |
+| y        | 1     |
+
+SAÍDA DO PROGRAMA
+
+```
+4
+1
+```
+
+Observação importante sobre a recursividade: apesar de o código possuir uma chamada recursiva, ela não é executada quando o parâmetro é maior que um. Para valores menores ou iguais a um, o procedimento calcula `z = s - 1` e realiza uma nova chamada com esse valor. Como a condição de parada continua sendo `s > 1`, essa recursão não termina para esses valores.
+
+Portanto, o código demonstra a tradução de uma chamada recursiva com passagem de parâmetros por referência, mas sua condição de parada e a operação de decremento não formam uma recursão com término garantido. Para utilizar esse exemplo didaticamente como uma recursão que efetivamente termina, seria necessário ajustar a condição ou o cálculo do próximo argumento.
+
+**Exemplo 3**
+
+Para o exemplo:
+
+```{.simples}
+programa fatorial
+  inteiro x
+
+  func inteiro fat(inteiro n)
+  inicio
+     se n > 0
+        entao fat <- fat(n - 1) * n
+        senao fat <- 1
+     fimse
+  fimfunc
+
+inicio
+   leia x
+   escreva fat(x)
+fimprograma
+```
+
+A construção da tabela de símbolo será realizada conforme ilustrada na @fig-exemplo3
+
+![Exemplo de compilação de função com recursão](/chapters/images/exemplo3.png){#fig-exemplo3 width="90%"}
+
+E o resultado do código compilado para MVS é:
+
+```{.mvs}
+	INPP
+	AMEM	1
+	DSVS	L0
+L1	ENSP
+	CRVL	-3
+	CRCT	0
+	CMMA
+	DSVF	L2
+	AMEM	1
+	CRVL	-3
+	CRCT	1
+	SUBT
+	SVCP
+	DSVS	L1
+	CRVL	-3
+	MULT
+	ARZL	-4
+	DSVS	L3
+L2	NADA
+	CRCT	1
+	ARZL	-4
+L3	NADA
+	RTSP	1
+L0	NADA
+	LEIA
+	ARZG	0
+	AMEM	1
+	CRVG	0
+	SVCP
+	DSVS	L1
+	ESCR
+	DMEM	1
+	FIMP
+```
+
+O código apresentado corresponde à tradução de uma função recursiva que calcula o fatorial de um número inteiro não negativo. A função utiliza uma estrutura condicional para identificar o caso-base da recursão e, quando necessário, realiza uma chamada a si própria para calcular o fatorial do número imediatamente anterior.
+
+A função implementa a seguinte definição matemática:
+
+$$ f(n)= \begin{cases} 1, & \text{se } n \leq 0\\\ n \times f(n-1), & \text{se } n > 0 \end{cases} $$
+
+A tradução pode ser dividida em três partes: inicialização do programa, implementação da função recursiva e programa principal responsável pela leitura do valor, chamada da função e apresentação do resultado.
+
+_Inicialização do programa_
+
+```
+INPP
+AMEM    1
+DSVS    L0
+```
+
+A instrução `INPP` inicializa a execução do programa. Em seguida, `AMEM 1` reserva uma posição de memória para armazenar a variável global utilizada pelo programa principal. A instrução `DSVS L0` realiza um desvio incondicional para o rótulo `L0`, evitando que o fluxo de execução passe diretamente pelo código da função.
+
+O rótulo `L1`, apresentado posteriormente, identifica o ponto de entrada da função recursiva. Dessa forma, sua execução ocorrerá somente quando houver uma chamada.
+
+_Implementação da função recursiva_
+
+O trecho seguinte apresenta a implementação da função responsável pelo cálculo do fatorial:
+
+```
+L1  ENSP
+    CRVL    -3
+    CRCT    0
+    CMMA
+    DSVF    L2
+```
+
+A instrução `ENSP` inicia a execução da função, preparando o ambiente necessário para o processamento de sua chamada.
+
+Em seguida, as instruções `CRVL -3` e `CRCT 0` recuperam o valor do parâmetro recebido e carregam a constante zero na pilha, respectivamente. A instrução `CMMA` realiza a comparação entre esses valores, verificando se o parâmetro é maior que zero.
+
+O resultado da comparação é utilizado pela instrução `DSVF L2`, que realiza um desvio condicional para o rótulo `L2` caso a condição seja falsa. Portanto, quando o parâmetro for menor ou igual a zero, a execução seguirá diretamente para o tratamento do caso-base da recursão.
+
+_Caso recursivo_
+
+Quando o parâmetro é maior que zero, a execução prossegue com as seguintes instruções:
+
+```
+AMEM    1
+CRVL    -3
+CRCT    1
+SUBT
+SVCP
+DSVS    L1
+```
+
+Nesse trecho, o compilador gera o código necessário para realizar uma nova chamada à própria função. Inicialmente, `AMEM 1` reserva uma posição de memória para armazenar o resultado da chamada recursiva.
+
+As instruções `CRVL -3` e `CRCT 1` carregam o valor do parâmetro atual e a constante um. Em seguida, `SUBT` calcula a diferença entre esses valores, produzindo \\(n-1\\).
+
+A instrução `SVCP` prepara os parâmetros para a chamada da função, e `DSVS L1` transfere o fluxo de execução para o início da própria rotina.
+
+Dessa maneira, a função passa a executar uma nova instância de si mesma, agora com o argumento \\(n-1\\). Esse processo se repete até que a condição de parada seja satisfeita.
+
+Após o retorno da chamada recursiva, a execução prossegue com:
+
+```
+CRVL    -3
+MULT
+ARZL    -4
+DSVS    L3
+```
+
+Nesse momento, o resultado da chamada recursiva está disponível na pilha. A instrução `CRVL -3` recupera o valor do parâmetro da chamada atual, enquanto `MULT` multiplica esse valor pelo resultado obtido na chamada recursiva.
+
+A instrução `ARZL -4` armazena o resultado da multiplicação na posição de memória relativa reservada para o retorno da função. Finalmente, `DSVS L3` desvia a execução para o ponto de encerramento da rotina, evitando que o caso-base seja executado.
+
+_Caso-base da recursão_
+
+O caso-base é implementado pelo seguinte trecho:
+
+```
+L2  NADA
+    CRCT    1
+    ARZL    -4
+```
+
+Quando o parâmetro recebido é menor ou igual a zero, o desvio condicional `DSVF L2` direciona a execução para esse trecho.
+
+A instrução `NADA` identifica o ponto de entrada do caso-base, sem realizar nenhuma operação sobre a pilha. Em seguida, `CRCT 1` carrega a constante um, que corresponde ao resultado do fatorial para os valores considerados no caso-base.
+
+A instrução `ARZL -4` armazena esse valor na posição de memória destinada ao resultado da função.
+
+Após o tratamento dos dois caminhos de execução, o fluxo converge para o rótulo `L3`:
+
+```
+L3  NADA
+    RTSP    1
+```
+
+A instrução `NADA` marca o ponto de convergência dos caminhos de execução. Finalmente, `RTSP 1` encerra a execução da função e retorna ao ponto imediatamente posterior à chamada, disponibilizando o resultado calculado e realizando o tratamento da estrutura de chamada, considerando um parâmetro.
+
+_Programa principal_
+
+Após a implementação da função, o código apresenta o programa principal, responsável por obter o valor de entrada, realizar a chamada da função recursiva e apresentar o resultado.
+
+```
+L0  NADA
+    LEIA
+    ARZG    0
+    AMEM    1
+    CRVG    0
+    SVCP
+    DSVS    L1
+    ESCR
+    DMEM    1
+    FIMP
+```
+
+O rótulo `L0` identifica o início do programa principal. A instrução `NADA` funciona como ponto de referência para o início da execução desse trecho.
+
+A instrução `LEIA` solicita a entrada de um valor pelo usuário. Em seguida, `ARZG 0` armazena o valor informado na posição zero da memória global, que foi previamente reservada pela instrução `AMEM 1`.
+
+Na sequência, o programa prepara a chamada da função:
+
+- `AMEM 1`: reserva uma posição de memória para armazenar o resultado da função;
+- `CRVG 0`: recupera o valor armazenado na posição zero da memória global, que será utilizado como argumento;
+- `SVCP`: prepara os parâmetros para a chamada da função;
+- `DSVS L1`: transfere o fluxo de execução para o início da função recursiva.
+
+Quando a função termina sua execução, a instrução `RTSP 1` retorna ao programa principal, disponibilizando o resultado calculado. A instrução `ESCR` apresenta esse resultado na saída padrão.
+
+Finalmente, `DMEM 1` libera a posição de memória reservada para o resultado da chamada, enquanto `FIMP` encerra a execução do programa.
+
+_Exemplo de execução da função recursiva_
+
+Para compreender o funcionamento da recursividade, considere que o usuário informe o valor 4. Nesse caso, a função realizará as seguintes chamadas:
+
+Etapa 1 — Expansão das chamadas recursivas
+
+f(4)
+
+4 × f(3)
+
+f(3)
+
+3 × f(2)
+
+f(2)
+
+2 × f(1)
+
+f(1)
+
+1 × f(0)
+
+Caso-base
+
+f(0) = 1
+
+Etapa 2 — Retorno das chamadas
+
+| Chamada | Operação | Resultado |
+| ------- | -------- | --------- |
+| f(0)    | 1        | 1         |
+| f(1)    | 1 × 1    | 1         |
+| f(2)    | 2 × 1    | 2         |
+| f(3)    | 3 × 2    | 6         |
+| f(4)    | 4 × 6    | 24        |
+
+Resultado apresentado pela instrução ESCR
+
+$$24$$
+
+Esse exemplo permite observar aspectos importantes da tradução de funções recursivas para a máquina virtual MVS.
+
+Primeiramente, cada chamada recursiva cria um novo ambiente de execução, preservando os valores dos parâmetros e as informações necessárias para que a execução possa retornar corretamente à chamada anterior. Isso é fundamental, pois cada instância da função possui seu próprio valor de parâmetro e seu próprio resultado parcial.
+
+Além disso, a utilização de endereços relativos, como `-3` e `-4`, permite que o mesmo código da função seja executado em diferentes níveis de recursividade, sem a necessidade de gerar uma cópia do código para cada chamada. O mecanismo de chamadas e retornos da MVS é responsável por manter os ambientes de execução independentes.
+
+Por fim, observa-se que a tradução de uma função recursiva exige que o compilador trate adequadamente a reserva de memória, a passagem de parâmetros, o armazenamento do resultado e o retorno ao ponto de chamada. Esses mecanismos permitem implementar funções recursivas sem que seja necessário conhecer antecipadamente a quantidade de chamadas que ocorrerão durante a execução do programa.
+
 ### Modificações no projeto de compilador
 
 A ampliação do compilador existente exige alterações coordenadas na gramática, na análise semântica, na tabela de símbolos e na geração de código.
