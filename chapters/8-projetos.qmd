@@ -333,13 +333,13 @@ A @fig-registro-mvs mostra uma configuração para construção do registro de a
 
 ![Registro de ativação da MVS](/chapters/images/registro-ativacao-mvs.png){#fig-registro-mvs width="60%"}
 
-A construção do registro de ativação na MVS começa com a reserva de uma posição na pilha de execução para armazenar o valor de retorno da rotina. Essa posição é necessária quando a rotina é uma função que retorna um resultado ao seu chamador. No caso de um procedimento, que não retorna valor, essa reserva não é necessária.
+A construção do registro de ativação na MVS começa com a reserva de uma posição na pilha de execução para armazenar o valor de retorno ($V_r$) da rotina. Essa posição é necessária quando a rotina é uma função que retorna um resultado ao seu chamador. No caso de um procedimento, que não retorna valor, essa reserva não é necessária.
 
-Em seguida, os valores dos argumentos da chamada são empilhados, na ordem estabelecida pela implementação da MVS. Esses valores serão utilizados para inicializar os parâmetros formais da rotina chamada. Dessa maneira, os argumentos ficam disponíveis na pilha para serem acessados durante a execução da rotina.
+Em seguida, os valores dos $n$ argumentos da chamada são empilhados, na ordem estabelecida pela implementação da MVS. Esses valores serão utilizados para inicializar os parâmetros formais ($P_1$, $P_2$,...,$P_n$) da rotina chamada. Dessa maneira, os argumentos ficam disponíveis na pilha para serem acessados durante a execução da rotina.
 
-Antes de transferir o controle para a rotina, é necessário preservar as informações que permitem retomar a execução no ponto em que a chamada ocorreu. Para isso, o endereço de retorno — isto é, o endereço da instrução que deverá ser executada após o término da rotina — é armazenado na pilha. Também é preservado o valor anterior do registrador `D`, que representa o contexto da rotina chamadora. Essas informações possibilitam restaurar o estado de execução anterior quando a rotina terminar.
+Antes de transferir o controle para a rotina, é necessário preservar as informações que permitem retomar a execução no ponto em que a chamada ocorreu. Para isso, o endereço de retorno ($i+2$) — isto é, o endereço da instrução que deverá ser executada após o término da rotina — é armazenado na pilha. Também é preservado o valor anterior do registrador `D`, que representa o contexto da rotina chamadora. Essas informações possibilitam restaurar o estado de execução anterior quando a rotina terminar.
 
-Após salvar essas informações, o registrador `D` é atualizado para apontar para a posição da pilha que servirá como referência para o novo registro de ativação. A partir desse ponto, são organizadas as variáveis locais, os parâmetros e os valores temporários necessários à execução da rotina. Os temporários são utilizados, por exemplo, para armazenar resultados intermediários produzidos durante a avaliação de expressões.
+Após salvar essas informações, o registrador `D` é atualizado para apontar para a posição da pilha que servirá como referência para o novo registro de ativação. A partir desse ponto, são organizadas as $m$ variáveis locais ($L_1$, $L_2$,...,$L_m$) e $k$ os valores temporários ($T_1$, $T_2$, ..., $T_k$) necessários à execução da rotina. Os temporários são utilizados, por exemplo, para armazenar resultados intermediários produzidos durante a avaliação de expressões.
 
 Ao final da execução da rotina, o processo de encerramento recupera as informações preservadas durante a chamada. O valor do registrador `D` correspondente ao contexto anterior pode ser recuperado da posição `M[D-1]`, enquanto o endereço de retorno do programa é recuperado da posição `M[D-2]`. Em seguida, a pilha é ajustada para remover os elementos utilizados pelo registro de ativação, incluindo os dados de controle e os demais valores associados à execução da rotina.
 
@@ -375,7 +375,7 @@ A Tabela apresenta as instruções acrescentadas à máquina virtual para permit
 | `CREG n` | Carrega endereço global | $s \leftarrow s + 1$ <br> $M[s] \leftarrow n$ |
 | `CRVI n` | Carrega valor indireto | $s \leftarrow s + 1$ <br> $M[s] \leftarrow M[M[d + n]]$ |
 | `ARMI n` | Armazena valor indireto | $M[M[d + n]] \leftarrow M[s]$ <br> $s \leftarrow s − 1$ |
-| `SVCPS` | Salva contador do programa | $s \leftarrow s + 1$ <br> $M[s] \leftarrow i + 2$ |
+| `SVCP` | Salva contador do programa | $s \leftarrow s + 1$ <br> $M[s] \leftarrow i + 2$ |
 | `ENSP` | Entrada em subprograma | $s \leftarrow s + 1$ <br> $M[s] \leftarrow d$ <br> $d \leftarrow s + 1$ |
 | `RTSP n` | Retorno de subprograma | $d \leftarrow M[s]$ <br> $i \leftarrow M[s − 1]$ <br> $s \leftarrow s − (n + 2)$ |
 
@@ -471,7 +471,7 @@ O processo de chamada de uma função ou procedimento envolve a preparação dos
 De maneira geral, o processo pode ser dividido nas seguintes etapas:
 
 1. **Preparação dos parâmetros:** os argumentos da chamada são avaliados e disponibilizados na pilha, conforme a convenção de passagem de parâmetros adotada pelo compilador.
-2. **Salvamento do endereço de retorno:** a instrução `SVCPS` armazena na pilha o endereço da próxima instrução a ser executada após o retorno.
+2. **Salvamento do endereço de retorno:** a instrução `SVCP` armazena na pilha o endereço da próxima instrução a ser executada após o retorno.
 3. **Criação do registro de ativação:** a instrução `ENSP` salva o endereço-base anterior e estabelece um novo valor para o registrador `d`.
 4. **Execução do subprograma:** as instruções da rotina acessam seus parâmetros e variáveis locais utilizando os deslocamentos relativos a `d`.
 5. **Retorno ao programa chamador:** a instrução `RTSP n` restaura o contexto anterior, recupera o endereço de retorno e libera o espaço ocupado pelos parâmetros e informações de controle.

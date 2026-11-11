@@ -34,36 +34,90 @@
       <item>func</item>
       <item>fimfunc</item>
     </list>
+    <list name="logicalOperators">
+      <item>E</item>
+      <item>OU</item>
+      <item>NAO</item>
+    </list>
 
     <contexts>
       <context name="Normal" attribute="Normal Text" lineEndContext="#stay">
-        <Detect2Chars char="/" char1="/" attribute="Comment" context="LineComment"/>
-        <DetectChar char="#" attribute="Comment" context="LineComment"/>
-        <RegExpr String="&quot;([^&quot;\\]|\\.)*&quot;|&apos;([^&apos;\\]|\\.)*&apos;"
-                 attribute="String" context="#stay"/>
-        <RegExpr String="^[ \t]*[A-Za-z_][A-Za-z0-9_]*(?=[ \t]*:)"
-                 attribute="Label" context="#stay"/>
-        <keyword String="keywords" attribute="Keyword" context="#stay"/>
-        <RegExpr String="\b[0-9]+(\.[0-9]+)?\b"
-                 attribute="Number" context="#stay"/>
-        <RegExpr String="&lt;=|&gt;=|&lt;&gt;|:=|&lt;|&gt;|=|[+\-*/]"
-                 attribute="Operator" context="#stay"/>
-        <RegExpr String="[A-Za-z_][A-Za-z0-9_]*"
-                 attribute="Identifier" context="#stay"/>
-      </context>
-      <context name="LineComment" attribute="Comment" lineEndContext="#pop">
-      </context>
-    </contexts>
 
+      <!-- Comentários -->
+      <Detect2Chars char="/" char1="/" attribute="Comment" context="LineComment"/>
+      <DetectChar char="#" attribute="Comment" context="LineComment"/>
+
+      <!-- Strings -->
+      <RegExpr String="&quot;([^&quot;\\]|\\.)*&quot;|&apos;([^&apos;\\]|\\.)*&apos;"
+           attribute="String" context="#stay"/>
+
+      <!-- Rótulos -->
+      <RegExpr String="^[ \t]*[A-Za-z_][A-Za-z0-9_]*(?=[ \t]*:)"
+           attribute="Label" context="#stay"/>
+
+      <!-- Palavras reservadas -->
+      <keyword String="keywords" attribute="Keyword" context="#stay"/>
+
+      <!-- Operadores lógicos -->
+      <keyword String="logicalOperators" attribute="Operator" context="#stay"/>
+
+      <!-- Números -->
+      <RegExpr String="\b[0-9]+(\.[0-9]+)?\b"
+           attribute="Number" context="#stay"/>
+
+      <!-- Operadores relacionais e aritméticos -->
+      <RegExpr String="&gt;|&lt;|=|[+\-*/]"
+           attribute="Operator" context="#stay"/>
+
+      <!-- Identificadores -->
+      <RegExpr String="[A-Za-z_][A-Za-z0-9_]*"
+           attribute="Identifier" context="#stay"/>
+
+     </context>
+    </contexts>
     <itemDatas>
-      <itemData name="Normal Text" defStyleNum="dsNormal"/>
-      <itemData name="Keyword" defStyleNum="dsKeyword" bold="1"/>
-      <itemData name="Label" defStyleNum="dsFunction" bold="1"/>
-      <itemData name="Number" defStyleNum="dsDecVal"/>
-      <itemData name="Identifier" defStyleNum="dsVariable"/>
-      <itemData name="Operator" defStyleNum="dsOperator" bold="1"/>
-      <itemData name="String" defStyleNum="dsString"/>
-      <itemData name="Comment" defStyleNum="dsComment" italic="1"/>
+      <!-- Texto e identificadores -->
+      <itemData name="Normal Text"
+            defStyleNum="dsNormal"
+            color="#000000"/>
+
+      <itemData name="Identifier"
+            defStyleNum="dsNormal"
+            color="#000000"/>
+
+      <!-- Palavras reservadas -->
+      <itemData name="Keyword"
+            defStyleNum="dsKeyword"
+            color="#0000CC"
+            bold="1"/>
+
+      <!-- Rótulos -->
+      <itemData name="Label"
+            defStyleNum="dsFunction"
+            color="#800080"
+            bold="1"/>
+
+      <!-- Constantes numéricas -->
+      <itemData name="Number"
+            defStyleNum="dsDecVal"
+            color="#008000"/>
+
+      <!-- Operadores -->
+      <itemData name="Operator"
+            defStyleNum="dsNormal"
+            color="#CC5500"
+            bold="1"/>
+
+      <!-- Cadeias de caracteres -->
+      <itemData name="String"
+            defStyleNum="dsString"
+            color="#A31515"/>
+
+      <!-- Comentários -->
+      <itemData name="Comment"
+            defStyleNum="dsComment"
+            color="#808080"
+            italic="1"/>
     </itemDatas>
   </highlighting>
 </language>
