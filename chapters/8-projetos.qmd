@@ -343,7 +343,7 @@ Após salvar essas informações, o registrador `D` é atualizado para apontar p
 
 Ao final da execução da rotina, o processo de encerramento recupera as informações preservadas durante a chamada. O valor do registrador `D` correspondente ao contexto anterior pode ser recuperado da posição `M[D-1]`, enquanto o endereço de retorno do programa é recuperado da posição `M[D-2]`. Em seguida, a pilha é ajustada para remover os elementos utilizados pelo registro de ativação, incluindo os dados de controle e os demais valores associados à execução da rotina.
 
-Considerando que esses elementos ocupam as posições previstas pela convenção de chamada da MVS, a remoção de `n-2` valores permite descartar os elementos do registro de ativação sem eliminar o valor de retorno, quando houver. Assim, se a rotina for uma função, o resultado permanece no topo da pilha, disponível para ser utilizado pela expressão que contém a chamada. Se a rotina for um procedimento, não há valor de retorno a preservar.
+Considerando que esses elementos ocupam as posições previstas pela convenção de chamada da MVS, a remoção dos  `n` valores dos parâmetros mais as duas posições (`D` anterior e `i+2`), isto é `n+2` valores, permite descartar os elementos do registro de ativação sem eliminar o valor de retorno, quando houver. Assim, se a rotina for uma função, o resultado permanece no topo da pilha, disponível para ser utilizado pela expressão que contém a chamada. Se a rotina for um procedimento, não há valor de retorno a preservar.
 
 Esse mecanismo permite que chamadas de rotinas sejam executadas de maneira aninhada e recursiva. Cada chamada estabelece um novo contexto de execução, preservando as informações necessárias para que, ao terminar, o controle retorne corretamente à rotina chamadora.
 
@@ -440,7 +440,7 @@ As instruções `SVCP`, `ENSP` e `RTSP` implementam o mecanismo de chamada e ret
 
 Salva na pilha o endereço da instrução que deverá ser executada após o retorno do subprograma.
 
-A operação utiliza `i+2`, considerando que a instrução de chamada e a instrução de entrada no subprograma ocupam posições consecutivas no programa.
+A operação utiliza `i+2`, considerando que a instrução consecutiva é o desvio para o rótulo de entrada no subprograma, desta forma o endereço de retorno do contador de programa é o endereço atual `i` mais duas posições.
 
 Esse endereço permite que a execução retorne ao ponto imediatamente posterior à chamada.
 
@@ -460,7 +460,7 @@ A instrução executa três operações:
 
 1. Recupera o endereço-base do registro de ativação anterior, restaurando o valor de `d`.
 2. Recupera o endereço de retorno e o coloca no registrador `i`, transferindo o controle para a instrução seguinte à chamada.
-3. Atualiza o ponteiro da pilha, removendo os elementos associados à chamada, incluindo os parâmetros e as informações de controle.
+3. Atualiza o ponteiro da pilha, removendo os elementos associados à chamada, incluindo os parâmetros e as informações de controle, preservando o valor de retorno, se for o caso.
 
 O operando `n` representa a quantidade de parâmetros utilizada no cálculo da desalocação. O termo `n+2` considera os parâmetros e as duas posições de controle utilizadas pelo mecanismo de chamada: endereço de retorno e endereço-base anterior.
 
@@ -632,6 +632,94 @@ Nem toda expressão pode ser utilizada como argumento de um parâmetro por refer
 | Uso frequente                 | Fornecimento de dados                      | Consulta e modificação de dados do chamador |
 
 A linguagem implementada no projeto poderá adotar apenas passagem por valor inicialmente e, posteriormente, incorporar passagem por referência. Essa evolução permite compreender o mecanismo básico de chamada antes de introduzir o tratamento de endereços e os efeitos das alterações sobre as variáveis do programa principal.
+
+
+### Modificações na gramática
+
+As regras para declaração de funções e procedimentos pode ser incluído da seguinte forma na gramática:
+
+```c
+programa 
+  : cabecalho 
+    variaveis 
+    rotinas
+    T_INICIO lista_comandos T_FIM 
+
+cabecalho 
+  : T_PROGRAMA T_IDENTIF ;
+
+rotinas 
+  : /* vazia */
+  | lista_rotinas;
+
+lista_rotinas
+  : lista_rotinas rotina
+  | rotina;
+
+rotina 
+  : funcao 
+  | procedimento;
+
+funcao 
+  : T_FUNC tipo T_IDENTIF
+    T_ABRE lista_parametros T_FECHA
+    variaveis
+    T_INICIO lista_comandos T_FIMFUNC 
+    ;
+
+procedimento 
+  : T_PROC T_IDENTIF
+    T_ABRE lista_parametros T_FECHA
+    variaveis
+    T_INICIO lista_comandos T_FIMPROC 
+    ;
+
+lista_parametros 
+  : /* vazia */
+  | lista_parametros parametro;
+
+parametro 
+  : mecanismo tipo T_IDENTIF 
+    ;
+
+mecanismo 
+  : /* vazia */ 
+  | T_REF; 
+```
+
+As chamadas de funções e procedimentos também são diferentes. As funções são chamadas nas expressões e o procedimento é chamado como um comando. As modificações na gramática então ficam:
+
+```c
+(...)
+comando 
+  : entrada_saida 
+  | repeticao 
+  | selecao 
+  | atribuicao
+  | chamada_procedimento 
+  ;
+
+chamada_procedimento
+  : T_IDENTIF T_ABRE argumentos T_FECHA;
+
+(...)
+
+termo 
+  : T_IDENTIF 
+  | T_IDENTIF T_ABRE argumentos T_FECHA;
+
+(...)
+
+argumentos 
+  : /* vazia */
+  | lista_argumentos ;
+
+lista_argumentos 
+  : lista_argumentos expressao 
+  | expressao
+  ;
+
+```
 
 ### Escopo e tabela de símbolos
 
