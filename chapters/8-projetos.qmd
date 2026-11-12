@@ -884,16 +884,16 @@ O código apresentado corresponde à tradução do programa que declara e utiliz
 
 _Inicialização e desvio para o programa principal_
 
-```
-INPP
-DSVS    L0
+```{.mvs}
+    INPP
+    DSVS    L0
 ```
 
 A instrução `INPP` inicializa a execução do programa, preparando as estruturas necessárias para o seu funcionamento. Em seguida, `DSVS L0` realiza um desvio incondicional para o rótulo `L0`, evitando que o fluxo de execução passe diretamente pelo código do procedimento. Essa estratégia permite que a execução comece pelo programa principal, deixando o corpo do procedimento disponível para ser executado somente quando ocorrer uma chamada.
 
 _Implementação do procedimento `somatudo`_
 
-```
+```{.mvs}
 L1  ENSP
     CRVL    -6
     CRVL    -5
@@ -920,7 +920,7 @@ Após o cálculo, a instrução `ESCR` apresenta o resultado na saída padrão. 
 
 _Execução do programa principal_
 
-```
+```{.mvs}
 L0  NADA
     CRCT    10
     CRCT    3
@@ -943,7 +943,7 @@ _Resultado da execução_
 
 Considerando a chamada:
 
-```
+```{.mvs}
 somatudo(10 3 4 8)
 ```
 
@@ -1090,10 +1090,10 @@ A implementação contém uma estrutura condicional que verifica se o parâmetro
 
 _Inicialização do programa_
 
-```
-INPP
-AMEM    2
-DSVS    L0
+```{.mvs}
+    INPP
+    AMEM    2
+    DSVS    L0
 ```
 
 A instrução `INPP` inicializa a execução do programa. Em seguida, `AMEM 2` reserva duas posições de memória para as variáveis globais `x` e `y`. A instrução `DSVS L0` realiza um desvio incondicional para o início do programa principal, evitando que a execução passe diretamente pelo código do procedimento.
@@ -1102,7 +1102,7 @@ _Implementação do procedimento recursivo_
 
 O procedimento é identificado pelo rótulo `L1` e possui um parâmetro inteiro `s`, passado por referência, e uma variável local `z`.
 
-```
+```{.mvs}
 L1  ENSP
     AMEM    1
     CRVI    -3
@@ -1121,10 +1121,10 @@ Dessa maneira, o procedimento apresenta dois caminhos de execução, determinado
 
 _Primeiro caminho: quando s é maior que 1_
 
-```
-CRCT    1
-ARZG    1
-DSVS    L3
+```{.mvs}
+    CRCT    1
+    ARZG    1
+    DSVS    L3
 ```
 
 Quando a condição `s > 1` é verdadeira, a execução prossegue nesse trecho.
@@ -1141,7 +1141,7 @@ _Segundo caminho: quando s é menor ou igual a 1_
 
 Quando a condição `s > 1` é falsa, a execução é direcionada para o rótulo `L2`.
 
-```
+```{.mvs}
 L2  NADA
     CRVI    -3
     CRCT    1
@@ -1164,11 +1164,11 @@ Observe que a chamada recursiva recebe uma referência à variável local `z`, e
 
 Após o retorno da chamada recursiva, a execução prossegue com:
 
-```
-CRVG    1
-CRVI    -3
-MULT
-ARZG    1
+```{.mvs}
+    CRVG    1
+    CRVI    -3
+    MULT
+    ARZG    1
 ```
 
 A instrução `CRVG 1` recupera o conteúdo da variável global `y`, enquanto `CRVI -3` recupera o valor do parâmetro `s` da chamada corrente.
@@ -1183,7 +1183,7 @@ Esse trecho demonstra como uma operação pode ser executada após o retorno de 
 
 _Encerramento do procedimento_
 
-```
+```{.mvs}
 L3  NADA
     DMEM    1
     RTSP    1
@@ -1201,7 +1201,7 @@ _Programa principal_
 
 Após a implementação do procedimento, o código apresenta o programa principal:
 
-```
+```{.mvs}
 L0  NADA
     CRCT    4
     ARZG    0
@@ -1251,7 +1251,7 @@ Resultado da execução para x = 4
 | x        | 4     |
 | y        | 1     |
 
-SAÍDA DO PROGRAMA
+_Saída do programa_
 
 ```
 4
@@ -1336,10 +1336,10 @@ A tradução pode ser dividida em três partes: inicialização do programa, imp
 
 _Inicialização do programa_
 
-```
-INPP
-AMEM    1
-DSVS    L0
+```{.mvs}
+    INPP
+    AMEM    1
+    DSVS    L0
 ```
 
 A instrução `INPP` inicializa a execução do programa. Em seguida, `AMEM 1` reserva uma posição de memória para armazenar a variável global utilizada pelo programa principal. A instrução `DSVS L0` realiza um desvio incondicional para o rótulo `L0`, evitando que o fluxo de execução passe diretamente pelo código da função.
@@ -1350,7 +1350,7 @@ _Implementação da função recursiva_
 
 O trecho seguinte apresenta a implementação da função responsável pelo cálculo do fatorial:
 
-```
+```{.mvs}
 L1  ENSP
     CRVL    -3
     CRCT    0
@@ -1368,13 +1368,13 @@ _Caso recursivo_
 
 Quando o parâmetro é maior que zero, a execução prossegue com as seguintes instruções:
 
-```
-AMEM    1
-CRVL    -3
-CRCT    1
-SUBT
-SVCP
-DSVS    L1
+```{.mvs}
+    AMEM    1
+    CRVL    -3
+    CRCT    1
+    SUBT
+    SVCP
+    DSVS    L1
 ```
 
 Nesse trecho, o compilador gera o código necessário para realizar uma nova chamada à própria função. Inicialmente, `AMEM 1` reserva uma posição de memória para armazenar o resultado da chamada recursiva.
@@ -1387,11 +1387,11 @@ Dessa maneira, a função passa a executar uma nova instância de si mesma, agor
 
 Após o retorno da chamada recursiva, a execução prossegue com:
 
-```
-CRVL    -3
-MULT
-ARZL    -4
-DSVS    L3
+```{.mvs}
+    CRVL    -3
+    MULT
+    ARZL    -4
+    DSVS    L3
 ```
 
 Nesse momento, o resultado da chamada recursiva está disponível na pilha. A instrução `CRVL -3` recupera o valor do parâmetro da chamada atual, enquanto `MULT` multiplica esse valor pelo resultado obtido na chamada recursiva.
@@ -1402,7 +1402,7 @@ _Caso-base da recursão_
 
 O caso-base é implementado pelo seguinte trecho:
 
-```
+```{.mvs}
 L2  NADA
     CRCT    1
     ARZL    -4
@@ -1416,7 +1416,7 @@ A instrução `ARZL -4` armazena esse valor na posição de memória destinada a
 
 Após o tratamento dos dois caminhos de execução, o fluxo converge para o rótulo `L3`:
 
-```
+```{.mvs}
 L3  NADA
     RTSP    1
 ```
@@ -1427,7 +1427,7 @@ _Programa principal_
 
 Após a implementação da função, o código apresenta o programa principal, responsável por obter o valor de entrada, realizar a chamada da função recursiva e apresentar o resultado.
 
-```
+```{.mvs}
 L0  NADA
     LEIA
     ARZG    0

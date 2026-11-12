@@ -489,36 +489,33 @@ O arquivo `utils.c` reúne os mecanismos necessários para armazenar informaçõ
 A tabela de símbolos é implementada por meio de um vetor de estruturas:
 
 ```{.c}
-#define TAM_TAB 100
+/*-----------------------------------
+ * Estrutura da Tabela de Símbolos
+ *-----------------------------------*/
 
-enum {
-    INT,
-    LOG
-};
-
-typedef struct {
-    char id[100];
+#define TAMTAB 100
+typedef struct
+{
+    char nome[30];
+    int tipo;
     int end;
-    int tip;
-} elemTabSimb;
+} tiptab;
 
-elemTabSimb tabSimb[TAM_TAB], elemTab;
-int topoTab = 0;
+tiptab elemtab, tabsimb[TAMTAB];
+int topotab = -1;
 ```
 
 Cada elemento da tabela contém três informações:
 
-- `id`: nome do identificador;
+- `nome`: nome do identificador;
 - `end`: endereço associado à variável na memória da MVS;
-- `tip`: tipo da variável, que pode ser inteiro (`INT`) ou lógico (`LOG`).
+- `tipo`: tipo da variável, que pode ser inteiro (`INT`) ou lógico (`LOG`).
 
-A constante `TAM_TAB` estabelece a capacidade máxima da tabela, de 100 identificadores. A variável `topoTab` indica a quantidade de posições ocupadas e, consequentemente, a próxima posição disponível para inserção.
-
-Os tipos são representados por constantes inteiras definidas no `enum`. O tipo `INT` identifica valores inteiros, enquanto `LOG` identifica valores lógicos. Esses tipos serão utilizados durante a análise semântica para verificar se as operações e atribuições são compatíveis com as regras da linguagem.
+A constante `TAMTAB` estabelece a capacidade máxima da tabela, de 100 identificadores. A variável `topotab` indica a quantidade de posições ocupadas e, consequentemente, a próxima posição disponível para inserção.
 
 #### Inserção de identificadores
 
-A função `insereSimbolo` recebe uma estrutura contendo as informações de uma variável e a registra na tabela de símbolos. Antes da inserção, verifica se a tabela está cheia e se o identificador já foi declarado.
+A função `inseresimbolo` recebe uma estrutura contendo as informações de uma variável e a registra na tabela de símbolos. Antes da inserção, verifica se a tabela está cheia e se o identificador já foi declarado.
 
 A detecção de identificadores duplicados evita que duas declarações utilizem o mesmo nome, conforme as regras adotadas por essa implementação. Caso o nome já esteja registrado, a função chama `yyerror` para informar o problema.
 
@@ -526,39 +523,54 @@ Durante a análise das declarações, o compilador preenche os campos da estrutu
 
 #### Busca de identificadores
 
-A função `buscaSimbolo` procura um identificador pelo nome e retorna sua posição na tabela. Ela é utilizada quando o programa faz referência a uma variável, seja em uma expressão, em uma atribuição ou em um comando de leitura.
+A função `buscasimbolo` procura um identificador pelo nome e retorna sua posição na tabela. Ela é utilizada quando o programa faz referência a uma variável, seja em uma expressão, em uma atribuição ou em um comando de leitura.
 
 Se o identificador não estiver cadastrado, a função comunica o erro por meio de `yyerror`. Caso seja encontrado, o compilador pode consultar seus campos `end` e `tip` para gerar o código apropriado e verificar a compatibilidade de tipos.
 
 A tabela de símbolos desempenha, portanto, duas funções importantes: permite verificar se as variáveis foram declaradas e fornece os endereços e tipos necessários às etapas seguintes da compilação.
 
-#### Pilha de tipos
+#### Pilha Semântica
 
-A verificação dos tipos das expressões é realizada com o auxílio de uma pilha:
+A verificação dos tipos das expressões, a resolução de rótulos nas estruturas de seleção e repetição e outras situações da compilação são resolvidas com o auxílio de uma pilha da pilha semântica
 
 ```{.c}
-#define TAM_PIL 100
+enum
+{
+    INT = 10,
+    LOG = 20
+};
 
-int Pilha[TAM_PIL];
+/*-----------------------------------
+ * Estrutura da Pilha Semantica
+ *-----------------------------------*/
+#define TAMPILHA 100
+struct
+{
+    int valor;
+    char tipo;
+} Pilha[TAMPILHA];
+
 int topo = -1;
 ```
 
-As funções `empilha` e `desempilha` inserem e removem valores dessa estrutura, verificando seus limites. No compilador, os valores armazenados representam principalmente os tipos das expressões reconhecidas.
+Os tipos são representados por constantes inteiras definidas no `enum`. O tipo `INT` identifica valores inteiros, enquanto `LOG` identifica valores lógicos. Esses tipos serão utilizados durante a análise semântica para verificar se as operações e atribuições são compatíveis com as regras da linguagem.
 
-A utilização de uma pilha é adequada à análise sintática ascendente realizada pelo Bison. Quando uma expressão simples é reconhecida, seu tipo é colocado na pilha. Quando uma produção combina duas expressões, seus tipos são removidos, verificados e substituídos pelo tipo resultante.
+As funções `empilha` e `desempilha` inserem e removem valores dessa estrutura, verificando seus limites. No compilador, os valores armazenados representam os tipos das expressões reconhecidas, os rótulos, posição de identificadores na tabela de símbolos e contagem de variáveis na declaração.
+
+A utilização de uma pilha é adequada à análise sintática ascendente realizada pelo Bison para verificação de tipos nas expressões, por exemplo. Quando uma expressão simples é reconhecida, seu tipo é colocado na pilha. Quando uma produção combina duas expressões, seus tipos são removidos, verificados e substituídos pelo tipo resultante.
 
 A função `testaTipo` implementa esse procedimento:
 
 ```{.c}
-void testaTipo(int tipo1, int tipo2, int ret)
+void testatipo(int tipo1, int tipo2, int ret)
 {
-    int t1 = desempilha();
-    int t2 = desempilha();
+    int t2 = desempilha('t');
+    int t1 = desempilha('t');
 
     if (t1 != tipo1 || t2 != tipo2)
         yyerror("Incompatibilidade de tipo!");
 
-    empilha(ret);
+    empilha(ret, 't');
 }
 ```
 
@@ -577,12 +589,13 @@ No início do arquivo, são incluídas bibliotecas da linguagem C e o arquivo `u
 Entre as variáveis globais, destacam-se:
 
 ```{.c}
-int contaVar = 0;
-int tipo;
-int rotulo = 0;
+extern int nlinha;   // numero da linha
+int contavar = 0;    // contador de variveis
+int rotulo = 0;      // contador de rotulos
+int tipo;            // tipo da variavel
 ```
 
-A variável `contaVar` controla a quantidade de variáveis declaradas e permite atribuir endereços sequenciais às posições de memória utilizadas pelo programa. A variável `tipo` armazena temporariamente o tipo da declaração em processamento. Já `rotulo` controla a numeração dos rótulos utilizados nos comandos de seleção e repetição.
+A variável `nlinha` é atualizada toda vez que o analisador léxico passa pelo caracter `\\n`. A variável `contavar` controla a quantidade de variáveis declaradas e permite atribuir endereços sequenciais às posições de memória utilizadas pelo programa. A variável `tipo` armazena temporariamente o tipo da declaração em processamento. Já `rotulo` controla a numeração dos rótulos utilizados nos comandos de seleção e repetição.
 
 Os rótulos são necessários porque as estruturas de controle geram desvios no fluxo de execução. Uma instrução condicional pode transferir o controle para uma posição posterior do código, enquanto um laço precisa retornar a uma posição anterior para avaliar novamente sua condição.
 
@@ -624,25 +637,29 @@ Isso estabelece `programa` como o símbolo inicial da gramática. A produção c
 
 ```{.c}
 programa
-    : cabecalho
-        { fprintf(yyout, "\tINPP\n"); }
-      variaveis
-        {
-            fprintf(yyout, "\tAMEM\t%d\n", contaVar);
-            empilha(contaVar);
-        }
+    : cabecalho 
+         { fprintf(yyout, "\tINPP\n"); }
+      variaveis 
+         { 
+            DEBUG(mostratabela();)
+            empilha(contavar, 'c');
+            if (contavar > 0) {
+               fprintf(yyout, "\tAMEM\t%d\n", contavar);
+            } 
+         }
       T_INICIO lista_comandos T_FIM
-        {
-            int conta = desempilha();
-            fprintf(yyout, "\tDMEM\t%d\n", conta);
-            fprintf(yyout, "\tFIMP\n");
-        }
+         {
+            int conta = desempilha('c');
+            if (conta > 0) 
+               fprintf(yyout, "\tDMEM\t%d\n", conta);
+            fprintf(yyout, "\tFIMP\n"); 
+         }
     ;
 ```
 
 Essa produção divide o programa em cabeçalho, declarações de variáveis, bloco de comandos e encerramento. As ações semânticas intercaladas com os símbolos da produção são executadas quando o analisador reconhece os trechos correspondentes.
 
-A primeira ação emite `INPP`, que inicia a execução do programa na MVS. Depois das declarações, a instrução `AMEM` reserva o espaço de memória necessário às variáveis. A quantidade de posições é determinada por `contaVar`.
+A primeira ação emite `INPP`, que inicia a execução do programa na MVS. Depois das declarações, a instrução `AMEM` reserva o espaço de memória necessário às variáveis. A quantidade de posições é determinada por `contavar`.
 
 O valor dessa quantidade também é colocado na pilha auxiliar, para que possa ser recuperado ao final do programa. Depois que os comandos são reconhecidos, a ação final emite `DMEM`, liberando a quantidade de posições registrada, e `FIMP`, que indica o encerramento do programa na máquina virtual.
 
@@ -666,15 +683,16 @@ tipo
 A ação semântica armazena o tipo reconhecido na variável global `tipo`. Em seguida, as produções responsáveis pelas listas de variáveis utilizam essa informação para registrar cada identificador:
 
 ```{.c}
-     {
-        strcpy(elemTab.id, atomo);
-        elemTab.tip = tipo;
-        elemTab.end = contaVar++;
-        insereSimbolo(elemTab);
-     }
+      { 
+        strcpy(elemtab.nome, atomo);
+        elemtab.tipo = tipo;
+        elemtab.end = contavar;
+        inseresimbolo(elemtab);
+        contavar++; 
+      }
 ```
 
-O nome do identificador é copiado de `atomo`, que contém o texto reconhecido pelo analisador léxico. O campo `tip` recebe o tipo da declaração e o campo `end` recebe o próximo endereço disponível. A variável `contaVar` é incrementada a cada declaração.
+O nome do identificador é copiado de `atomo`, que contém o texto reconhecido pelo analisador léxico. O campo `tip` recebe o tipo da declaração e o campo `end` recebe o próximo endereço disponível. A variável `contavar` é incrementada a cada declaração.
 
 Por exemplo, para as declarações:
 
@@ -685,7 +703,7 @@ logico ativo
 
 o compilador registra os identificadores na tabela de símbolos com seus respectivos tipos e endereços sequenciais. Essa informação será utilizada posteriormente para acessar as variáveis e verificar a compatibilidade das atribuições.
 
-A chamada a `insereSimbolo` também permite detectar declarações duplicadas e impedir que o mesmo identificador seja cadastrado novamente.
+A chamada a `inseresimbolo` também permite detectar declarações duplicadas e impedir que o mesmo identificador seja cadastrado novamente.
 
 #### Sequência de comandos
 
@@ -721,11 +739,11 @@ A produção `leitura` reconhece um comando de entrada:
 ```{.c}
 leitura
     : T_LEIA T_IDENTIF
-        {
-            int pos = buscaSimbolo(atomo);
-            fprintf(yyout, "\tLEIA\n");
-            fprintf(yyout, "\tARZG\t%d\n", tabSimb[pos].end);
-        }
+       {
+        int pos = buscasimbolo(atomo); 
+        fprintf(yyout,"\tLEIA\n");
+        fprintf(yyout,"\tARZG\t%d\n", tabsimb[pos].end); 
+       }
     ;
 ```
 
@@ -753,10 +771,10 @@ A produção `escrita` reconhece o comando de saída:
 ```{.c}
 escrita
     : T_ESCREVA expressao
-        {
-            int tip = desempilha();
-            fprintf(yyout, "\tESCR\n");
-        }
+       {
+        int t = desempilha('t'); 
+        fprintf(yyout, "\tESCR\n"); 
+       }
     ;
 ```
 
@@ -788,20 +806,18 @@ A produção `atribuicao` reconhece comandos de atribuição:
 ```{.c}
 atribuicao
     : T_IDENTIF
-        {
-            int pos = buscaSimbolo(atomo);
-            empilha(pos);
-        }
+        { 
+            int pos = buscasimbolo(atomo);
+            empilha(pos, 'p');
+        } 
       T_ATRIB expressao
         {
-            int tip = desempilha();
-            int pos = desempilha();
-
-            if (tip != tabSimb[pos].tip)
-                yyerror("Incompatibilidade de tipos na atribuição");
-
-            fprintf(yyout, "\tARZG\t%d\n",
-                    tabSimb[pos].end);
+            DEBUG(mostrapilha();)
+            int t = desempilha('t');
+            int pos = desempilha('p'); 
+            if (t != tabsimb[pos].tipo) 
+                yyerror("Incompatibiliade de tipos na atribuição");
+            fprintf(yyout, "\tARZG\t%d\n", tabsimb[pos].end); 
         }
     ;
 ```
@@ -839,12 +855,12 @@ A multiplicação, por exemplo, é implementada da seguinte maneira:
 expressao
     : expressao T_VEZES expressao
         {
-            testaTipo(INT, INT, INT);
+            testatipo(INT, INT, INT);
             fprintf(yyout, "\tMULT\n");
         }
 ```
 
-A função `testaTipo` verifica se os dois operandos são inteiros e registra que o resultado também é inteiro. Depois dessa verificação, a ação emite `MULT`.
+A função `testatipo` verifica se os dois operandos são inteiros e registra que o resultado também é inteiro. Depois dessa verificação, a ação emite `MULT`.
 
 A adição, a subtração e a divisão seguem o mesmo princípio, utilizando, respectivamente, as instruções `SOMA`, `SUBT` e `DIVI`. Essas operações exigem operandos inteiros e produzem resultados inteiros.
 
@@ -867,16 +883,14 @@ A tabela sintetiza as regras implementadas pelas ações semânticas. Por exempl
 A negação lógica também possui uma regra própria:
 
 ```{.c}
-| T_NAO termo
-    {
-        int tip = desempilha();
-
-        if (tip != LOG)
-            yyerror("Incompatibilidade de tipo na negação");
-
-        empilha(LOG);
-        fprintf(yyout, "\tNEGA\n");
-    }
+    | T_NAO termo
+      { 
+        int t = desempilha('t');
+        if (t != LOG)
+           yyerror("O operando do NAO tem que ser logico");
+        empilha(LOG, 't');
+        fprintf(yyout, "\tNEGA\n"); 
+      }
 ```
 
 Nesse caso, a expressão negada deve ser lógica. O tipo é removido da pilha, verificado e substituído por `LOG`, que representa o tipo do resultado. A instrução `NEGA` realiza a operação correspondente durante a execução.
@@ -908,26 +922,30 @@ A produção `repeticao` reconhece a estrutura `enquanto ... faca ... fimenquant
 O trecho responsável pela avaliação da condição verifica se a expressão é lógica. Caso contrário, o compilador informa que a condição da repetição deve ser lógica. Se o tipo estiver correto, emite `DSVF` com o rótulo de saída.
 
 ```{.c} 
-repeticao:
-        T_ENQTO
-           { 
-             printf ("L%d\tNADA\n", ++ROTULO);
-             empilha (ROTULO);
-           } 
-        expressao 
-        T_FACA 
-           {
-             printf ("\tDSVF\tL%d\n",++ROTULO);
-             empilha (ROTULO);
-           }
-        lista_comandos 
-        T_FIMENQTO
-           {
-             aux = desempilha();
-             printf ("\tDSVS\tL%d\n", desempilha()); 
-             printf ("L%d\tNADA\n", aux);           
-           }
-      ;
+repeticao
+    : T_ENQTO 
+        { 
+            fprintf(yyout, "L%d\tNADA\n", ++rotulo);
+            empilha(rotulo, 'r'); 
+        }
+      expressao 
+      T_FACA 
+        { 
+            int t = desempilha('t');
+            if (t != LOG)
+                yyerror("Incompatibilidade de tipo na condição do enquanto");
+            fprintf(yyout, "\tDSVF\tL%d\n", ++rotulo);
+            empilha(rotulo, 'r');
+        }
+      lista_comandos 
+      T_FIMENQTO
+        { 
+            int y = desempilha('r');
+            int x = desempilha('r');
+            fprintf(yyout, "\tDSVS\tL%d\n", x);
+            fprintf(yyout, "L%d\tNADA\n", y);
+        }
+    ;
 ```
 
 
@@ -952,27 +970,28 @@ Assim, os comandos condicionais são traduzidos por meio de desvios explícitos,
 A utilização de rótulos permite que o código gerado represente a escolha entre dois caminhos de execução, preservando o comportamento definido pelo programa-fonte.
 
 ```{.c}
-selecao:
-        T_SE 
-        expressao
-        T_ENTAO 
-           {
-             printf ("\tDSVF\tL%d\n", ++ROTULO); 
-             empilha (ROTULO);
-           }  
-        lista_comandos 
-        T_SENAO 
-           {
-             printf ("\tDSVS\tL%d\n", ++ROTULO);
-             printf ("L%d\tNADA\n", desempilha()); 
-             empilha (ROTULO);
-           }
-        lista_comandos 
-        T_FIMSE
-           { 
-             printf ("L%d\tNADA\n", desempilha());    
-           }
-      ;
+selecao
+    : T_SE expressao T_ENTAO
+        { 
+            int t = desempilha('t');
+            if (t != LOG)
+                yyerror("Incompatibilidade de tipo na condição da seleção");
+            fprintf(yyout, "\tDSVF\tL%d\n", ++rotulo);
+            empilha(rotulo, 'r'); 
+        } 
+      lista_comandos T_SENAO 
+        { 
+            int x = desempilha('r');
+            fprintf(yyout, "\tDSVS\tL%d\n", ++rotulo);
+            fprintf(yyout, "L%d\tNADA\n", x);
+            empilha(rotulo, 'r');
+        }
+      lista_comandos T_FIMSE
+        { 
+            int y = desempilha('r');
+            fprintf(yyout, "L%d\tNADA\n", y); 
+        }
+    ;
 ```
 
 
@@ -1001,3 +1020,1015 @@ Entre elas, destacam-se a ampliação das regras de compatibilidade de tipos, o 
 Também é importante observar que os arquivos apresentados não incluem a implementação do analisador léxico nem a definição completa da MVS. Por isso, os exemplos de tradução pressupõem que os tokens sejam fornecidos corretamente e que as instruções emitidas correspondam à semântica adotada pela máquina virtual.
 
 Com esse projeto, o estudante pode acompanhar concretamente o percurso de um programa desde o reconhecimento de suas construções sintáticas até a geração das instruções que serão executadas. O compilador evidencia, assim, a função da análise semântica na verificação da consistência do programa e o papel das ações semânticas na tradução das construções da linguagem de origem para o código da máquina de destino.
+
+## Código Completo
+
+**Arquivo `makefile`**
+
+```{.c}
+simples: utils.c lexico.l sintatico.y ;\
+	flex -o lexico.c lexico.l
+	bison -o sintatico.c sintatico.y -v -d
+	gcc sintatico.c -o simples
+
+limpa: ;\
+	rm simples lexico.c sintatico.c sintatico.h sintatico.output
+```
+
+**Arquivo `utils.c`**
+
+```{.c}
+#include <stdio.h>
+
+extern FILE *stderr;
+extern int nlinha;
+
+void yyerror(const char *);
+
+enum
+{
+    INT = 10,
+    LOG = 20
+};
+
+/*-----------------------------------
+ * Estrutura da Pilha Semantica
+ *-----------------------------------*/
+#define TAMPILHA 100
+struct
+{
+    int valor;
+    char tipo;
+} Pilha[TAMPILHA];
+
+int topo = -1;
+
+void empilha(int valor, char tipo)
+{
+    if (topo > TAMPILHA)
+        yyerror("Pilha Cheia");
+    Pilha[++topo].valor = valor;
+    Pilha[topo].tipo = tipo;
+}
+
+int desempilha(char tipo)
+{
+    if (topo == -1)
+        yyerror("Pilha Vazia");
+    if (Pilha[topo].tipo != tipo)
+        yyerror("Tipo diferente no desempilha");
+    return Pilha[topo--].valor;
+}
+
+void testatipo(int tipo1, int tipo2, int ret)
+{
+    int t2 = desempilha('t');
+    int t1 = desempilha('t');
+
+    if (t1 != tipo1 || t2 != tipo2)
+        yyerror("Incompatibilidade de tipo!");
+
+    empilha(ret, 't');
+}
+
+void mostrapilha()
+{
+    printf("Pilha = [");
+    for (int i = topo; i >= 0; i--)
+        printf("(%d,%c) ", Pilha[i].valor, Pilha[i].tipo);
+    printf("]\n");
+}
+
+/*-----------------------------------
+ * Estrutura da Tabela de Símbolos
+ *-----------------------------------*/
+
+#define TAMTAB 100
+typedef struct
+{
+    char nome[30];
+    int tipo;
+    int end;
+} tiptab;
+
+tiptab elemtab, tabsimb[TAMTAB];
+int topotab = -1;
+
+void inseresimbolo(tiptab elem)
+{
+    int i;
+    for (i = topotab; i >= 0 && strcmp(elem.nome, tabsimb[i].nome) != 0; i--)
+        ;
+    if (i != -1)
+    {
+        yyerror("Identificador duplicado");
+    }
+    tabsimb[++topotab] = elem;
+}
+
+int buscasimbolo(char *nome)
+{
+    int i;
+    for (i = topotab; i >= 0 && strcmp(nome, tabsimb[i].nome) != 0; i--)
+        ;
+    if (i == -1)
+    {
+        yyerror("Identificador não encontrado");
+    }
+    return i;
+}
+
+void mostratabela()
+{
+    printf("%10s %3s %3s\n", "Nome", "Tipo", "End");
+    for (int i = 0; i <= topotab; i++)
+    {
+        printf("%10s %3d %3d\n", tabsimb[i].nome, tabsimb[i].tipo, tabsimb[i].end);
+    }
+}
+```
+
+**Arquivo `lexico.l`**
+
+```{.c}
+%{
+#include "sintatico.h"
+int nlinha = 1;
+char atomo[30];
+void yyerror(const char *);
+
+%}
+
+identificador [a-zA-Z]([a-zA-Z]|[0-9])*
+numero [0-9]+
+espaco [ \t]+
+novalinha [\n]
+
+%%
+programa          { return T_PROG; }
+inicio            { return T_INICIO; }
+fimprograma       { return T_FIM; }
+leia              { return T_LEIA; }
+escreva           { return T_ESCREVA; }
+se                { return T_SE; }
+entao             { return T_ENTAO; }
+senao             { return T_SENAO; }
+fimse             { return T_FIMSE; }
+enquanto          { return T_ENQTO; }
+faca              { return T_FACA; }
+fimenquanto       { return T_FIMENQTO; }
+
+inteiro           { return T_INTEIRO; }
+logico            { return T_LOGICO; }
+
+V                 { return T_V; }
+F                 { return T_F; }
+
+"+"               { return T_MAIS; }
+"-"               { return T_MENOS; }
+"*"               { return T_VEZES; }
+div               { return T_DIV; }
+">"               { return T_MAIOR; }
+"<"               { return T_MENOR; }
+"="               { return T_IGUAL; }
+E                 { return T_E; }
+OU                { return T_OU; }
+NAO               { return T_NAO; }
+"<-"              { return T_ATRIB; }
+"("               { return T_ABRE;}
+")"               { return T_FECHA; }
+
+{identificador}   { 
+                     strcpy(atomo, yytext);
+                     return T_IDENTIF; 
+                  }
+{numero}          { 
+                     strcpy(atomo, yytext);
+                     return T_NUMERO; 
+                  }
+{espaco}          {  }
+{novalinha}       {  nlinha++; }
+
+.                 { 
+                      char msg[100];
+                      sprintf(msg, "  símbolo %s desconhecido!", yytext);
+                      yyerror(msg); 
+                  }
+%%
+
+
+int yywrap() {
+  return 1;
+}
+```
+
+**Arquivo `sintatico.y`**
+
+```{.c}
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "lexico.c"
+#include "utils.c"
+
+extern FILE *yyin;   // arquivo de entrada (.simples)
+extern FILE *yyout;  // arquivo de saida (.mvs)
+extern int nlinha;   // numero da linha
+int contavar = 0;    // contador de variveis
+int rotulo = 0;      // contador de rotulos
+int tipo;            // tipo da variavel
+#define DEBUG(x) 
+
+%}
+
+%token T_PROG
+%token T_INICIO
+%token T_FIM
+%token T_IDENTIF
+%token T_LEIA
+%token T_ESCREVA
+%token T_ENQTO
+%token T_FACA
+%token T_FIMENQTO
+%token T_SE 
+%token T_ENTAO
+%token T_SENAO
+%token T_FIMSE
+%token T_ATRIB
+%token T_VEZES
+%token T_DIV
+%token T_MAIS
+%token T_MENOS
+%token T_MAIOR
+%token T_MENOR
+%token T_IGUAL
+%token T_E 
+%token T_OU
+%token T_V 
+%token T_F 
+%token T_NUMERO
+%token T_NAO 
+%token T_ABRE
+%token T_FECHA
+%token T_LOGICO
+%token T_INTEIRO
+
+%define parse.error custom
+
+%left T_E T_OU
+%left T_IGUAL
+%left T_MAIOR T_MENOR
+%left T_MAIS T_MENOS
+%left T_VEZES T_DIV
+
+%%
+programa
+    : cabecalho 
+         { fprintf(yyout, "\tINPP\n"); }
+      variaveis 
+         { 
+            DEBUG(mostratabela();)
+            empilha(contavar, 'c');
+            if (contavar > 0) {
+               fprintf(yyout, "\tAMEM\t%d\n", contavar);
+            } 
+         }
+      T_INICIO lista_comandos T_FIM
+         {
+            int conta = desempilha('c');
+            if (conta > 0) 
+               fprintf(yyout, "\tDMEM\t%d\n", conta);
+            fprintf(yyout, "\tFIMP\n"); 
+         }
+    ;
+
+cabecalho
+    : T_PROG T_IDENTIF
+    ;
+
+variaveis
+    : /* vazio */
+    | declaracao_variaveis
+    ;
+
+declaracao_variaveis
+    : tipo lista_variaveis declaracao_variaveis
+    | tipo lista_variaveis
+    ;
+
+tipo
+    : T_LOGICO
+      { tipo = LOG; }
+    | T_INTEIRO
+      { tipo = INT; }
+    ;
+
+lista_variaveis
+    : lista_variaveis T_IDENTIF
+      { 
+        strcpy(elemtab.nome, atomo);
+        elemtab.tipo = tipo;
+        elemtab.end = contavar;
+        inseresimbolo(elemtab);
+        contavar++; 
+      }
+    | T_IDENTIF
+      { 
+        strcpy(elemtab.nome, atomo);
+        elemtab.tipo = tipo;
+        elemtab.end = contavar;
+        inseresimbolo(elemtab);
+        contavar++; 
+      }
+    ;
+
+lista_comandos
+    : /* vazio */
+    | comando lista_comandos
+    ;
+
+comando
+    : leitura
+    | escrita
+    | repeticao
+    | selecao
+    | atribuicao
+    ;
+
+leitura
+    : T_LEIA T_IDENTIF
+       {
+        int pos = buscasimbolo(atomo); 
+        fprintf(yyout,"\tLEIA\n");
+        fprintf(yyout,"\tARZG\t%d\n", tabsimb[pos].end); 
+       }
+    ;
+
+escrita
+    : T_ESCREVA expressao
+       {
+        int t = desempilha('t'); 
+        fprintf(yyout, "\tESCR\n"); 
+       }
+    ;
+
+repeticao
+    : T_ENQTO 
+        { 
+            fprintf(yyout, "L%d\tNADA\n", ++rotulo);
+            empilha(rotulo, 'r'); 
+        }
+      expressao 
+      T_FACA 
+        { 
+            int t = desempilha('t');
+            if (t != LOG)
+                yyerror("Incompatibilidade de tipo na condição do enquanto");
+            fprintf(yyout, "\tDSVF\tL%d\n", ++rotulo);
+            empilha(rotulo, 'r');
+        }
+      lista_comandos 
+      T_FIMENQTO
+        { 
+            int y = desempilha('r');
+            int x = desempilha('r');
+            fprintf(yyout, "\tDSVS\tL%d\n", x);
+            fprintf(yyout, "L%d\tNADA\n", y);
+        }
+    ;
+
+selecao
+    : T_SE expressao T_ENTAO
+        { 
+            int t = desempilha('t');
+            if (t != LOG)
+                yyerror("Incompatibilidade de tipo na condição da seleção");
+            fprintf(yyout, "\tDSVF\tL%d\n", ++rotulo);
+            empilha(rotulo, 'r'); 
+        } 
+      lista_comandos T_SENAO 
+        { 
+            int x = desempilha('r');
+            fprintf(yyout, "\tDSVS\tL%d\n", ++rotulo);
+            fprintf(yyout, "L%d\tNADA\n", x);
+            empilha(rotulo, 'r');
+        }
+      lista_comandos T_FIMSE
+        { 
+            int y = desempilha('r');
+            fprintf(yyout, "L%d\tNADA\n", y); 
+        }
+    ;
+
+atribuicao
+    : T_IDENTIF
+        { 
+            int pos = buscasimbolo(atomo);
+            empilha(pos, 'p');
+        } 
+      T_ATRIB expressao
+        {
+            DEBUG(mostrapilha();)
+            int t = desempilha('t');
+            int pos = desempilha('p'); 
+            if (t != tabsimb[pos].tipo) 
+                yyerror("Incompatibiliade de tipos na atribuição");
+            fprintf(yyout, "\tARZG\t%d\n", tabsimb[pos].end); 
+        }
+    ;
+
+expressao
+    : expressao T_VEZES expressao
+        { testatipo (INT, INT, INT); fprintf(yyout, "\tMULT\n"); }
+    | expressao T_DIV expressao
+        { testatipo (INT, INT, INT); fprintf(yyout, "\tDIVI\n"); }
+    | expressao T_MAIS expressao
+        { testatipo (INT, INT, INT); fprintf(yyout, "\tSOMA\n"); }
+    | expressao T_MENOS expressao
+        { testatipo (INT, INT, INT); fprintf(yyout, "\tSUBT\n"); }
+    | expressao T_MAIOR expressao
+        { testatipo (INT, INT, LOG); fprintf(yyout, "\tCMMA\n"); }
+    | expressao T_MENOR expressao
+        { testatipo (INT, INT, LOG); fprintf(yyout, "\tCMME\n"); }
+    | expressao T_IGUAL expressao
+        { testatipo (INT, INT, LOG); fprintf(yyout, "\tCMIG\n"); }
+    | expressao T_E expressao
+        { testatipo (LOG, LOG, LOG); fprintf(yyout, "\tCONJ\n"); }
+    | expressao T_OU expressao
+        { testatipo (LOG, LOG, LOG); fprintf(yyout, "\tDISJ\n"); }
+    | termo
+    ;
+
+termo
+    : T_IDENTIF
+      { 
+        int pos = buscasimbolo(atomo);
+        fprintf(yyout, "\tCRVG\t%d\n", tabsimb[pos].end);
+        empilha(tabsimb[pos].tipo, 't'); 
+      }
+    | T_NUMERO
+      { 
+        fprintf(yyout, "\tCRCT\t%s\n", atomo);
+        empilha(INT, 't'); 
+      }
+    | T_V
+      { 
+        fprintf(yyout, "\tCRCT\t1\n");
+        empilha(LOG, 't'); 
+      }
+    | T_F
+      { 
+        fprintf(yyout, "\tCRCT\t0\n");
+        empilha(LOG, 't'); 
+      }
+    | T_NAO termo
+      { 
+        int t = desempilha('t');
+        if (t != LOG)
+           yyerror("O operando do NAO tem que ser logico");
+        empilha(LOG, 't');
+        fprintf(yyout, "\tNEGA\n"); 
+      }
+    | T_ABRE expressao T_FECHA
+    ; 
+
+%%
+
+void yyerror(const char *s)
+{
+    fprintf(stderr, "Erro na linha %d.\n", nlinha);
+    fprintf(stderr, "  %s\n\n", s);
+    exit(10);
+}
+
+static const char *nome_token(yysymbol_kind_t token)
+{
+    static const char *nomes[] = {
+        [YYSYMBOL_T_PROG]      = "programa",
+        [YYSYMBOL_T_INICIO]    = "início",
+        [YYSYMBOL_T_FIM]       = "fim",
+        [YYSYMBOL_T_IDENTIF]   = "identificador",
+        [YYSYMBOL_T_LEIA]      = "leia",
+        [YYSYMBOL_T_ESCREVA]   = "escreva",
+        [YYSYMBOL_T_ENQTO]     = "enquanto",
+        [YYSYMBOL_T_FACA]      = "faça",
+        [YYSYMBOL_T_FIMENQTO]  = "fimenquanto",
+        [YYSYMBOL_T_SE]        = "se",
+        [YYSYMBOL_T_ENTAO]     = "então",
+        [YYSYMBOL_T_SENAO]     = "senão",
+        [YYSYMBOL_T_FIMSE]     = "fimse",
+        [YYSYMBOL_T_ATRIB]     = "atribuição (<-)",
+        [YYSYMBOL_T_VEZES]     = "'*'",
+        [YYSYMBOL_T_DIV]       = "'/'",
+        [YYSYMBOL_T_MAIS]      = "'+'",
+        [YYSYMBOL_T_MENOS]     = "'-'",
+        [YYSYMBOL_T_MAIOR]     = "'>'",
+        [YYSYMBOL_T_MENOR]     = "'<'",
+        [YYSYMBOL_T_IGUAL]     = "'='",
+        [YYSYMBOL_T_E]         = "e",
+        [YYSYMBOL_T_OU]        = "ou",
+        [YYSYMBOL_T_V]         = "verdadeiro",
+        [YYSYMBOL_T_F]         = "falso",
+        [YYSYMBOL_T_NUMERO]    = "número",
+        [YYSYMBOL_T_NAO]       = "não",
+        [YYSYMBOL_T_ABRE]      = "'('",
+        [YYSYMBOL_T_FECHA]     = "')'",
+        [YYSYMBOL_T_LOGICO]    = "lógico",
+        [YYSYMBOL_T_INTEIRO]   = "inteiro"
+    };
+
+    if (token >= 0 &&
+        token < sizeof(nomes) / sizeof(nomes[0]) &&
+        nomes[token] != NULL)
+        return nomes[token];
+
+    return "símbolo desconhecido";
+}
+
+static int yyreport_syntax_error(const yypcontext_t *ctx)
+{
+    yysymbol_kind_t token;
+    yysymbol_kind_t expected[10];
+
+    token = yypcontext_token(ctx);
+
+    fprintf(stderr, "Erro de sintaxe na linha %d.\n", nlinha);
+    fprintf(stderr, "  Símbolo encontrado: %s\n",
+            nome_token(token));
+
+    fprintf(stderr, "  Símbolos esperados: ");
+
+    int n = yypcontext_expected_tokens(ctx, expected, 10);
+
+    for (int i = 0; i < n; i++) {
+        if (i > 0)
+            fprintf(stderr, ", ");
+
+        fprintf(stderr, "%s", nome_token(expected[i]));
+    }
+    fprintf(stderr, "\n\n");
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+    char nameIn[100], nameOut[100], *s;
+    if (argc < 2) {
+        printf("Uso:\n \t%s <nomeprog[.simples]>\n\n", argv[0]);
+        exit(20);
+    }
+    s = strstr(argv[1],".simples");
+    if (s) {
+        *s = 0;
+    }
+    strcpy(nameIn, argv[1]);
+    strcpy(nameOut, argv[1]);
+    strcat(nameOut, ".mvs");
+    strcat(nameIn, ".simples");
+    yyin = fopen(nameIn, "rt");
+    yyout = fopen(nameOut, "wt");
+    yyparse();
+    fclose(yyin);
+    fclose(yyout);
+}
+```
+
+**Arquivo `mvs.c`**
+
+```{.c}
+/*--------------------------------------------------------
+ *      Simulador da Maquina Virtual Simples (MVS)                            
+ *--------------------------------------------------------*/
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+/*--------------------------------------------------------
+ * Conjunto de instrucoes mnemonicas da MVS                    
+ *--------------------------------------------------------*/
+#define TOTALINST 31
+char *inst[TOTALINST] = {
+    "CRVG", /* Carrega valor */
+    "CRCT", /* Carrega constante */
+    "SOMA", /* Soma */
+    "SUBT", /* Subtrai */
+    "MULT", /* Multiplica */
+    "DIVI", /* Divide (divisao inteira) */
+    "CMIG", /* Compara se igual */
+    "CMMA", /* Compara se maior */
+    "CMME", /* Compara se menor */
+    "CONJ", /* Conjuncao - e logico */
+    "DISJ", /* Disjuncao - ou logico */
+    "NEGA", /* Negacao - nao logico */
+    "ARZG", /* Armazena na variavel */
+    "DSVS", /* Desvia sempre */
+    "DSVF", /* Desvia se falso */
+    "NADA", /* Nada */
+    "ESCR", /* Escreve */
+    "LEIA", /* Le */
+    "INPP", /* Inicia Programa Principal */
+    "AMEM", /* Aloca memoria */
+    "CRVL", /* Carrega valor local */
+    "ARZL", /* Armazena Local */
+    "CREL", /* Carrega endereco local */
+    "CREG", /* Carrega endereco global */
+    "CRVI", /* Carrega valor indireto */
+    "ARMI", /* Armazena indireto */
+    "SVCP", /* Salva contador de programa */
+    "ENSP", /* Entrada Sub-Programa */
+    "RTSP", /* Retorno Sub-Programa */
+    "DMEM", /* Desaloca memoria */
+    "FIMP"  /* Fim do programa */
+};
+
+enum codinst
+{
+    CRVG,
+    CRCT,
+    SOMA,
+    SUBT,
+    MULT,
+    DIVI,
+    CMIG,
+    CMMA,
+    CMME,
+    CONJ,
+    DISJ,
+    NEGA,
+    ARZG,
+    DSVS,
+    DSVF,
+    NADA,
+    ESCR,
+    LEIA,
+    INPP,
+    AMEM,
+    CRVL,
+    ARZL,
+    CREL,
+    CREG,
+    CRVI,
+    ARMI,
+    SVCP,
+    ENSP,
+    RTSP,
+    DMEM,
+    FIMP
+};
+
+/*--------------------------------------------------------
+ * Regioes do ambiente de execucao da MVS                    
+ *--------------------------------------------------------*/
+struct prog
+{
+    int r, i, o;
+} P[500]; /* Regiao do Programa */
+int
+    L[50]; /* Posicao dos rotulos */
+int
+    M[500]; /* Pilha M - Dados do programa */
+
+/*--------------------------------------------------------
+ * Rotinas da MVS                   
+ *--------------------------------------------------------*/
+int busca_instrucao(char *);
+int carrega_programa(char *, int *);
+void mostra_programa(int);
+void executa_programa(int);
+
+/*--------------------------------------------------------
+ * Funcao principal.
+ * Carrega o codigo passado em linha de comando e executa          
+ *--------------------------------------------------------*/
+int main(int argc, char *argv[])
+{
+    char *p, nome[100];
+    int i, nroinst, debug = 0, mostra = 0;
+    argc--;
+    argv++;
+    if (argc < 1)
+    {
+        puts("\nMVS - Maquina Virtual Simples");
+        puts("Uso: mvs <nomedoarquivo>[.mvs] [opcoes]");
+        puts("Opcoes:\t+m=mostra codigo \n\t+d=debug\n\n");
+        exit(0);
+    }
+    if (p = strstr(argv[0], ".mvs"))
+        *p = 0;
+    strcpy(nome, argv[0]);
+    strcat(nome, ".mvs");
+    for (i = 0; i < argc; i++)
+    {
+        if (strstr(argv[i], "+m"))
+            mostra = 1;
+        if (strstr(argv[i], "+d"))
+            debug = 1;
+    }
+    if (carrega_programa(nome, &nroinst))
+    {
+        if (mostra)
+            mostra_programa(nroinst);
+        executa_programa(debug);
+        printf("Fim do programa.\n");
+    }
+    return 1;
+}
+
+/*--------------------------------------------------------
+ * Funcao que codifica as instrucoes.
+ * Recebe o nome da instrucao e retorna um numero.
+ *--------------------------------------------------------*/
+int busca_instrucao(char *s)
+{
+    int i;
+    for (i = TOTALINST - 1; i >= 0 && strcmp(inst[i], s); i--)
+        ;
+    return i;
+}
+
+void instrucao (char *linha, int *rot, int *inst, int *op) {
+    char str[6];
+    int i;
+    //---- rotulo
+    if (*linha == 'L') {
+        i = 0;
+        linha++;
+        while (*linha != '\t')
+           str[i++] = *linha++;
+        str[i] = 0;
+        *rot = atoi (str);
+    } else *rot = -1;
+    //---- instrucao
+    linha++;
+    i = 0;
+    while (i < 4)
+        str[i++] = *linha++;
+    str[i] = 0;
+    *inst = busca_instrucao(str);
+    //---- operando
+    if (*linha == '\t') {
+        linha++;
+        if (*linha == 'L')
+           linha++;
+        i = 0;
+        while (*linha != '\r' && *linha != '\n')
+          str[i++] = *linha++;
+        str[i] = 0;
+        *op = atoi (str);
+    }
+    else *op = -1;
+}
+
+/*--------------------------------------------------------
+ * Carrega o programa MVS. 
+ * Recebe o nome do arquivo com o programa para MVS e
+ * retorna o numero de linhas do programa. 
+ *--------------------------------------------------------*/
+int carrega_programa(char *s, int *nro)
+{
+    FILE *arq;
+    char linha[20], *p, str[6];
+    int j;
+
+    if ((arq = fopen(s, "r")) == NULL)
+    {
+        puts("\n\nErro na abertura do arquivo\n\n");
+        return 0;
+    }
+    *nro = 0;
+    while (!feof(arq))
+    {
+        int rot, inst, op;
+        fgets(linha, 20, arq);
+        if (!feof(arq)) {
+           instrucao (linha, &rot, &inst, &op);
+           P[*nro].r = rot;
+           if (rot != -1)
+              L[rot] = *nro;
+           P[*nro].i = inst;
+           P[*nro].o = op;
+           (*nro)++; // proxima instrucao
+        }
+    }
+    fclose(arq);
+    return 1;
+}
+
+void mostra_programa(int nro)
+{
+    int i;
+    char r_str[10], o_str[10];
+    for (i = 0; i < nro; i++)
+    {
+        if (P[i].r != -1)
+            sprintf(r_str, "%d", P[i].r);
+        else
+            strcpy(r_str, "   ");
+        if (P[i].o != -1)
+            sprintf(o_str, "%d", P[i].o);
+        else
+            strcpy(o_str, "   ");
+        printf("%3d:[%-3s  %4s  %3s]\n", i, r_str, inst[P[i].i], o_str);
+    }
+}
+
+/*--------------------------------------------------------
+ * Funcao que executa o programa MVS
+ * A partir do vetor P (programa) preenchido, executa uma
+ * a uma as instrucoes do programa.                      
+ *--------------------------------------------------------*/
+void executa_programa(int debug)
+{
+    int i = 0, s = 0, d;
+    char numstr[6];
+    while (1)
+    {
+        if (debug)
+        {
+            int x;
+            printf("M = [");
+            for (x = 0; x <= s; x++)
+                printf("%d:%d ", x, M[x]);
+            printf("]\n%2d:[%2d\t%4s\t%2d]  s=%d  d=%d\n", i, P[i].r, inst[P[i].i], P[i].o, s, d);
+            puts("digite . e <ENTER>");
+            while (getchar() != '.')
+                ;
+        }
+        switch (P[i].i)
+        {
+        case CRCT:
+            s++;
+            M[s] = P[i].o;
+            i++;
+            break;
+        case CRVG:
+            s++;
+            M[s] = M[P[i].o];
+            i++;
+            break;
+        case ARZG:
+            M[P[i].o] = M[s];
+            s--;
+            i++;
+            break;
+        case SOMA:
+            M[s - 1] = M[s - 1] + M[s];
+            s--;
+            i++;
+            break;
+        case SUBT:
+            M[s - 1] = M[s - 1] - M[s];
+            s--;
+            i++;
+            break;
+        case MULT:
+            M[s - 1] = M[s - 1] * M[s];
+            s--;
+            i++;
+            break;
+        case DIVI:
+            M[s - 1] = M[s - 1] / M[s];
+            s--;
+            i++;
+            break;
+        case CONJ:
+            if (M[s - 1] && M[s])
+                M[s - 1] = 1;
+            else
+                M[s - 1] = 0;
+            s--;
+            i++;
+            break;
+        case DISJ:
+            if (M[s - 1] || M[s])
+                M[s - 1] = 1;
+            else
+                M[s - 1] = 0;
+            s--;
+            i++;
+            break;
+        case NEGA:
+            M[s] = 1 - M[s];
+            i++;
+            break;
+        case CMME:
+            if (M[s - 1] < M[s])
+                M[s - 1] = 1;
+            else
+                M[s - 1] = 0;
+            s--;
+            i++;
+            break;
+        case CMMA:
+            if (M[s - 1] > M[s])
+                M[s - 1] = 1;
+            else
+                M[s - 1] = 0;
+            s--;
+            i++;
+            break;
+        case CMIG:
+            if (M[s - 1] == M[s])
+                M[s - 1] = 1;
+            else
+                M[s - 1] = 0;
+            s--;
+            i++;
+            break;
+        case DSVS:
+            i = L[P[i].o];
+            break;
+        case DSVF:
+            if (M[s] == 0)
+                i = L[P[i].o];
+            else
+                i++;
+            s--;
+            break;
+        case NADA:
+            i++;
+            break;
+        case FIMP:
+            printf("\n\n");
+            return;
+        case LEIA:
+            s++;
+            printf("? ");
+            fgets(numstr, 5, stdin);
+            M[s] = atoi(numstr);
+            i++;
+            break;
+        case ESCR:
+            printf("Saida = %d\n", M[s]);
+            s--;
+            i++;
+            break;
+        case AMEM:
+            s = s + P[i].o;
+            i++;
+            break;
+        case INPP:
+            s = -1;
+            i++;
+            d = -1;
+            break;
+        case CRVL:
+            s = s + 1;
+            M[s] = M[d + P[i].o];
+            i++;
+            break;
+        case ARZL:
+            M[d + P[i].o] = M[s];
+            s = s - 1;
+            i++;
+            break;
+        case CREL:
+            s = s + 1;
+            M[s] = d + P[i].o;
+            i++;
+            break;
+        case CREG:
+            s = s + 1;
+            M[s] = P[i].o;
+            i++;
+            break;
+        case CRVI:
+            s = s + 1;
+            M[s] = M[M[d + P[i].o]];
+            i++;
+            break;
+        case ARMI:
+            M[M[d + P[i].o]] = M[s];
+            s = s - 1;
+            i++;
+            break;
+        case SVCP:
+            s = s + 1;
+            M[s] = i + 2;
+            i++;
+            break;
+        case ENSP:
+            s = s + 1;
+            M[s] = d;
+            d = s + 1;
+            i++;
+            break;
+        case RTSP:
+        {
+            int nropar = P[i].o;
+            d = M[s];
+            i = M[s - 1];
+            s = s - (nropar + 2);
+            break;
+        }
+        case DMEM:
+            s = s - P[i].o;
+            i++;
+            break;
+        default:
+            printf("Instrucao <%d,%d> MVS desconhecida!", i, P[i].i);
+            exit(0);
+        }
+    }
+}
+```
