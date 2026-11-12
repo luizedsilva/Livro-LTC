@@ -10,6 +10,11 @@ number-depth: 2
 filters:
   - simulacao.lua
   - quebra.lua
+  - tables-rules.lua
+
+metadata:
+  tables-vrules: true
+  tables-hrules: true
 
 resources:
   - p5js
@@ -48,6 +53,7 @@ format:
     cover-image: capa.png
 
   pdf:
+    # keep-tex: true
     documentclass: book
     geometry:
       - paperwidth=17cm

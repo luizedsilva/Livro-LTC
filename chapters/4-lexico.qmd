@@ -2803,18 +2803,18 @@ Alguns carateres tem um significado especial nas expressões regulares escritas 
 ::: {#tbl-metacaracteres}
 | **Metacaracter** | **Correspondência**                          |
 |:----------------:|:---------------------------------------------|
-|        x         | caracter 'x', exceto nova linha              |
-|        .         | Qualquer caracter exceto nova linha          |
-|      $\backslash n$       | Nova linha                                   |
-|        \*        | Zero ou mais cópias da expressão precedente  |
-|        \+        | Uma ou mais cópias da expressão precedente   |
-|        ?         | Zero ou uma cópia da expressão precedente    |
-|        \^        | Início da linha                              |
-|        \$        | Fim da linha                                 |
-|       a b        | Alternativa "a ou b"                         |
-|      (ab)+       | Uma ou mais cópias de ab (agrupamento)       |
-|      "a+b"       | Literal "a+b"                                |
-|      [abc]       | Classe de caracteres. Nesse caso, a, b ou c. |
+|        $x$         | caracter 'x', exceto nova linha              |
+|        $.$         | Qualquer caracter exceto nova linha          |
+|  $\backslash n$  | Nova linha                                   |
+|        $*$        | Zero ou mais cópias da expressão precedente  |
+|        $+$        | Uma ou mais cópias da expressão precedente   |
+|        $?$         | Zero ou uma cópia da expressão precedente    |
+|        $\^$        | Início da linha                              |
+|        $\$$        | Fim da linha                                 |
+|       $a|b$       | Alternativa "a ou b"                         |
+|      $(ab)+$       | Uma ou mais cópias de ab (agrupamento)       |
+|      $"a+b"$       | Literal "a+b"                                |
+|      $[abc]$       | Classe de caracteres. Nesse caso, a, b ou c. |
 
 : Metacaracteres de Lex
 :::
@@ -2833,8 +2833,8 @@ Alguns exemplos de correspondências entre expressões regulares para Lex e os s
 |        [a-z]          | qualquer letra no intervalo a até z. |
 |        [-az]          | - ou a ou z                          |
 |        [^ab]          | qualquer símbolo exceto a ou b.      |
-|        [a^b]          | a ou \^ ou b                          |
-|        [a\|b]         | a ou \| ou b                            |
+|        [a^b]          | a ou \^ ou b                         |
+|        [a\|b]         | a ou \| ou b                         |
 |          ab           | a ou b                               |
 
 : Exemplos de Expressões Regulares para Lex
@@ -2969,23 +2969,48 @@ int main(void) {
 }
 ```
 
-## Analisador Léxico para Linguagem Simples
+## PROJETO PARTE 1 - Construção do Analisador Léxico
 
-A linguagem Simples$^\circledR$, na sua versão inicial, é composta dos seguintes símbolos léxicos:
+A primeira etapa do desenvolvimento do compilador consiste na construção do **analisador léxico**, responsável por realizar a leitura do código-fonte e identificar os símbolos que compõem a linguagem de programação Simples. Nessa etapa, será utilizada a ferramenta **FLEX (Fast Lexical Analyzer Generator)**, que permite especificar padrões léxicos por meio de expressões regulares e gerar automaticamente um programa capaz de reconhecer esses padrões.
 
--   [**Palavras Reservadas**]{.underline}: programa, inicio, fimprograma, leia, escreva, se, entao, senao, fimse, enquanto, faca, fimenquanto.
+Na versão inicial, a linguagem Simples possui um conjunto reduzido de símbolos léxicos, organizados em categorias de acordo com suas funções na construção dos programas. Essas categorias são apresentadas a seguir.
 
--   [**Operadores**]{.underline}: +, -, \*, div, $>$, $<$, +, e, ou, nao, [$<$$-$]{.underline}, [(]{.underline}, [)]{.underline}
+- **Palavras reservadas:** representam palavras com significado previamente definido na linguagem e são utilizadas para delimitar estruturas e comandos. São elas: `programa`, `inicio`, `fimprograma`, `leia`, `escreva`, `se`, `entao`, `senao`, `fimse`, `enquanto`, `faca` e `fimenquanto`.
 
--   [**tipos**]{.underline}: inteiro, logico
+- **Operadores:** são utilizados para construir expressões aritméticas, relacionais e lógicas. A linguagem contempla os operadores aritméticos `+`, `-`, `*` e `div`; os operadores relacionais `>`, `<` e `=`; e os operadores lógicos `e`, `ou` e `nao`. Também são reconhecidos os delimitadores `(` e `)` e o operador de atribuição `<-`.
 
--   [**constantes**]{.underline}: V, F
+- **Tipos de dados:** identificam os tipos básicos suportados pela linguagem: `inteiro` e `logico`.
 
--   [**identificadores**]{.underline}: (letra)(letradigito)\*
+- **Constantes lógicas:** representam os valores lógicos verdadeiro e falso, identificados pelos símbolos `V` e `F`, respectivamente.
 
--   [**números**]{.underline}: (digito)+
+- **Identificadores:** são utilizados para nomear variáveis e outros elementos definidos pelo programador. Sua formação segue o padrão de uma letra, seguida opcionalmente por uma sequência de letras ou dígitos.
 
-Utilizando a ferramenta flex pode-se construir um classificador do código da linguagem Simples. Esse classificador é uma versão básica do analisador léxico que recebe como entrada um código de Simples e apresenta na saída uma tabela onde todos os símbolos léxicos encontrados no código são classificados. Dado o seguinte código Simples:
+- **Números:** representam constantes numéricas inteiras, constituídas por uma ou mais ocorrências de dígitos.
+
+A Tabela a seguir sintetiza as categorias de símbolos léxicos e os respectivos padrões utilizados para reconhecê-los.
+
+| Categoria | Padrão ou símbolos |
+|:--|:--|
+| Palavras reservadas | `programa`, `inicio`, `fimprograma`, `leia`, `escreva`, `se`, `entao`, `senao`, `fimse`, `enquanto`, `faca`, `fimenquanto` |
+| Operadores aritméticos | `+`, `-`, `*`, `div` |
+| Operadores relacionais | `>`, `<`, `=` |
+| Operadores lógicos | `e`, `ou`, `nao` |
+| Atribuição | `<-` |
+| Delimitadores | `(`, `)` |
+| Tipos de dados | `inteiro`, `logico` |
+| Constantes lógicas | `V`, `F` |
+| Identificadores | `(letra)(letra\|digito)*` |
+| Números inteiros | `(digito)+` |
+
+Para implementar o analisador léxico, inicialmente é necessário especificar os padrões que representam cada categoria de símbolos da linguagem. O FLEX utiliza expressões regulares para descrever esses padrões e permite associar a cada um deles uma ação, executada sempre que uma ocorrência correspondente é identificada no código-fonte.
+
+Nesta primeira parte do projeto, será desenvolvido um **classificador léxico**, que constitui uma versão inicial e simplificada do analisador léxico de um compilador. Esse programa recebe como entrada um arquivo contendo um código-fonte escrito na linguagem Simples, realiza a análise dos caracteres e identifica os símbolos léxicos encontrados.
+
+Como resultado do processamento, o classificador apresenta uma tabela contendo os símbolos identificados e suas respectivas classificações. Dessa forma, cada ocorrência é associada à categoria léxica correspondente, permitindo observar como o código-fonte é decomposto em unidades léxicas, também denominadas *tokens*.
+
+É importante destacar que, nesta etapa, o objetivo está concentrado no reconhecimento e na classificação dos símbolos, não sendo realizada ainda a análise sintática ou semântica do programa. Essas etapas serão incorporadas progressivamente ao longo do desenvolvimento do compilador.
+
+Considere, como exemplo, o seguinte código-fonte escrito na linguagem Simples:
 
 
 ```{.simples}         

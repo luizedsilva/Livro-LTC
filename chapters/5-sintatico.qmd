@@ -600,6 +600,8 @@ Os componentes de $M_1$ são:
 - $F = \{q_1, q_4\}$; e
 - $\delta$ é dada pela tabela a seguir:
 
+\small
+
 | Entrada |  | **0** |  |  | **1** |  |  | $\varepsilon$ |  |
 |:--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | Pilha | $0$ | $\$$ | $\varepsilon$ | $0$ | $\$$ | $\varepsilon$ | $0$ | $\$$ | $\varepsilon$ |
@@ -607,6 +609,8 @@ Os componentes de $M_1$ são:
 | $q_2$ |  |  | $\{(q_2,0)\}$ | $\{(q_3,\varepsilon)\}$ |  |  |  |  |  |
 | $q_3$ |  |  |  | $\{(q_3,\varepsilon)\}$ |  |  |  | $\{(q_4,\varepsilon)\}$ |  |
 | $q_4$ |  |  |  |  |  |  |  |  |  |
+
+\normalsize
 
 #### Outros exemplos de autômatos com pilha
 
@@ -1586,7 +1590,7 @@ O símbolo $\#$ representa o **marcador de fim da entrada**. Ele é acrescentado
 | 18 | $e_0 +_2 E_6$ | $\underline{E}$ | $\#$ | $e_8$ |
 | 19 | $e_0 +_2 E_6 E_8$ | | $\underline{\#}$ | $r_1$ |
 | 20 | $e_0$ | $\underline{E}$ | $\#$ | $e_1$ |
-| 21 | $e_0 E_1$ | | $\underline{\#}$ | **ACEITAR** |
+| 21 | $e_0 E_1$ | | $\underline{\#}$ | **Aceita** |
 
 : Acompanhamento do algoritmo LR {#tbl-algoritmoLR}
 
@@ -3399,7 +3403,7 @@ dot -Tsvg exemplo.dot -o exemplo.svg
 ```
 
 
-## Projeto de Compilador - Parte 2
+## PROJETO PARTE 2 - Construção do Analisador Sintático
 
 Na **Parte 1**, foi implementada uma versão do analisador léxico responsável por percorrer o programa fonte e identificar os tokens presentes na entrada. Para algumas classes de tokens, como `T_NUMERO` e `T_IDENTIF`, o analisador léxico também armazena, na variável global `atomo`, o lexema correspondente ao token reconhecido. Dessa forma, além de identificar a classe léxica do elemento encontrado, o analisador mantém a informação necessária para que esse lexema possa ser utilizada nas etapas posteriores do processo de compilação.
 

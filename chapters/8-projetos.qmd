@@ -379,8 +379,6 @@ A Tabela apresenta as instruções acrescentadas à máquina virtual para permit
 | `ENSP` | Entrada em subprograma | $s \leftarrow s + 1$ <br> $M[s] \leftarrow d$ <br> $d \leftarrow s + 1$ |
 | `RTSP n` | Retorno de subprograma | $d \leftarrow M[s]$ <br> $i \leftarrow M[s − 1]$ <br> $s \leftarrow s − (n + 2)$ |
 
-: {tbl-colwidths="[20,40,40]"}
-
 #### Descrição das instruções
 
 ##### Manipulação de variáveis locais
@@ -941,25 +939,9 @@ Por fim, `FIMP` indica o término da execução do programa.
 
 _Resultado da execução_
 
-Considerando a chamada:
+A @fig-registro-mvs1 apresenta a configuração da MVS no instante imediatamente anterior à execução da primeira instrução do subprograma somatudo. Na pilha de dados M, observa-se a formação do registro de ativação correspondente à chamada `somatudo(10 3 4 8)`. Estão indicados os valores passados como argumentos (`10`, `3`, `4` e `8`), que serão associados, em ordem inversa à sua inserção na pilha, aos respectivos parâmetros formais (`a`, `b`, `c` e `d`). O registro também contém o endereço de retorno (`19`), que indica a instrução a ser executada após o encerramento do subprograma, e o valor do contexto anterior (`d' = -1`), utilizado para recuperar o contexto de execução da rotina chamadora. 
 
-```{.mvs}
-somatudo(10 3 4 8)
-```
-
-o procedimento recebe os valores correspondentes aos seus quatro parâmetros e realiza as seguintes operações:
-
-$$ 10+3=13 $$
-
-$$ 13+4=17 $$
-
-$$ 17+8=25 $$
-
-Saída esperada
-
-```
-25
-```
+![Simulação da execução do exemplo 1 na MVS](/chapters/images/registro-mvs1.png){#fig-registro-mvs1 width="70%"} 
 
 Esse exemplo demonstra como o compilador traduz a declaração de um procedimento e sua respectiva chamada, incluindo a organização dos parâmetros na pilha, o acesso aos valores por meio de endereços relativos, o desvio para a rotina e o retorno ao fluxo de execução do programa principal.
 
@@ -1457,43 +1439,11 @@ Finalmente, `DMEM 1` libera a posição de memória reservada para o resultado d
 
 _Exemplo de execução da função recursiva_
 
-Para compreender o funcionamento da recursividade, considere que o usuário informe o valor 4. Nesse caso, a função realizará as seguintes chamadas:
+A @fig-registro-mvs2 apresenta a configuração da MVS no instante imediatamente anterior à execução da próxima instrução, após a terceira entrada na rotina recursiva. Nesse momento, a função `fat(2)` já foi chamada a partir do programa principal, seguida pela primeira chamada recursiva, `fat(1)`, e pela segunda chamada recursiva, `fat(0)`, considerando que o valor digitado pelo usuário e armazenado na variável x é igual a 2.
 
-Etapa 1 — Expansão das chamadas recursivas
+Na pilha de dados `M`, observa-se a organização dos registros de ativação correspondentes às três chamadas da função. Cabe destacar que a principal diferença entre o registro de ativação da chamada inicial e os registros das chamadas recursivas está no endereço de retorno. Na chamada inicial, o endereço de retorno corresponde à instrução `30`, que será executada após o término da função. Já nas chamadas recursivas, o endereço de retorno corresponde à instrução `14`, localizada no próprio corpo da função, permitindo que a execução retorne ao ponto imediatamente posterior à chamada recursiva.
 
-f(4)
-
-4 × f(3)
-
-f(3)
-
-3 × f(2)
-
-f(2)
-
-2 × f(1)
-
-f(1)
-
-1 × f(0)
-
-Caso-base
-
-f(0) = 1
-
-Etapa 2 — Retorno das chamadas
-
-| Chamada | Operação | Resultado |
-| ------- | -------- | --------- |
-| f(0)    | 1        | 1         |
-| f(1)    | 1 × 1    | 1         |
-| f(2)    | 2 × 1    | 2         |
-| f(3)    | 3 × 2    | 6         |
-| f(4)    | 4 × 6    | 24        |
-
-Resultado apresentado pela instrução ESCR
-
-$$24$$
+![Simulação da execução do exemplo 2 na MVS](/chapters/images/registro-mvs2.png){#fig-registro-mvs2 width="60%"} 
 
 Esse exemplo permite observar aspectos importantes da tradução de funções recursivas para a máquina virtual MVS.
 
