@@ -1544,7 +1544,7 @@ Essa hipótese simplifica a construção. Caso os autômatos tenham alfabetos di
 
 ##### Função de transição
 
-A função de transição de \(M\) é definida por
+A função de transição de $M$ é definida por
 
 $$
 \delta((r_1,r_2),a)
@@ -1823,6 +1823,370 @@ $$
 Como $M'$ é um autômato finito determinístico, concluímos que $\overline{A}$ também é regular. Logo, **a classe das linguagens regulares é fechada sob a operação de complemento**.
 
 **Atenção:** essa construção exige um autômato determinístico completo. Se houver transições ausentes, será necessário completá-lo, normalmente acrescentando um estado não final de erro (*estado poço*), antes de inverter os estados finais. Para um autômato finito não determinístico, a simples troca dos estados finais pelos não finais não produz, em geral, o complemento da linguagem reconhecida.
+
+
+#### Minimização de autômatos finitos determinísticos
+
+A minimização de um autômato finito determinístico (AFD) consiste em construir um autômato equivalente que reconheça a mesma linguagem, mas que possua o menor número possível de estados. Esse processo é importante porque permite obter representações mais compactas dos autômatos, reduzindo a quantidade de estados e, consequentemente, os recursos necessários para sua implementação e execução.
+
+A ideia fundamental da minimização é identificar estados que, embora tenham identificadores diferentes, apresentam o mesmo comportamento em relação ao reconhecimento de palavras. Dois estados são considerados equivalentes quando não existe nenhuma palavra que permita distingui-los, isto é, quando, a partir de ambos, o processamento de qualquer palavra resulta simultaneamente em aceitação ou rejeição.
+
+**Definição: Equivalência de estados**
+
+Seja $A = (Q, \Sigma, \delta, s, F)$ um AFD. Dois estados $p,q \in Q$ são equivalentes, denotado por $p \equiv q$, se, e somente se, para toda palavra $w \in \Sigma^*$, vale:
+
+$$
+\hat{\delta}(p,w) \in F \iff \hat{\delta}(q,w) \in F
+$$
+
+Em outras palavras, os estados $p$ e $q$ são equivalentes quando qualquer palavra processada a partir desses estados leva ambos a estados finais ou ambos a estados não finais.
+
+Por outro lado, dois estados são distinguíveis quando existe pelo menos uma palavra que, processada a partir deles, leva um dos estados a uma situação de aceitação e o outro a uma situação de rejeição.
+
+**Algoritmo de minimização pelo método da tabela de pares**
+
+Uma das técnicas utilizadas para minimizar AFDs é o método da tabela de pares, também conhecido como algoritmo de marcação de pares de estados. O método identifica sistematicamente os pares de estados distinguíveis e, ao final, permite determinar quais estados são equivalentes.
+
+O algoritmo utiliza uma matriz denominada tabela de marcação, na qual cada posição representa um par não ordenado de estados $\{p,q\}$. Como a equivalência é simétrica, os pares $\{p,q\}$ e $\{q,p\}$ representam a mesma relação. Portanto, basta considerar uma das metades da matriz.
+
+O procedimento pode ser dividido nas seguintes etapas:
+
+**1. Inicialização da tabela**
+
+Inicialmente, todos os pares de estados são considerados não marcados. Em seguida, são marcados os pares formados por um estado final e um estado não final.
+
+Essa primeira marcação decorre diretamente da definição de equivalência: se um estado pertence ao conjunto de estados finais e o outro não pertence, eles são distinguíveis pela palavra vazia $\varepsilon$.
+
+Formalmente, marca-se o par $\{p,q\}$ quando:
+
+$$
+(p \in F \land q \notin F) \lor
+(p \notin F \land q \in F)
+$$
+
+**2. Propagação das marcações**
+
+Depois da inicialização, o algoritmo verifica os pares ainda não marcados. Para cada par $\{p,q\}$ e para cada símbolo $a \in \Sigma$, são calculados os estados alcançados pelas transições:
+
+$$
+p' = \delta(p,a)
+$$
+
+$$
+q' = \delta(q,a)
+$$
+
+Se o par $\{p',q'\}$ já estiver marcado, significa que existe uma palavra capaz de distinguir $p'$ de $q'$. Consequentemente, os estados $p$ e $q$ também são distinguíveis, pois basta acrescentar o símbolo $a$ ao início dessa palavra.
+
+Assim, o par $\{p,q\}$ também deve ser marcado.
+
+Formalmente:
+
+$$
+\{p,q\} \text{ é marcado se }
+\exists a \in \Sigma:
+\{\delta(p,a),\delta(q,a)\}
+\text{ está marcado}
+$$
+
+Esse procedimento é repetido até que nenhuma nova marcação seja realizada. É importante observar que uma marcação pode provocar outras marcações em iterações posteriores, razão pela qual o algoritmo precisa continuar até atingir um ponto de estabilidade.
+
+**3. Identificação dos estados equivalentes**
+
+Quando o processo de marcação termina, os pares que permanecem sem marcação representam estados equivalentes.
+
+Portanto:
+
+$$
+p \equiv q \iff \{p,q\} \text{ não está marcado}
+$$
+
+Os estados equivalentes são reunidos em classes de equivalência. Cada classe passa a representar um único estado no autômato minimizado.
+
+O conjunto de estados do AFD minimizado é formado pelo quociente:
+
+$$
+Q_{\min} = Q/{\equiv}
+$$
+
+Cada elemento desse conjunto corresponde a uma classe de equivalência de estados do autômato original.
+
+**4. Construção do autômato minimizado**
+
+Após identificar as classes de equivalência, o novo autômato é construído utilizando essas classes como estados.
+
+A função de transição é definida por:
+
+$$
+\delta_{\min}([p],a) = [\delta(p,a)]
+$$
+
+em que $[p]$ representa a classe de equivalência à qual pertence o estado $p$.
+
+O estado inicial é a classe que contém o estado inicial original:
+
+$$
+s_{\min} = [s]
+$$
+
+O conjunto de estados finais é constituído pelas classes que contêm estados finais do autômato original:
+
+$$
+F_{\min} = \{[p] \mid p \in F\}
+$$
+
+Como estados equivalentes possuem o mesmo comportamento para qualquer palavra, a definição da função de transição independe do representante escolhido para a classe.
+
+**Exemplo de implementação em linguagem C**
+
+O programa apresentado a seguir implementa o método da tabela de pares para minimizar um AFD. Para facilitar a compreensão do algoritmo, o autômato é representado por uma matriz de transições, e os estados finais são identificados por um vetor lógico.
+
+A implementação utiliza as seguintes estruturas:
+
+- `finals`: vetor que indica quais estados são finais. O valor `1` representa um estado final, enquanto `0` representa um estado não final.
+- `afd`: matriz que representa a função de transição. Cada linha corresponde a um estado e cada coluna a um símbolo do alfabeto.
+- `marked`: matriz que armazena as marcações dos pares de estados distinguíveis.
+- `grouped`: vetor auxiliar utilizado para identificar os estados que já foram associados a uma classe de equivalência.
+
+Neste exemplo, são considerados seis estados, identificados de 0 a 5, e um alfabeto com dois símbolos.
+
+A declaração:
+
+```c
+#define NSTATES 6
+#define NSYMBOLS 2
+int finals[NSTATES] = {0, 0, 0, 1, 1, 1};
+```
+
+define o número de estados, a quantidade de símbolos do alfabeto e os estados finais do autômato. Portanto, os estados 3, 4 e 5 são finais, enquanto os estados 0, 1 e 2 são não finais.
+
+A matriz de transições é definida por:
+
+```c
+int afd[NSTATES][NSYMBOLS] =
+   {{1, 2},
+    {3, 4},
+    {4, 3},
+    {5, 5},
+    {5, 5},
+    {5, 5}};
+```
+
+Cada elemento `afd[p][k]` representa o estado alcançado a partir do estado `p`, quando o símbolo de índice `k` é processado.
+
+A primeira etapa do programa inicializa a tabela de marcação. Para cada par de estados distintos, verifica-se se um deles é final e o outro não final. Quando isso ocorre, o par é marcado:
+
+```c
+for (int q = 1; q < NSTATES; q++)
+    for (int p = 0; p < q; p++)
+        if ((finals[p] && !finals[q]) ||
+            (!finals[p] && finals[q]))
+        {
+            marked[p][q] = 1;
+            marked[q][p] = 1;
+        }
+        else
+        {
+            marked[p][q] = 0;
+            marked[q][p] = 0;
+        }
+```
+
+Observe que as duas posições da matriz são atualizadas, garantindo que `marked[p][q]` e `marked[q][p]` armazenem a mesma informação.
+
+A função `show()` apresenta a tabela de marcação durante a execução. Um símbolo `x` indica que o par foi marcado, enquanto um ponto indica que ainda não foi identificado como distinguível.
+
+Na segunda etapa, o programa realiza a propagação das marcações. O laço `do-while` garante que o procedimento seja repetido enquanto houver novas marcações:
+
+```c
+do
+{
+    changed = false;
+
+    for (int p = 0; p < NSTATES; p++)
+        for (int q = p + 1; q < NSTATES; q++)
+            if (!marked[p][q])
+            {
+                for (int k = 0; k < NSYMBOLS; k++)
+                {
+                    int dP = afd[p][k];
+                    int dQ = afd[q][k];
+
+                    if (marked[dP][dQ])
+                    {
+                        marked[p][q] = 1;
+                        marked[q][p] = 1;
+                        changed = true;
+                    }
+                }
+            }
+
+} while (changed);
+```
+
+Para cada par ainda não marcado, o programa percorre todos os símbolos do alfabeto e calcula os estados de destino. Se o par formado pelos estados de destino já estiver marcado, o par original também será marcado.
+
+A variável `changed` controla a repetição do processo. Ela recebe o valor `false` no início de cada iteração e passa a ser `true` sempre que uma nova marcação é realizada. Quando uma iteração termina sem novas marcações, o algoritmo alcança a estabilidade e pode prosseguir para a identificação das classes de equivalência.
+
+Finalmente, o programa percorre os estados e agrupa aqueles que permanecem não distinguíveis. Para isso, utiliza o vetor `grouped`, evitando que um mesmo estado seja apresentado mais de uma vez:
+
+```c
+for (int i = 0; i < NSTATES; i++)
+    grouped[i] = 0;
+
+for (int p = 0; p < NSTATES; p++)
+{
+    if (!grouped[p])
+    {
+        printf("{ %d ", p);
+        grouped[p] = 1;
+
+        for (int q = p + 1; q < NSTATES; q++)
+            if (!marked[p][q])
+            {
+                printf("%d ", q);
+                grouped[q] = 1;
+            }
+
+        printf("}\n");
+    }
+}
+```
+
+**Análise do exemplo**
+
+Para o autômato apresentado, a inicialização marca todos os pares constituídos por um estado final e um não final. Portanto, são inicialmente marcados os pares formados por um estado do conjunto $\{0,1,2\}$ e outro do conjunto $\{3,4,5\}$.
+
+Na etapa de propagação, verifica-se que os estados 1 e 2 são distinguíveis, pois, para qualquer um dos dois símbolos, suas transições levam a estados pertencentes a classes diferentes. Consequentemente, o par $\{1,2\}$ é marcado.
+
+Por outro lado, os estados 3, 4 e 5 são equivalentes. Todos são estados finais e, independentemente do símbolo processado, suas transições levam ao estado 5, que também é final.
+
+Assim, os estados equivalentes identificados pelo algoritmo são:
+
+$$
+Q/{\equiv} =
+\{\{0\},\{1\},\{2\},\{3,4,5\}\}
+$$
+
+O AFD minimizado possui, portanto, quatro estados, correspondentes às quatro classes de equivalência.
+
+É importante destacar que o programa apresentado realiza a identificação dos estados equivalentes, mas não implementa a construção da matriz de transições do autômato minimizado. Essa construção pode ser realizada posteriormente, utilizando as classes de equivalência como novos estados.
+
+**código completo**
+
+```{.c}
+#include <stdio.h>
+#include <stdbool.h>
+
+#define NSTATES 6
+#define NSYMBOLS 2
+int finals[NSTATES] = {0, 0, 0, 1, 1, 1};
+int afd[NSTATES][NSYMBOLS] =
+    {{1, 2},
+     {3, 4},
+     {4, 3},
+     {5, 5},
+     {5, 5},
+     {5, 5}};
+int marked[NSTATES][NSTATES];
+
+int grouped[NSTATES];
+
+void show()
+{
+    printf("\n%2d\n", 0);
+    for (int q = 1; q < NSTATES; q++)
+    {
+        for (int p = 0; p < q; p++)
+            printf("%2c ", marked[p][q] ? 'x' : '.');
+        printf("%2d \n", q);
+    }
+}
+
+int main(void)
+{
+    bool changed;
+    // Para AFD = (Q, Sigma, delta, s, F)
+    // 1. Seja marked uma tabela com todos os pares
+    //    NÃO ORDENADOS {p, q}, inicialmente desmarcados
+    //    ou seja, {p, q} = {q, p}
+    // 2. Marque {p, q} se p in F e q notin F, ou
+    //    vice-versa
+    for (int q = 1; q < NSTATES; q++)
+        for (int p = 0; p < q; p++)
+            if ((finals[p] && !finals[q]) ||
+                (!finals[p] && finals[q]))
+            {
+                marked[p][q] = 1;
+                marked[q][p] = 1;
+            }
+            else
+            {
+                marked[p][q] = 0;
+                marked[q][p] = 0;
+            }
+    puts("\nInitialization");
+    show();
+    // 3. Repita o seguinte passo até que nenhuma
+    //    mudança ocorra: se existe um par {p,q}
+    //    tal que {d(p,a), d(q,a)} está marcado
+    //    para algum a in Sigma, entao marque {p,q}
+    int i = 0;
+    do
+    {
+        changed = false;
+        printf("\nIteration %d\n", ++i);
+        for (int p = 0; p < NSTATES; p++)
+            for (int q = p + 1; q < NSTATES; q++)
+                if (!marked[p][q])
+                {
+                    printf("{%d,%d} is not marked\n", p, q);
+                    for (int k = 0; k < NSYMBOLS; k++)
+                    {
+                        int dP = afd[p][k];
+                        int dQ = afd[q][k];
+                        printf("\t{d(%d,%d}, d(%d,%d)} = {%d, %d} ", 
+                                p, k, q, k, dP, dQ);
+                        if (marked[dP][dQ])
+                        {
+                            printf("is marked\n");
+                            marked[p][q] = 1;
+                            marked[q][p] = 1;
+                            changed = true;
+                        }
+                        else
+                        {
+                            printf("is not marked\n");
+                        }
+                    }
+                }
+        show();
+    } while (changed);
+    // show();
+    //  4. Ao final, p é equivalente a q sse
+    //     {p, q} não está marcado
+    for (int i = 0; i < NSTATES; i++)
+    {
+        grouped[i] = 0;
+    }
+
+    printf("\nEquivalent States\n");
+    for (int p = 0; p < NSTATES; p++)
+    {
+        if (!grouped[p])
+        {
+            printf("{ %d ", p);
+            grouped[p] = 1;
+            for (int q = p + 1; q < NSTATES; q++)
+                if (!marked[p][q]) {
+                    printf("%d ", q);
+                    grouped[q] = 1;
+                }
+            printf("}\n");
+        }
+    }
+}
+```
 
 
 ### Autômatos Finitos Não-Determinísticos
@@ -2623,9 +2987,8 @@ A linguagem Simples$^\circledR$, na sua versão inicial, é composta dos seguint
 
 Utilizando a ferramenta flex pode-se construir um classificador do código da linguagem Simples. Esse classificador é uma versão básica do analisador léxico que recebe como entrada um código de Simples e apresenta na saída uma tabela onde todos os símbolos léxicos encontrados no código são classificados. Dado o seguinte código Simples:
 
-morekeywords=programa, inicio, fimprograma, leia, escreva, se, entao, senao, fimse, enquanto, faca, fimenquanto, inteiro, logico, V, F, e, ou, nao, div, sensitive=false, morecomment=\[l\]//, morecomment=\[s\]/\*\*/, morestring=\[b\]",
 
-```         
+```{.simples}         
 programa teste
   inteiro A B
 inicio
@@ -2662,7 +3025,7 @@ fimprograma: palavra reservada
 
 O arquivo de especificação Lex que implementa esse classificador de símbolos da linguagem Simples é:
 
-```         
+```{.c}         
 identificador  [a-zA-Z]([a-zA-Z0-9])*
 numero         [0-9]+
 espaco         [ \t]+
@@ -2730,7 +3093,7 @@ A exclusão dos comentários tem um tratamento especial na sintaxe Lex/Flex. A m
 
 O novo arquivo de especificação Flex que inclui o tratamento para comentário de linha (//), comentário de múltiplas linhas (/\* ... \*/) e a contagem do número das linhas no arquivo fonte é:
 
-```         
+```{.c}         
 identificador [a-zA-Z]([a-zA-Z0-9])*
 numero [0-9]+
 espaco [ \t]+
@@ -2795,7 +3158,7 @@ int main () {
 
 Para o arquivo Simples de entrada:
 
-```         
+```{.simples}         
 /*----------------------
 Programa exemplo em linguagem simples
 --------------------*/

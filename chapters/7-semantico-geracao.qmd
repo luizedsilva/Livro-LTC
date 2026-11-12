@@ -321,6 +321,278 @@ A definição dos tipos desses valores depende da declaração de `YYSTYPE` ou d
 
 É importante observar que o cálculo do valor de uma expressão e a geração de código são tarefas distintas, embora ambas possam ser implementadas por ações semânticas. Na avaliação, o objetivo é calcular o resultado da expressão. Na geração de código, o objetivo é produzir instruções que, quando executadas, realizem a operação correspondente.
 
+### Implementação de uma calculadora de expressões
+
+A partir dos conceitos apresentados, podemos usar a ferramenta **bison** para construir como um exemplo uma calculadora de expressões aritméticas. Esse processo é ilustrado na @fig-flex-bison.
+
+![Processo de construção da calculadora](/chapters/images/flex-bison.png){#fig-flex-bison width="90%"}
+
+A figura apresenta, de forma esquemática, a **integração entre o analisador léxico e o analisador sintático na utilização conjunta de Flex e Bison**. O fluxo pode ser explicado a partir dos arquivos de especificação, dos arquivos gerados pelas ferramentas e da comunicação estabelecida entre os componentes.
+
+O processo começa com o arquivo **`calc.l`**, que contém a especificação do analisador léxico. Nele são definidas as expressões regulares responsáveis por reconhecer os diferentes elementos da linguagem. No exemplo, as regras reconhecem os operadores `+` e `-` e retornam, respectivamente, os tokens `MAIS` e `MENOS`. O arquivo também pode conter regras para números, identificadores, espaços em branco e outros elementos léxicos. 
+
+A partir de `calc.l`, o **Flex** gera o arquivo **`lexico.c`**. Esse arquivo contém a implementação do analisador léxico, incluindo a função `yylex()`, responsável por percorrer a entrada e identificar os tokens. A geração pode ser realizada, por exemplo, pelo comando:
+
+```bash
+flex -o lexico.c calc.l
+```
+
+Assim, o arquivo escrito pelo programador (`calc.l`) constitui a especificação do analisador, enquanto `lexico.c` corresponde ao código-fonte C produzido automaticamente pelo Flex.
+
+De maneira semelhante, o arquivo **`calc.y`** contém a especificação do analisador sintático. Nesse arquivo são declarados os tokens utilizados pela gramática e definidas as produções que descrevem a estrutura sintática das expressões. No exemplo representado na figura, a gramática contém produções para expressões envolvendo os tokens `MAIS` e `MENOS`. As regras podem ainda ser acompanhadas de ações semânticas, responsáveis por realizar algum processamento quando uma produção é reduzida. 
+
+O **Bison** recebe `calc.y` e gera o arquivo **`calc.c`**, que implementa o analisador sintático. Internamente, o Bison constrói as estruturas necessárias para realizar a análise ascendente, incluindo os estados do autômato e a tabela de análise sintática. A opção `-v` pode ser utilizada para solicitar a geração de um arquivo contendo informações detalhadas sobre os estados e as ações do analisador, enquanto a opção `-d` solicita a geração de um arquivo de cabeçalho com as definições dos tokens.
+
+O arquivo **`calc.h`** desempenha um papel importante na integração entre o analisador léxico e o analisador sintático. Ele contém as definições dos tokens gerados pelo Bison. Na figura, por exemplo, aparecem códigos como `MAIS = 258` e `MENOS = 259`. Dessa forma, tanto o código gerado pelo Flex quanto o código gerado pelo Bison utilizam a mesma representação numérica para os tokens.
+
+A comunicação entre os dois analisadores ocorre principalmente por meio da função **`yylex()`**. Quando o analisador sintático necessita de um novo token, ele solicita esse token ao analisador léxico. O `yylex()` examina a entrada, reconhece o próximo lexema e retorna o código correspondente ao token. Por exemplo, ao encontrar o caractere `+`, o analisador léxico pode retornar `MAIS`; ao encontrar `-`, pode retornar `MENOS`.
+
+Além do código do token, o analisador léxico pode fornecer um **valor semântico** associado ao token. Esse mecanismo é utilizado, por exemplo, quando um número inteiro é reconhecido. Nesse caso, o texto identificado pelo Flex pode ser convertido para um valor numérico e armazenado em `yylval`, permitindo que o analisador sintático e suas ações semânticas tenham acesso ao valor reconhecido.
+
+A figura também mostra o arquivo **`calc.output`**, produzido quando o Bison é executado com a opção `-v`. Esse arquivo é particularmente útil para compreender o funcionamento interno do analisador. Ele apresenta informações sobre os **estados do autômato LR**, os itens que compõem cada estado e as ações de deslocamento e redução associadas aos símbolos da gramática. O trecho apresentado na figura, por exemplo, mostra o estado inicial contendo um item semelhante a:
+
+```text
+estado 0:
+
+    $ : . calculo <end>
+```
+
+O ponto indica a posição corrente durante a construção do item LR. Nesse caso, o analisador encontra-se no estado inicial e ainda não reconheceu nenhum símbolo da produção.
+
+Finalmente, o arquivo **`calc.c`**, juntamente com o código gerado pelo Flex e os demais arquivos necessários, pode ser compilado para produzir o programa executável. O resultado é um analisador sintático capaz de receber uma sequência de caracteres, solicitar tokens ao analisador léxico e verificar se essa sequência pode ser reconhecida pela gramática especificada em `calc.y`.
+
+
+
+### Integração entre Lex/Flex e Yacc/Bison
+
+A construção de um analisador sintático com Yacc normalmente envolve sua integração com um analisador léxico, tradicionalmente implementado com **Lex** ou, atualmente, com ferramentas compatíveis como **Flex**.
+
+O analisador léxico é responsável por ler os caracteres da entrada e agrupá-los em **tokens**. O analisador sintático, por sua vez, recebe esses tokens e verifica se a sequência obtida está de acordo com a gramática.
+
+Por exemplo, podemos declarar um token para representar números inteiros:
+
+```c
+%token MAIS
+%token NUMERO
+```
+
+A partir dessa declaração, o Yacc identifica `NUMERO` como um dos terminais utilizados pela gramática. Durante a geração do analisador, são produzidas as estruturas necessárias para que o analisador léxico e o analisador sintático utilizem uma representação comum dos tokens.
+
+O arquivo gerado contém, entre outras informações, os códigos numéricos associados aos tokens. O analisador léxico pode então incluir o arquivo de cabeçalho produzido pelo Yacc/Bison para ter acesso às definições desses tokens.
+
+A comunicação entre o analisador léxico e o sintático ocorre, tradicionalmente, por meio da função `yylex()`. Quando o analisador sintático necessita de um novo token, ele chama essa função. O analisador léxico identifica o próximo elemento da entrada e retorna o código correspondente ao token.
+
+Além do código do token, o analisador léxico pode fornecer um **valor associado** ao token por meio da variável `yylval`. Esse mecanismo é particularmente importante para tokens que carregam informações adicionais, como números, identificadores e literais.
+
+Por exemplo, ao reconhecer um número inteiro, o analisador léxico pode executar:
+
+```c
+[0-9]+ {
+    yylval = atoi(yytext);
+    return NUMERO;
+}
+```
+
+Nesse caso, `yytext` contém o texto reconhecido pelo analisador léxico. A função `atoi()` converte esse texto para um valor inteiro, que é armazenado em `yylval`. Em seguida, a função retorna o token `NUMERO` para o analisador sintático.
+
+O tipo de `yylval` é determinado pela definição de `YYSTYPE`. Em exemplos simples, pode ser utilizado o tipo `int`. Em compiladores mais complexos, entretanto, diferentes tokens podem transportar diferentes tipos de informação, como valores numéricos, nomes de identificadores ou estruturas de dados.
+
+### Pilhas utilizadas pelo analisador sintático
+
+Durante a análise, o Yacc mantém informações que representam o estado corrente do processo de reconhecimento. Didaticamente, podemos considerar duas estruturas principais: a **pilha de análise** e a **pilha de valores**.
+
+A pilha de análise representa a estrutura sintática que está sendo construída. Nela são mantidas informações relacionadas aos símbolos e aos estados do analisador. A pilha de valores, por sua vez, mantém os valores semânticos associados aos símbolos.
+
+As duas estruturas permanecem sincronizadas. Quando um token é deslocado para a pilha durante uma operação *shift*, seu valor correspondente também é armazenado na estrutura de valores.
+
+Durante uma redução, os símbolos correspondentes ao lado direito da produção são removidos e substituídos pelo não terminal do lado esquerdo. Simultaneamente, a ação semântica associada à produção pode calcular o valor que será associado ao novo símbolo.
+
+Considere a produção:
+
+```c
+expr:
+      expr MAIS expr   { $$ = $1 + $3; }
+```
+
+Os símbolos `$1`, `$2` e `$3` representam os valores associados aos símbolos que aparecem no lado direito da produção. Nesse caso:
+
+* `$1` representa o valor da primeira ocorrência de `expr`;
+* `$2` representa o valor associado ao token `MAIS`;
+* `$3` representa o valor da segunda ocorrência de `expr`;
+* `$$` representa o valor associado ao não terminal `expr` após a redução.
+
+Assim, a ação:
+
+```c
+{ $$ = $1 + $3; }
+```
+
+calcula o valor da expressão resultante e o associa ao símbolo `expr` produzido pela redução.
+
+Quando a produção é:
+
+```c
+expr:
+      NUMERO   { $$ = $1; }
+```
+
+o valor do token `NUMERO` é simplesmente transferido para o não terminal `expr`. Essa ação permite que o valor numérico reconhecido pelo analisador léxico seja propagado pela árvore sintática durante as reduções.
+
+Esse mecanismo estabelece uma ligação direta entre a **análise sintática** e a **análise semântica**. Enquanto as produções determinam a estrutura sintática da linguagem, as ações semânticas permitem associar informações e operações a essa estrutura.
+
+### Exemplo de uma calculadora simples
+
+Os padrões léxicos utilizados nas expressões aritméticas é especificada da seguinte forma para flex (arquivo `calc.l`):
+
+```c
+%{
+#include "calc.h"
+void yyerror(char *);
+%}
+
+%%
+[0-9]+     {  
+              yylval = atoi(yytext);
+              return NUMERO;
+           }
+"+"        return MAIS;
+"-"        return MENOS;
+"*"        return VEZES;
+"/"        return DIV;
+"("        return ABRE;
+")"        return FECHA;
+[ \t]+     ;
+\n         return ENTER;
+.          {
+             char msg[100];
+             sprintf(msg, "[%s] desconhecido!", yytext);
+             yyerror(msg);
+           }
+%%
+
+int yywrap () {
+    return 1;
+}
+```
+
+
+Uma gramática elementar para uma calculadora que realiza operações de adição, subtração, multiplicação, divisão e expressões entre parênteses pode ser especificada como (arquivo `calc.y`):
+
+```c
+%{
+#include <stdio.h>
+#include <stdlib.h>
+int yylex(void);
+void yyerror(char *);
+%}
+
+%token ENTER
+%token MAIS
+%token MENOS
+%token VEZES
+%token DIV
+%token NUMERO
+%token ABRE
+%token FECHA
+
+%start linha
+
+%left MAIS MENOS 
+%left VEZES DIV
+
+%%
+
+calculo: calculo expr ENTER { printf ("resultado = %d\n", $2); }
+       | 
+       ;
+
+expr : expr MAIS expr { $$ = $1 + $3; }
+     | expr MENOS expr { $$ = $1 - $3; }
+     | expr VEZES expr { $$ = $1 * $3; }
+     | expr DIV expr   { $$ = $1 / $3; }
+     | ABRE expr FECHA { $$ = $2; }
+     | NUMERO { $$ = $1; }
+     ;
+
+%%
+
+void yyerror (char *msg) {
+    printf("Erro: %s\n", msg);
+} 
+
+int main() {
+    yyparse();
+    return 0;
+}
+```
+
+A produção `calculo` permite reconhecer uma sequência de expressões, cada uma terminada por uma quebra de linha. Quando uma expressão é reconhecida, seu valor é apresentado na saída.
+
+A produção:
+
+```c
+expr: expr MAIS expr
+```
+
+define uma expressão como a soma de duas outras expressões. Quando essa produção é reduzida, a ação semântica calcula a soma dos valores associados às duas subexpressões.
+
+De maneira análoga:
+
+```c
+expr: expr MENOS expr
+```
+
+calcula a diferença entre os valores das duas expressões.
+
+O uso de ações semânticas dessa forma permite que o analisador não apenas reconheça se uma sequência pertence à linguagem definida pela gramática, mas também **execute operações associadas à estrutura sintática reconhecida**.
+
+Esse processo está ilustrado na árvore de derivação apresentada na @fig-arvore-expressao. As ações semânticas associadas às produções podem ser entendidas como operações executadas durante o processo de análise sintática, à medida que o analisador percorre a árvore de derivação. Quando uma ação semântica é alcançada, ela é executada e os valores associados aos símbolos da árvore são calculados ou atualizados. Dessa forma, as informações semânticas são propagadas pela árvore, permitindo que o valor de uma construção sintática seja determinado a partir dos valores de seus componentes.
+
+![Árvore de Derivação para expressão `2 * 3 + 5`](/chapters/images/arvore-expressao.png){#fig-arvore-expressao width="90%"}
+
+Esse princípio é fundamental para a construção de compiladores. Durante a análise sintática, as reduções podem ser utilizadas para construir árvores sintáticas, verificar informações semânticas, gerar representações intermediárias ou executar ações específicas associadas às construções da linguagem.
+
+Para geração da calculadora devemos executar a seguinte sequência de comandos:
+
+```c
+flex -o lexico.c calc.l
+bison -o calc.c calc.y -v -d;
+gcc lexico.c calc.c -o calc;
+```
+
+### Tratamento de erros sintáticos
+
+Quando o analisador sintático encontra uma sequência de tokens que não pode ser derivada pela gramática, ocorre um **erro sintático**. O Yacc/Bison disponibiliza mecanismos para tratar esses erros, tradicionalmente por meio da função `yyerror()`.
+
+Uma implementação simples pode ser:
+
+```c
+void yyerror(char *s)
+{
+    printf("%s\n", s);
+}
+```
+
+Essa função recebe uma mensagem associada ao erro detectado pelo analisador sintático e pode ser modificada para produzir mensagens mais informativas, incluindo, por exemplo, a linha e a coluna em que o erro ocorreu, o token encontrado e os tokens esperados.
+
+O tratamento de erros é uma característica importante de analisadores sintáticos utilizados em compiladores reais. Um compilador não deve apenas detectar que uma entrada é inválida, mas também fornecer informações que auxiliem o programador a localizar e corrigir o problema.
+
+### Uso da calculadora de expressões
+
+Com o executável gerado `calc` podemos realizar alguns cálculos:
+
+```c
+$ ./calc
+12 + 4
+resultado = 16
+2 * (3 + 4)
+resultado = 14
+2 + 3 + 4
+resultado = 9
+^C
+$ 
+```
+
 ## Geração de código para a Máquina Virtual Simples
 
 A tradução dirigida por sintaxe permite integrar a geração de código ao analisador sintático. Quando uma produção é reconhecida, sua ação semântica pode emitir as instruções necessárias para representar a construção correspondente.
@@ -460,24 +732,6 @@ A implementação está distribuída em dois arquivos principais:
 
 O arquivo `sintatico.y` utiliza o Bison para gerar o analisador sintático em C. Os tokens são fornecidos pelo analisador léxico, responsável por reconhecer palavras reservadas, identificadores, números e operadores. A comunicação entre as etapas ocorre por meio dos tokens e das informações associadas a eles, como o conteúdo textual armazenado em `atomo`.
 
-O fluxo geral de compilação pode ser representado da seguinte forma:
-
-Programa-fonte
-
-Arquivo com extensão `.simples`
-
-Analisador léxico
-
-Reconhece tokens e fornece seus valores
-
-Analisador sintático e semântico
-
-Bison, tabela de símbolos, pilha de tipos e ações semânticas
-
-Código para a MVS
-
-Arquivo com extensão `.mvs`
-
 Nesse projeto, não é construída uma representação intermediária completa para depois gerar o código. As ações semânticas escrevem diretamente as instruções da MVS no arquivo de saída. Essa escolha simplifica a implementação e permite observar como cada construção da linguagem de origem se transforma em instruções da máquina virtual.
 
 #### O arquivo `utils.c`: estruturas de apoio à análise semântica
@@ -559,7 +813,7 @@ As funções `empilha` e `desempilha` inserem e removem valores dessa estrutura,
 
 A utilização de uma pilha é adequada à análise sintática ascendente realizada pelo Bison para verificação de tipos nas expressões, por exemplo. Quando uma expressão simples é reconhecida, seu tipo é colocado na pilha. Quando uma produção combina duas expressões, seus tipos são removidos, verificados e substituídos pelo tipo resultante.
 
-A função `testaTipo` implementa esse procedimento:
+A função `testatipo` implementa esse procedimento:
 
 ```{.c}
 void testatipo(int tipo1, int tipo2, int ret)
@@ -1143,7 +1397,8 @@ void mostratabela()
     printf("%10s %3s %3s\n", "Nome", "Tipo", "End");
     for (int i = 0; i <= topotab; i++)
     {
-        printf("%10s %3d %3d\n", tabsimb[i].nome, tabsimb[i].tipo, tabsimb[i].end);
+        printf("%10s %3d %3d\n", 
+             tabsimb[i].nome, tabsimb[i].tipo, tabsimb[i].end);
     }
 }
 ```
@@ -1384,7 +1639,7 @@ repeticao
         { 
             int t = desempilha('t');
             if (t != LOG)
-                yyerror("Incompatibilidade de tipo na condição do enquanto");
+                yyerror("Incompatibilidade de tipo na repetição");
             fprintf(yyout, "\tDSVF\tL%d\n", ++rotulo);
             empilha(rotulo, 'r');
         }
@@ -1403,7 +1658,7 @@ selecao
         { 
             int t = desempilha('t');
             if (t != LOG)
-                yyerror("Incompatibilidade de tipo na condição da seleção");
+                yyerror("Incompatibilidade de tipo na seleção");
             fprintf(yyout, "\tDSVF\tL%d\n", ++rotulo);
             empilha(rotulo, 'r'); 
         } 
@@ -1849,7 +2104,8 @@ void executa_programa(int debug)
             printf("M = [");
             for (x = 0; x <= s; x++)
                 printf("%d:%d ", x, M[x]);
-            printf("]\n%2d:[%2d\t%4s\t%2d]  s=%d  d=%d\n", i, P[i].r, inst[P[i].i], P[i].o, s, d);
+            printf("]\n%2d:[%2d\t%4s\t%2d]  s=%d  d=%d\n", 
+                        i, P[i].r, inst[P[i].i], P[i].o, s, d);
             puts("digite . e <ENTER>");
             while (getchar() != '.')
                 ;

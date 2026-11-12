@@ -2468,486 +2468,936 @@ O simulador apresentado a seguir implementa esse processo de forma automática. 
 ::: {.simulacao url="/p5js/lr/" height="600" image="/printscreen/lr.png" qrcode="/qrcode/lr.png"}
 :::
 
-## Yacc/Bison - Geradores e Analisadores Sintáticos 
+A seção deve enfatizar que os conflitos são problemas relacionados à construção das ações do analisador sintático, e não simplesmente à execução de operações na pilha. Também é importante distinguir três conceitos: ambiguidade da gramática, conflito na tabela de análise e resolução de conflitos por meio de precedência e associatividade.
 
-As gramáticas utilizadas por ferramentas como **Yacc** e **Bison** são especificadas por meio de uma notação semelhante à **Forma de Backus-Naur (BNF)**. A BNF foi desenvolvida por John Backus e Peter Naur e utilizada originalmente para a descrição da sintaxe da linguagem ALGOL 60. Por sua simplicidade e capacidade de representar estruturas hierárquicas, a BNF e suas variantes tornaram-se amplamente utilizadas na especificação da sintaxe de linguagens de programação.
+Há ainda um ajuste conceitual importante no exemplo original: a gramática apresentada para expressões é ambígua, mas nem todo conflito de análise LR implica necessariamente uma gramática ambígua. Uma gramática não ambígua também pode apresentar conflitos para uma determinada classe de analisadores LR, como LR(0) ou SLR(1).
 
-Uma gramática livre de contexto permite descrever muitas das construções sintáticas encontradas em linguagens de programação. Considere, por exemplo, a seguinte gramática para expressões formadas por identificadores e pelos operadores de adição e multiplicação:
+Abaixo está uma versão revisada, mantendo a sequência didática e a notação utilizada no capítulo, mas aprofundando a discussão dos dois tipos de conflito e o papel do Yacc/Bison.
+
+## Yacc/Bison – Geradores de Analisadores Sintáticos
+
+Ferramentas como **Yacc** (*Yet Another Compiler Compiler*) e **Bison** são geradores de analisadores sintáticos. A partir de uma especificação gramatical, essas ferramentas constroem automaticamente um analisador, normalmente baseado em técnicas de análise sintática ascendente da família LR.
+
+As gramáticas utilizadas por essas ferramentas são especificadas por meio de uma notação semelhante à **Forma de Backus-Naur (BNF)**. A BNF foi desenvolvida por John Backus e Peter Naur e utilizada originalmente para a descrição da sintaxe da linguagem ALGOL 60. Por sua simplicidade e capacidade de representar estruturas hierárquicas, a BNF e suas variantes tornaram-se amplamente utilizadas na especificação da sintaxe de linguagens de programação.
+
+Como apresentado anteriormente, as gramáticas livres de contexto permitem descrever as construções sintáticas de uma linguagem, enquanto os algoritmos LL e LR estabelecem estratégias para reconhecer essas construções. No caso do Yacc e do Bison, a especificação gramatical é utilizada para gerar um analisador sintático ascendente, que realiza operações de deslocamento e redução (*shift-reduce parsing*).
+
+Entretanto, nem toda gramática livre de contexto pode ser utilizada diretamente por um gerador de analisadores sintáticos sem dificuldades. Durante a construção da tabela de análise, podem surgir situações em que mais de uma ação é possível para um mesmo estado do analisador e um mesmo símbolo de entrada. Essas situações são denominadas **conflitos de análise sintática** e constituem um dos aspectos importantes no desenvolvimento de gramáticas para compiladores.
+
+### Exemplo de uma gramática para expressões
+
+Considere a seguinte gramática para expressões formadas por identificadores e pelos operadores de adição e multiplicação:
 
 ::: center
 
 $$
-\begin{array}{rccl}
-(1) & E & \rightarrow & E + E \\
-(2) & E & \rightarrow & E * E \\
-(3) & E & \rightarrow & id
+\begin{array}{rccl}\
+(1) & E & \rightarrow & E + E \\\
+(2) & E & \rightarrow & E * E \\\
+(3) & E & \rightarrow & id\
 \end{array}
 $$
 
 :::
 
-A gramática possui três regras de produção. O símbolo $E$ é um **não terminal** e representa uma expressão. Já o símbolo $id$ é um **terminal**, normalmente correspondente a um token produzido pelo analisador léxico. Os terminais representam os elementos efetivamente presentes na cadeia de entrada, enquanto os não terminais são utilizados para representar estruturas sintáticas.
+A gramática possui três regras de produção. O símbolo (E) é um **não terminal** e representa uma expressão. Já o símbolo (id) é um **terminal**, normalmente correspondente a um token produzido pelo analisador léxico. Os terminais representam os elementos efetivamente presentes na cadeia de entrada, enquanto os não terminais são utilizados para representar estruturas sintáticas.
 
-A partir dessa gramática, podemos gerar, por exemplo, a expressão $x+y*z$. Uma possível derivação é:
+A partir dessa gramática, podemos gerar, por exemplo, a expressão (x+y\*z). Uma possível derivação é:
 
 ::: center
 
 $$
-\begin{array}{rcll}
-E &\Rightarrow & E * E & (r2)\\
-  &\Rightarrow & E * z & (r3)\\
-  &\Rightarrow & E + E * z & (r1)\\
-  &\Rightarrow & E + y * z & (r3)\\
-  &\Rightarrow & x + y * z & (r3)
+\begin{array}{rcll}\
+E &\Rightarrow & E * E & (r2)\\\
+&\Rightarrow & E * z & (r3)\\\
+&\Rightarrow & E + E * z & (r1)\\\
+&\Rightarrow & E + y * z & (r3)\\\
+&\Rightarrow & x + y * z & (r3)\
 \end{array}
 $$
 
 :::
 
-Em cada passo da derivação, um não terminal é substituído pelo lado direito de uma de suas produções. O número indicado entre parênteses identifica a regra de produção utilizada. A derivação começa com o símbolo inicial $E$ e termina quando todos os não terminais foram substituídos por símbolos terminais.
+Em cada passo da derivação, um não terminal é substituído pelo lado direito de uma de suas produções. O número indicado entre parênteses identifica a regra de produção utilizada. A derivação começa com o símbolo inicial (E) e termina quando todos os não terminais foram substituídos por símbolos terminais.
 
-Na **análise sintática ascendente**, o processo ocorre na direção inversa. Em vez de iniciar pelo símbolo inicial e gerar a cadeia de entrada, parte-se da própria cadeia e procura-se reconstruir o símbolo inicial por meio de sucessivas **reduções**. Por esse motivo, esse tipo de análise também é denominado **análise por redução e deslocamento** (*shift-reduce parsing*) ou simplesmente **análise bottom-up**.
+### Análise sintática ascendente e operações do analisador
+
+Na análise sintática ascendente, o processo ocorre na direção inversa. Em vez de iniciar pelo símbolo inicial e gerar a cadeia de entrada, parte-se da própria cadeia e procura-se reconstruir o símbolo inicial por meio de sucessivas **reduções**. Por esse motivo, esse tipo de análise também é denominado análise por redução e deslocamento (*shift-reduce parsing*) ou simplesmente análise *bottom-up*.
 
 O analisador ascendente examina a cadeia de entrada da esquerda para a direita e utiliza uma pilha para armazenar os símbolos que já foram processados. Durante a análise, duas operações fundamentais são realizadas:
 
-* **deslocamento (*shift*)**: um símbolo da entrada é deslocado para a pilha;
-* **redução (*reduce*)**: uma sequência de símbolos no topo da pilha que corresponde ao lado direito de uma produção é substituída pelo não terminal que aparece no lado esquerdo dessa produção.
+- **Deslocamento (*shift*):** o próximo símbolo da entrada é deslocado para a pilha.
+- **Redução (*reduce*):** uma sequência de símbolos no topo da pilha que corresponde ao lado direito de uma produção é substituída pelo não terminal que aparece no lado esquerdo dessa produção.
 
-Assim, uma redução representa a aplicação de uma produção **no sentido inverso**. Se a produção é
+Assim, uma redução representa a aplicação de uma produção no sentido inverso. Se a produção é:
 
 $$
-A \rightarrow \alpha,
+A \rightarrow \alpha
 $$
 
 a análise ascendente procura uma ocorrência de $\alpha$ e a substitui por $A$.
 
-Para a expressão $x+y*z$, uma possível sequência de deslocamentos e reduções é:
-
-::: center
+Por exemplo, considerando a produção:
 
 $$
-\begin{array}{rlll}
-1 & \bullet x + y * z & \text{shift} & \\
-2 & x \bullet + y * z & \text{reduce}(r3) & \\
-3 & E \bullet + y * z & \text{shift} & \\
-4 & E + \bullet y * z & \text{shift} & \\
-5 & E + y \bullet * z & \text{reduce}(r3) & \\
-6 & E + E \bullet * z & \text{shift} & \\
-7 & E + E * \bullet z & \text{shift} & \\
-8 & E + E * z \bullet & \text{reduce}(r3) & \\
-9 & E + E * E \bullet & \text{reduce}(r2) & \text{emit multiply}\\
-10 & E + E \bullet & \text{reduce}(r1) & \text{emit add}\\
-11 & E \bullet & \text{accept} &
+E \rightarrow id
+$$
+
+quando o token $id$ estiver no topo da pilha e a ação de redução for selecionada, ele será substituído pelo não terminal $E$.
+
+A sequência de símbolos que pode ser reduzida em determinado momento é denominada **redutendo** (*handle*). Em uma implementação baseada em pilha, a redução consiste em desempilhar os símbolos que correspondem ao lado direito da produção e, em seguida, empilhar o não terminal correspondente ao lado esquerdo.
+
+Para determinar qual operação deve ser executada, o analisador LR utiliza o estado atual e o próximo símbolo da entrada, denominado símbolo de antecipação (*lookahead*). Essas informações são consultadas na tabela de análise sintática, que contém as ações possíveis para cada situação.
+
+As ações normalmente disponíveis são:
+
+- `shift`: deslocar o próximo símbolo para a pilha e realizar a transição para outro estado;
+- `reduce`: aplicar uma produção da gramática;
+- `accept`: indicar que a cadeia foi reconhecida;
+- `error`: indicar que foi encontrada uma situação sintática inválida.
+
+É justamente durante a construção dessa tabela que podem surgir conflitos.
+
+### Conflitos na análise sintática
+
+Um conflito ocorre quando, para uma determinada combinação de estado do analisador e símbolo de antecipação, existem duas ou mais ações possíveis. Em outras palavras, o gerador não consegue determinar uma única ação com base nas informações fornecidas pela gramática e pelo método de análise utilizado.
+
+Existem dois tipos principais de conflitos:
+
+- **Conflito deslocamento-redução (*shift-reduce conflict*):** ocorre quando o analisador pode escolher entre deslocar o próximo símbolo da entrada ou realizar uma redução.
+- **Conflito redução-redução (*reduce-reduce conflict*):** ocorre quando duas ou mais produções podem ser utilizadas para realizar uma redução na mesma situação.
+
+Esses conflitos podem estar relacionados à ambiguidade da gramática, à insuficiência de informações utilizadas pelo método de análise ou à forma como as produções foram especificadas.
+
+#### Conflito deslocamento-redução (*shift-reduce conflict*)
+
+Considere novamente a gramática:
+
+$$
+\begin{array}{rcl}\
+E &\rightarrow& E+E\\\
+E &\rightarrow& E*E\\\
+E &\rightarrow& id\
 \end{array}
 $$
 
-:::
+Suponha que, durante a análise da expressão $x+y*z$, o analisador tenha reconhecido a sequência $E+E$ e encontre o símbolo $*$ como próximo símbolo da entrada.
 
-Nessa representação, o ponto indica a fronteira entre a parte da cadeia que já foi deslocada para a pilha e a parte que ainda permanece na entrada. Assim, os símbolos à esquerda do ponto representam os símbolos já processados, enquanto aqueles à direita ainda precisam ser analisados.
+Nesse momento, existem duas possibilidades:
 
-No primeiro passo, o símbolo $x$ é deslocado para a pilha. No passo seguinte, como $x$ corresponde ao lado direito da produção $E\rightarrow id$, realiza-se uma redução, substituindo $x$ pelo não terminal $E$. A análise prossegue alternando operações de deslocamento e redução até que todos os símbolos da entrada tenham sido processados e o símbolo inicial da gramática seja obtido.
+1. **Reduzir:** aplicar a produção $E\rightarrow E+E$, substituindo a sequência $E+E$ por $E$.
+2. **Deslocar:** colocar o símbolo $*$ na pilha, permitindo que a expressão continue sendo analisada.
 
-A sequência de símbolos que pode ser reduzida em determinado momento é denominada **redutendo** (*handle*). Em uma implementação baseada em pilha, a redução consiste conceitualmente em desempilhar os símbolos que correspondem ao lado direito da produção e, em seguida, empilhar o não terminal correspondente ao lado esquerdo.
-
-Por exemplo, considerando a produção
-
-$$
-E\rightarrow E*E,
-$$
-
-quando a sequência $E*E$ estiver disponível para redução, os três símbolos são removidos da pilha e substituídos por um único símbolo $E$. A operação pode ser representada por:
-
-$$
-E*E \Rightarrow E.
-$$
-
-Essa operação é exatamente o inverso da aplicação da produção durante uma derivação.
-
-### Ambiguidade e conflito deslocamento-redução
-
-A sequência de operações realizada pelo analisador não é necessariamente única. Considere, por exemplo, o momento em que a pilha contém $E+E$ e o próximo símbolo da entrada é $*$. O analisador pode deslocar o símbolo $*$ para a pilha, formando:
-
-$$
-E+E*.
-$$
-
-Entretanto, também poderia reduzir imediatamente $E+E$ utilizando a produção
-
-$$
-E\rightarrow E+E.
-$$
-
-Temos, portanto, duas possibilidades de ação: **deslocar** o próximo símbolo ou **reduzir** os símbolos que já estão na pilha. Essa situação caracteriza um **conflito deslocamento-redução** (*shift-reduce conflict*).
-
-Esse conflito está relacionado à ambiguidade da gramática. A gramática
-
-$$
-E\rightarrow E+E \mid E*E \mid id
-$$
-
-não especifica, por si só, qual operador possui maior precedência. Consequentemente, a expressão
-
-$$
-x+y*z
-$$
-
-pode ser interpretada como:
+A primeira possibilidade corresponde à interpretação:
 
 $$
 (x+y)*z
 $$
 
-ou como:
+A segunda permite continuar o reconhecimento da multiplicação, produzindo a interpretação:
 
 $$
-x+(y*z).
+x+(y*z)
 $$
 
-As duas interpretações correspondem a diferentes árvores sintáticas e, portanto, a diferentes derivações.
+Portanto, o analisador encontra duas ações possíveis: reduzir a soma ou deslocar o operador de multiplicação. Essa situação caracteriza um conflito deslocamento-redução.
 
-No exemplo apresentado anteriormente, o analisador escolheu realizar a redução de $E*E$ antes de reduzir $E+E$. Essa escolha produz a interpretação
+A origem do conflito está relacionada à ausência de informações sobre a precedência dos operadores na gramática. A gramática apresentada não estabelece que a multiplicação deve ser realizada antes da adição. Consequentemente, as duas interpretações são válidas segundo suas regras de produção.
+
+**Precedência e associatividade dos operadores**
+
+Para resolver esse tipo de problema, é necessário estabelecer regras que determinem a ordem de avaliação dos operadores. Duas propriedades são particularmente importantes:
+
+- **Precedência:** determina qual operador deve ser aplicado primeiro quando diferentes operadores aparecem em uma mesma expressão.
+- **Associatividade:** determina como operadores de mesma precedência são agrupados quando aparecem consecutivamente.
+
+Por exemplo, na maioria das linguagens de programação, a multiplicação possui precedência maior que a adição:
 
 $$
-x+(y*z),
+x+y*z \equiv x+(y*z)
 $$
 
-na qual a multiplicação possui precedência maior que a adição. Na implementação de um compilador, essa diferença é fundamental, pois a árvore sintática produzida influencia diretamente a geração do código e, consequentemente, o significado da expressão.
+Por sua vez, a adição normalmente possui associatividade à esquerda:
 
-Uma maneira de resolver esse problema é **reescrever a gramática**, de modo que a própria estrutura das produções represente as relações de precedência e associatividade entre os operadores. Outra possibilidade, particularmente conveniente em ferramentas como Yacc e Bison, consiste em declarar explicitamente a precedência e a associatividade dos operadores. Nesse caso, a ferramenta pode utilizar essas informações para resolver determinados conflitos durante a construção do analisador.
+$$
+x-y-z \equiv (x-y)-z
+$$
 
-### Conflito redução-redução
-
-Outro tipo de conflito ocorre quando duas reduções diferentes podem ser aplicadas na mesma situação. Considere a gramática:
+Essas propriedades podem ser incorporadas diretamente à gramática. Uma alternativa é reescrever as produções, estabelecendo diferentes níveis para as expressões:
 
 ::: center
 
 $$
-\begin{array}{ccl}
-E &\rightarrow& T\\
-E &\rightarrow& id\\
-T &\rightarrow& id
+\begin{array}{rcl}\
+E &\rightarrow& E+T \mid T\\\
+T &\rightarrow& T*F \mid F\\\
+F &\rightarrow& (E) \mid id\
 \end{array}
 $$
 
 :::
 
-Quando o token $id$ está disponível para redução, existem duas possibilidades. Pode-se utilizar a produção
+Nessa gramática, $E$ representa expressões de adição, $T$ representa termos que podem conter multiplicações e $F$ representa fatores. A separação dos níveis estabelece que a multiplicação deve ser reconhecida antes da adição.
 
-$$
-E\rightarrow id
-$$
+Além disso, a recursividade à esquerda nas produções de $E$ e $T$ estabelece a associatividade à esquerda dos operadores correspondentes.
 
-ou a produção
+Outra possibilidade, particularmente conveniente em ferramentas como Yacc e Bison, consiste em declarar explicitamente a precedência e a associatividade dos operadores. Para isso, são utilizadas declarações específicas na seção de definições da gramática.
 
-$$
-T\rightarrow id.
-$$
+Considere o seguinte exemplo:
 
-Temos, portanto, um **conflito redução-redução** (*reduce-reduce conflict*). Diferentemente do conflito deslocamento-redução, no qual a escolha ocorre entre uma redução e um deslocamento, aqui o analisador precisa escolher entre duas reduções distintas.
-
-Esse tipo de conflito normalmente indica que a gramática precisa ser revisada, pois diferentes produções podem reconhecer a mesma sequência de entrada sem que exista informação suficiente para determinar qual delas deve ser aplicada.
-
-Quando encontra conflitos, Yacc apresenta mensagens de advertência durante a geração do analisador. Na ausência de informações adicionais, a ferramenta utiliza regras de desempate predefinidas. Para conflitos deslocamento-redução, Yacc tradicionalmente privilegia o deslocamento. Para conflitos redução-redução, utiliza a primeira produção na ordem em que elas aparecem na especificação da gramática.
-
-Embora essas regras permitam que o analisador seja gerado, não significa que o conflito deva ser ignorado. Um conflito pode representar uma ambiguidade real na especificação da linguagem e, consequentemente, produzir uma análise sintática diferente daquela pretendida pelo projetista do compilador.
-
-### Implementação de uma calculadora de expressões
-
-A partir dos conceitos apresentados, podemos usar a ferramenta **bison** para construir como um exemplo uma calculadora de expressões aritméticas. Esse processo é ilustrado na @fig-flex-bison.
-
-![Processo de construção da calculadora](/chapters/images/flex-bison.png){#fig-flex-bison width="90%"}
-
-A figura apresenta, de forma esquemática, a **integração entre o analisador léxico e o analisador sintático na utilização conjunta de Flex e Bison**. O fluxo pode ser explicado a partir dos arquivos de especificação, dos arquivos gerados pelas ferramentas e da comunicação estabelecida entre os componentes.
-
-O processo começa com o arquivo **`calc.l`**, que contém a especificação do analisador léxico. Nele são definidas as expressões regulares responsáveis por reconhecer os diferentes elementos da linguagem. No exemplo, as regras reconhecem os operadores `+` e `-` e retornam, respectivamente, os tokens `MAIS` e `MENOS`. O arquivo também pode conter regras para números, identificadores, espaços em branco e outros elementos léxicos. 
-
-A partir de `calc.l`, o **Flex** gera o arquivo **`lexico.c`**. Esse arquivo contém a implementação do analisador léxico, incluindo a função `yylex()`, responsável por percorrer a entrada e identificar os tokens. A geração pode ser realizada, por exemplo, pelo comando:
-
-```bash
-flex -o lexico.c calc.l
+```
+%left '+'
+%left '*'
 ```
 
-Assim, o arquivo escrito pelo programador (`calc.l`) constitui a especificação do analisador, enquanto `lexico.c` corresponde ao código-fonte C produzido automaticamente pelo Flex.
+A declaração `%left` estabelece associatividade à esquerda. A ordem das declarações determina os níveis de precedência: as declarações posteriores possuem precedência maior. Portanto, nesse exemplo, a multiplicação possui precedência maior que a adição.
 
-De maneira semelhante, o arquivo **`calc.y`** contém a especificação do analisador sintático. Nesse arquivo são declarados os tokens utilizados pela gramática e definidas as produções que descrevem a estrutura sintática das expressões. No exemplo representado na figura, a gramática contém produções para expressões envolvendo os tokens `MAIS` e `MENOS`. As regras podem ainda ser acompanhadas de ações semânticas, responsáveis por realizar algum processamento quando uma produção é reduzida. 
+As principais declarações disponíveis são:
 
-O **Bison** recebe `calc.y` e gera o arquivo **`calc.c`**, que implementa o analisador sintático. Internamente, o Bison constrói as estruturas necessárias para realizar a análise ascendente, incluindo os estados do autômato e a tabela de análise sintática. A opção `-v` pode ser utilizada para solicitar a geração de um arquivo contendo informações detalhadas sobre os estados e as ações do analisador, enquanto a opção `-d` solicita a geração de um arquivo de cabeçalho com as definições dos tokens.
+| Declaração    | Significado                                        |
+| ------------- | -------------------------------------------------- |
+| `%left`       | Associatividade à esquerda                         |
+| `%right`      | Associatividade à direita                          |
+| `%nonassoc`   | Operadores não associativos                        |
+| `%precedence` | Define precedência sem estabelecer associatividade |
 
-O arquivo **`calc.h`** desempenha um papel importante na integração entre o analisador léxico e o analisador sintático. Ele contém as definições dos tokens gerados pelo Bison. Na figura, por exemplo, aparecem códigos como `MAIS = 258` e `MENOS = 259`. Dessa forma, tanto o código gerado pelo Flex quanto o código gerado pelo Bison utilizam a mesma representação numérica para os tokens.
+Por exemplo, para os operadores aritméticos convencionais, podemos utilizar:
 
-A comunicação entre os dois analisadores ocorre principalmente por meio da função **`yylex()`**. Quando o analisador sintático necessita de um novo token, ele solicita esse token ao analisador léxico. O `yylex()` examina a entrada, reconhece o próximo lexema e retorna o código correspondente ao token. Por exemplo, ao encontrar o caractere `+`, o analisador léxico pode retornar `MAIS`; ao encontrar `-`, pode retornar `MENOS`.
-
-Além do código do token, o analisador léxico pode fornecer um **valor semântico** associado ao token. Esse mecanismo é utilizado, por exemplo, quando um número inteiro é reconhecido. Nesse caso, o texto identificado pelo Flex pode ser convertido para um valor numérico e armazenado em `yylval`, permitindo que o analisador sintático e suas ações semânticas tenham acesso ao valor reconhecido.
-
-A figura também mostra o arquivo **`calc.output`**, produzido quando o Bison é executado com a opção `-v`. Esse arquivo é particularmente útil para compreender o funcionamento interno do analisador. Ele apresenta informações sobre os **estados do autômato LR**, os itens que compõem cada estado e as ações de deslocamento e redução associadas aos símbolos da gramática. O trecho apresentado na figura, por exemplo, mostra o estado inicial contendo um item semelhante a:
-
-```text
-estado 0:
-
-    $ : . calculo <end>
+```
+%left '+' '-'
+%left '*' '/'
+%right UMINUS
 ```
 
-O ponto indica a posição corrente durante a construção do item LR. Nesse caso, o analisador encontra-se no estado inicial e ainda não reconheceu nenhum símbolo da produção.
+Nesse caso, adição e subtração possuem o mesmo nível de precedência, assim como multiplicação e divisão. A multiplicação e a divisão possuem precedência maior que a adição e a subtração. O identificador `UMINUS` representa um nível de precedência utilizado para o operador de menos unário.
 
-Finalmente, o arquivo **`calc.c`**, juntamente com o código gerado pelo Flex e os demais arquivos necessários, pode ser compilado para produzir o programa executável. O resultado é um analisador sintático capaz de receber uma sequência de caracteres, solicitar tokens ao analisador léxico e verificar se essa sequência pode ser reconhecida pela gramática especificada em `calc.y`.
+Para associar essa precedência a uma produção específica, pode-se utilizar a diretiva `%prec`:
 
-### Arquivo de especificação para Bison
+```
+expr:
+      expr '+' expr
+    | expr '*' expr
+    | '-' expr %prec UMINUS
+    | '(' expr ')'
+    | ID
+    ;
+```
 
-Um arquivo de entrada do Yacc é tradicionalmente dividido em três partes:
+A diretiva `%prec UMINUS` determina que a produção correspondente ao menos unário utilize a precedência declarada para `UMINUS`, em vez de utilizar a precedência do símbolo terminal presente no final da produção.
+
+Dessa maneira, Yacc/Bison podem utilizar as informações de precedência e associatividade para resolver conflitos deslocamento-redução durante a construção do analisador.
+
+**O problema do `else` pendente**
+
+Outro exemplo clássico de conflito deslocamento-redução ocorre na construção de comandos condicionais. Considere a seguinte gramática simplificada:
+
+$$
+\begin{array}{rcl}\
+S &\rightarrow& \text{if } E \text{ then } S\\\
+S &\rightarrow& \text{if } E \text{ then } S \text{ else } S\\\
+S &\rightarrow& \text{outro}\
+\end{array}
+$$
+
+Considere a sequência:
+
+```
+if E1 then if E2 then S1 else S2
+```
+
+Quando o analisador reconhece `if E1 then if E2 then S1` e encontra o terminal `else`, pode ocorrer um conflito.
+
+O analisador pode reduzir a construção interna:
+
+```
+if E2 then S1
+```
+
+ou deslocar o `else`, associando-o ao comando condicional mais interno.
+
+Na maioria das linguagens de programação, adota-se a regra segundo a qual o `else` está associado ao `if` mais próximo que ainda não possui um `else`. Essa convenção corresponde à escolha do deslocamento (*shift*) em detrimento da redução (*reduce*).
+
+Esse exemplo demonstra que conflitos deslocamento-redução não estão restritos a expressões aritméticas. Eles também podem surgir na especificação de estruturas de controle e outras construções sintáticas.
+
+#### Conflito redução-redução (*reduce-reduce conflict*)
+
+O segundo tipo de conflito ocorre quando duas ou mais reduções diferentes podem ser aplicadas para a mesma situação do analisador.
+
+Considere a seguinte gramática:
+
+$$
+\begin{array}{rcl}\
+S &\rightarrow& A\\\
+S &\rightarrow& B\\\
+A &\rightarrow& id\\\
+B &\rightarrow& id\
+\end{array}
+$$
+
+Quando o analisador reconhece o token (id), existem duas possibilidades de redução:
+
+$$
+A\rightarrow id
+$$
+
+ou
+
+$$
+B\rightarrow id
+$$
+
+Ambas as produções possuem o mesmo lado direito, mas produzem não terminais diferentes. Portanto, o analisador não consegue determinar qual redução deve ser realizada.
+
+Essa situação caracteriza um conflito redução-redução.
+
+Diferentemente do conflito deslocamento-redução, no qual a escolha ocorre entre uma redução e um deslocamento, aqui o analisador precisa escolher entre duas ou mais reduções distintas.
+
+A ocorrência desse conflito geralmente indica um problema na especificação da gramática. Pode haver produções redundantes, sobreposição entre estruturas sintáticas ou ausência de informações suficientes para distinguir as construções.
+
+Uma possível solução consiste em revisar a gramática, eliminando produções desnecessárias ou reorganizando sua estrutura para que cada situação de análise determine uma única redução.
+
+Por exemplo, se (A) e (B) representam apenas duas formas de descrever a mesma construção, pode-se simplificar a gramática:
+
+$$
+\begin{array}{rcl}\
+S &\rightarrow& id\
+\end{array}
+$$
+
+É importante destacar que a simples escolha de uma das reduções não significa que o problema tenha sido resolvido conceitualmente. Em uma linguagem de programação, diferentes reduções podem corresponder a diferentes interpretações semânticas, e escolher arbitrariamente uma delas pode resultar em um analisador que reconhece construções diferentes daquelas pretendidas.
+
+### Tratamento de conflitos no Yacc/Bison
+
+Durante a geração do analisador sintático, Yacc e Bison examinam as produções da gramática e constroem as estruturas necessárias para a análise. Quando encontram situações em que mais de uma ação pode ser executada, identificam e reportam os conflitos.
+
+Na ausência de declarações específicas, o Yacc/Bison utiliza regras de desempate predefinidas:
+
+- **Conflito deslocamento-redução:** a ferramenta tradicionalmente privilegia o deslocamento (*shift*) em relação à redução (*reduce*).
+- **Conflito redução-redução:** a ferramenta privilegia a redução correspondente à produção que aparece primeiro na especificação gramatical.
+
+Essas regras permitem que o analisador seja gerado mesmo quando existem conflitos. Entretanto, não significam que a gramática esteja necessariamente correta ou que o comportamento produzido corresponda à intenção do projetista.
+
+No caso dos conflitos deslocamento-redução, as declarações de precedência e associatividade podem fornecer informações suficientes para determinar a ação adequada. Já os conflitos redução-redução normalmente exigem uma revisão mais cuidadosa da gramática.
+
+O Bison também permite solicitar informações adicionais durante a geração do analisador, facilitando a identificação das situações problemáticas. Por exemplo:
+
+```
+bison -v -d parser.y
+```
+
+A opção `-v` solicita a geração de um relatório contendo os estados do analisador e as ações associadas. Esse relatório permite examinar as situações em que ocorreram conflitos, identificando os estados e as produções envolvidos. A opção `-d` solicita a geração do arquivo de cabeçalho com as definições dos tokens.
+
+O Bison também pode apresentar mensagens mais detalhadas sobre os conflitos com opções adicionais, como:
+
+```
+bison -Wcounterexamples parser.y
+```
+
+Essa opção solicita a apresentação de exemplos de cadeias que demonstram os conflitos encontrados, auxiliando na compreensão e na correção da gramática.
+
+
+## Arquivo de especificação para Bison
+
+O **Bison** é um gerador de analisadores sintáticos que recebe como entrada um arquivo contendo a especificação de uma gramática livre de contexto e produz código-fonte em linguagem C ou C++. Esse código implementa um analisador sintático capaz de reconhecer cadeias pertencentes à linguagem definida pela gramática.
+
+Além das produções gramaticais, o arquivo de especificação pode conter declarações de tokens, informações sobre precedência e associatividade dos operadores, tipos de dados associados aos símbolos gramaticais e ações semânticas que serão executadas durante as reduções.
+
+Um arquivo de especificação Bison possui três seções principais, separadas pelo delimitador `%%`:
 
 ```c
 %{
-    /* definições e declarações em C */
+    /* Definicoes e declaracoes em C */
 %}
 
-/* declarações de tokens */
+/* Declaracoes do Bison */
 
 %%
 
-/* regras gramaticais e ações semânticas */
+/* Regras gramaticais e acoes semanticas */
 
 %%
 
-/* subrotinas do usuário */
+/* Subrotinas do usuario */
 ```
 
-A primeira seção contém declarações necessárias ao analisador e código C que deve ser incorporado ao programa gerado. Nessa seção também podem ser declarados os tokens utilizados pela gramática.
+Cada uma dessas seções possui uma finalidade específica.
 
-A segunda seção contém as **regras de produção** da gramática. Cada produção pode ser acompanhada por uma **ação semântica**, escrita entre chaves, que será executada quando a produção correspondente for reduzida.
+### 1. Seção de definições e declarações
 
-A terceira seção contém as funções auxiliares e demais rotinas escritas pelo programador.
+A primeira seção contém as declarações necessárias à construção do analisador sintático. Pode incluir código C, declarações de variáveis globais, inclusão de bibliotecas e definições de funções auxiliares.
 
-Essa organização permite separar a especificação da gramática da implementação das rotinas auxiliares, tornando o desenvolvimento do analisador mais sistemático.
+O trecho delimitado por `%{` e `%}` é denominado bloco de código inicial (*prologue*). Seu conteúdo é copiado para o código-fonte gerado pelo Bison.
 
-### Integração entre Lex/Flex e Yacc/Bison
-
-A construção de um analisador sintático com Yacc normalmente envolve sua integração com um analisador léxico, tradicionalmente implementado com **Lex** ou, atualmente, com ferramentas compatíveis como **Flex**.
-
-O analisador léxico é responsável por ler os caracteres da entrada e agrupá-los em **tokens**. O analisador sintático, por sua vez, recebe esses tokens e verifica se a sequência obtida está de acordo com a gramática.
-
-Por exemplo, podemos declarar um token para representar números inteiros:
-
-```c
-%token MAIS
-%token NUMERO
-```
-
-A partir dessa declaração, o Yacc identifica `NUMERO` como um dos terminais utilizados pela gramática. Durante a geração do analisador, são produzidas as estruturas necessárias para que o analisador léxico e o analisador sintático utilizem uma representação comum dos tokens.
-
-O arquivo gerado contém, entre outras informações, os códigos numéricos associados aos tokens. O analisador léxico pode então incluir o arquivo de cabeçalho produzido pelo Yacc/Bison para ter acesso às definições desses tokens.
-
-A comunicação entre o analisador léxico e o sintático ocorre, tradicionalmente, por meio da função `yylex()`. Quando o analisador sintático necessita de um novo token, ele chama essa função. O analisador léxico identifica o próximo elemento da entrada e retorna o código correspondente ao token.
-
-Além do código do token, o analisador léxico pode fornecer um **valor associado** ao token por meio da variável `yylval`. Esse mecanismo é particularmente importante para tokens que carregam informações adicionais, como números, identificadores e literais.
-
-Por exemplo, ao reconhecer um número inteiro, o analisador léxico pode executar:
-
-```c
-[0-9]+ {
-    yylval = atoi(yytext);
-    return NUMERO;
-}
-```
-
-Nesse caso, `yytext` contém o texto reconhecido pelo analisador léxico. A função `atoi()` converte esse texto para um valor inteiro, que é armazenado em `yylval`. Em seguida, a função retorna o token `NUMERO` para o analisador sintático.
-
-O tipo de `yylval` é determinado pela definição de `YYSTYPE`. Em exemplos simples, pode ser utilizado o tipo `int`. Em compiladores mais complexos, entretanto, diferentes tokens podem transportar diferentes tipos de informação, como valores numéricos, nomes de identificadores ou estruturas de dados.
-
-### Pilhas utilizadas pelo analisador sintático
-
-Durante a análise, o Yacc mantém informações que representam o estado corrente do processo de reconhecimento. Didaticamente, podemos considerar duas estruturas principais: a **pilha de análise** e a **pilha de valores**.
-
-A pilha de análise representa a estrutura sintática que está sendo construída. Nela são mantidas informações relacionadas aos símbolos e aos estados do analisador. A pilha de valores, por sua vez, mantém os valores semânticos associados aos símbolos.
-
-As duas estruturas permanecem sincronizadas. Quando um token é deslocado para a pilha durante uma operação *shift*, seu valor correspondente também é armazenado na estrutura de valores.
-
-Durante uma redução, os símbolos correspondentes ao lado direito da produção são removidos e substituídos pelo não terminal do lado esquerdo. Simultaneamente, a ação semântica associada à produção pode calcular o valor que será associado ao novo símbolo.
-
-Considere a produção:
-
-```c
-expr:
-      expr MAIS expr   { $$ = $1 + $3; }
-```
-
-Os símbolos `$1`, `$2` e `$3` representam os valores associados aos símbolos que aparecem no lado direito da produção. Nesse caso:
-
-* `$1` representa o valor da primeira ocorrência de `expr`;
-* `$2` representa o valor associado ao token `MAIS`;
-* `$3` representa o valor da segunda ocorrência de `expr`;
-* `$$` representa o valor associado ao não terminal `expr` após a redução.
-
-Assim, a ação:
-
-```c
-{ $$ = $1 + $3; }
-```
-
-calcula o valor da expressão resultante e o associa ao símbolo `expr` produzido pela redução.
-
-Quando a produção é:
-
-```c
-expr:
-      NUMERO   { $$ = $1; }
-```
-
-o valor do token `NUMERO` é simplesmente transferido para o não terminal `expr`. Essa ação permite que o valor numérico reconhecido pelo analisador léxico seja propagado pela árvore sintática durante as reduções.
-
-Esse mecanismo estabelece uma ligação direta entre a **análise sintática** e a **análise semântica**. Enquanto as produções determinam a estrutura sintática da linguagem, as ações semânticas permitem associar informações e operações a essa estrutura.
-
-### Exemplo de uma calculadora simples
-
-Os padrões léxicos utilizados nas expressões aritméticas é especificada da seguinte forma para flex (arquivo `calc.l`):
-
-```c
-%{
-#include "calc.h"
-void yyerror(char *);
-%}
-
-%%
-[0-9]+     {  
-              yylval = atoi(yytext);
-              return NUMERO;
-           }
-"+"        return MAIS;
-"-"        return MENOS;
-"*"        return VEZES;
-"/"        return DIV;
-"("        return ABRE;
-")"        return FECHA;
-[ \t]+     ;
-\n         return ENTER;
-.          {
-             char msg[100];
-             sprintf(msg, "[%s] desconhecido!", yytext);
-             yyerror(msg);
-           }
-%%
-
-int yywrap () {
-    return 1;
-}
-```
-
-
-Uma gramática elementar para uma calculadora que realiza operações de adição, subtração, multiplicação, divisão e expressões entre parênteses pode ser especificada como (arquivo `calc.y`):
+Por exemplo:
 
 ```c
 %{
 #include <stdio.h>
 #include <stdlib.h>
+
 int yylex(void);
-void yyerror(char *);
+void yyerror(const char *s);
+%}
+```
+
+Nesse exemplo, são incluídas as bibliotecas necessárias e declarados os protótipos das funções utilizadas pelo analisador.
+
+Após o bloco de código inicial, podem ser especificadas declarações próprias do Bison. Entre as mais importantes estão:
+
+| Declaração | Finalidade |
+|---|---|
+| `%token` | Declara os tokens utilizados pela gramática. |
+| `%left` | Declara operadores com associatividade à esquerda. |
+| `%right` | Declara operadores com associatividade à direita. |
+| `%nonassoc` | Declara operadores não associativos. |
+| `%precedence` | Define precedência sem especificar associatividade. |
+| `%start` | Define explicitamente o símbolo inicial da gramática. |
+| `%type` | Associa um tipo semântico a símbolos não terminais. |
+| `%union` | Declara os tipos de valores semânticos utilizados pelo analisador. |
+
+Os tokens representam as unidades léxicas reconhecidas pelo analisador léxico. Por exemplo, uma linguagem pode possuir tokens para identificadores, números, operadores aritméticos e palavras reservadas.
+
+Uma declaração poderia ser:
+
+```c
+%token ID NUM IF ELSE
+%left '+' '-'
+%left '*' '/'
+```
+
+Nesse caso, são declarados cinco tokens e estabelecidas regras de precedência e associatividade para os operadores aritméticos.
+
+Quando são utilizados caracteres literais diretamente nas produções, como `'+'`, `'-'` e `'a'`, não é necessário declarar esses caracteres com `%token`. O analisador léxico deve simplesmente retornar o código correspondente ao caractere.
+
+### 2. Seção de regras gramaticais
+
+A segunda seção começa após o primeiro delimitador `%%` e contém as produções da gramática.
+
+Cada produção possui um símbolo não terminal no lado esquerdo e uma sequência de símbolos terminais e não terminais no lado direito. As alternativas de uma mesma produção podem ser escritas separadamente ou agrupadas utilizando o caractere `|`.
+
+A forma geral é:
+
+```yacc
+nao_terminal:
+      alternativa_1
+    | alternativa_2
+    | alternativa_3
+    ;
+```
+
+Por exemplo:
+
+```yacc
+expr:
+      expr '+' expr
+    | expr '*' expr
+    | ID
+    ;
+```
+
+Essa especificação corresponde à gramática:
+
+$$
+\begin{aligned}
+E &\rightarrow E+E\\
+E &\rightarrow E*E\\
+E &\rightarrow id
+\end{aligned}
+$$
+
+O ponto e vírgula indica o término das alternativas de uma produção. Portanto, não é necessário escrever uma produção completa em cada linha.
+
+**Ações semânticas**
+
+Uma característica importante do Bison é a possibilidade de associar ações semânticas às produções. Essas ações são trechos de código C ou C++ delimitados por chaves e executados quando o analisador realiza a redução correspondente.
+
+Por exemplo:
+
+```yacc
+expr:
+      expr '+' expr { $$ = $1 + $3; }
+    | NUM           { $$ = $1; }
+    ;
+```
+
+Nesse exemplo, a ação associada à primeira produção calcula a soma dos valores das duas expressões.
+
+O Bison disponibiliza referências especiais para acessar os valores semânticos dos símbolos envolvidos em uma produção:
+
+- `$$`: representa o valor semântico do símbolo não terminal produzido, isto é, do lado esquerdo da produção.
+- `$1`: representa o valor semântico do primeiro símbolo do lado direito.
+- `$2`: representa o valor semântico do segundo símbolo.
+- `$3`: representa o valor semântico do terceiro símbolo, e assim sucessivamente.
+
+Assim, para a produção:
+
+$$
+E\rightarrow E+E
+$$
+
+a expressão `$$ = $1 + $3` atribui ao não terminal produzido o resultado da soma dos valores dos dois operandos.
+
+Para utilizar valores semânticos, é necessário declarar os tipos correspondentes. Por exemplo:
+
+```yacc
+%union {
+    int inteiro;
+}
+
+%token <inteiro> NUM
+%type <inteiro> expr
+```
+
+Nesse caso, o token `NUM` e o não terminal `expr` possuem valores semânticos do tipo inteiro.
+
+As ações semânticas são fundamentais na construção de compiladores, pois permitem realizar operações como avaliação de expressões, construção de árvores sintáticas, verificação de informações e geração de código intermediário.
+
+### 3. Seção de subrotinas do usuário
+
+A terceira seção começa após o segundo delimitador `%%`. Nela são incluídas as funções auxiliares necessárias à execução do analisador sintático.
+
+Entre essas funções, destacam-se:
+
+- `yylex()`: função do analisador léxico, responsável por fornecer os próximos tokens ao analisador sintático.
+- `yyerror()`: função responsável pelo tratamento e pela apresentação de mensagens de erro sintático.
+- `main()`: função principal do programa, normalmente responsável por chamar `yyparse()`.
+
+Um exemplo simplificado é:
+
+```c
+int yylex(void)
+{
+    int c;
+
+    do {
+        c = getchar();
+    } while (c == ' ' || c == '\t' || c == '\n');
+
+    return c;
+}
+
+void yyerror(const char *s)
+{
+    fprintf(stderr, "Erro sintatico: %s\n", s);
+}
+
+int main(void)
+{
+    return yyparse();
+}
+```
+
+Nesse exemplo, o analisador léxico lê os caracteres da entrada padrão e os retorna individualmente ao analisador sintático. Os espaços em branco são ignorados.
+
+A função `yyparse()` é gerada automaticamente pelo Bison e implementa o algoritmo de análise sintática. Durante sua execução, solicita tokens à função `yylex()` e consulta as tabelas de análise construídas a partir da gramática.
+
+É importante observar que o Bison não gera automaticamente um analisador léxico completo. A função `yylex()` precisa ser implementada pelo programador ou gerada por uma ferramenta específica, como o Flex.
+
+### Exemplo 1 – Gramática recursiva
+
+Considere a seguinte especificação:
+
+```yacc
+%start S
+
+%%
+
+S : 'a' S 'c'
+  | 'b'
+  ;
+
+%%
+```
+
+A gramática correspondente é:
+
+$$
+S\rightarrow aSc \mid b
+$$
+
+A primeira produção é recursiva, pois o não terminal \(S\) aparece novamente no lado direito. A segunda produção estabelece a condição de término da recursão.
+
+A linguagem gerada por essa gramática é:
+
+$$
+L(G)=\{a^n b c^n \mid n\geq 0\}
+$$
+
+Algumas cadeias pertencentes à linguagem são:
+
+$$
+b,\quad abc,\quad aabcc,\quad aaabccc
+$$
+
+Por exemplo, a cadeia \(aaabccc\) pode ser gerada pela seguinte derivação:
+
+$$
+\begin{aligned}
+S &\Rightarrow aSc\\
+  &\Rightarrow aaScc\\
+  &\Rightarrow aaaSccc\\
+  &\Rightarrow aaabccc
+\end{aligned}
+$$
+
+O exemplo ilustra como uma gramática recursiva pode ser especificada no Bison e utilizada para reconhecer uma linguagem formal.
+
+Como a gramática não apresenta ambiguidades nem conflitos para a análise LR utilizada pelo Bison, o analisador pode ser gerado sem conflitos.
+
+### Exemplo 2 – Gramática ambígua e conflito deslocamento-redução
+
+Considere agora a seguinte gramática:
+
+```yacc
+%%
+
+E : E '-' E
+  | 'n'
+  ;
+
+%%
+```
+
+A gramática corresponde às produções:
+
+$$
+\begin{aligned}
+E &\rightarrow E-E\\
+E &\rightarrow n
+\end{aligned}
+$$
+
+O terminal `'n'` representa um operando, enquanto o terminal `'-'` representa o operador de subtração.
+
+Essa gramática permite construir expressões como:
+
+$$
+n-n-n
+$$
+
+Entretanto, não estabelece a associatividade do operador de subtração.
+
+A expressão pode ser interpretada de duas maneiras:
+
+$$
+(n-n)-n
+$$
+
+ou:
+
+$$
+n-(n-n)
+$$
+
+As duas interpretações correspondem a árvores sintáticas diferentes. Portanto, a gramática é ambígua.
+
+Durante a construção do analisador, o Bison identifica um conflito deslocamento-redução. Esse conflito ocorre quando o analisador reconhece uma expressão $E-E$ e encontra outro símbolo `'-'` na entrada.
+
+Nesse momento, existem duas possibilidades:
+
+- Reduzir $E-E$ para $E$, formando uma expressão associativa à esquerda.
+- Deslocar o próximo operador `'-'`, permitindo que ele seja incorporado à expressão antes da redução.
+
+O Bison, na ausência de declarações adicionais, resolve esse conflito privilegiando o deslocamento. Consequentemente, a interpretação padrão resultante é associativa à direita:
+
+$$
+n-(n-n)
+$$
+
+É importante destacar que essa escolha não elimina a ambiguidade da gramática. Apenas estabelece qual das alternativas será adotada pelo analisador gerado.
+
+Durante a geração, o Bison apresenta uma mensagem semelhante a:
+
+```text
+warning: 1 shift/reduce conflict [-Wconflicts-sr]
+```
+
+A mensagem informa que foi identificado um conflito entre deslocamento e redução.
+
+### Exemplo 3 – Resolução do conflito por associatividade
+
+O conflito do exemplo anterior pode ser resolvido declarando explicitamente a associatividade do operador de subtração.
+
+Considere:
+
+```yacc
+%left '-'
+
+%%
+
+E : E '-' E
+  | 'a'
+  ;
+
+%%
+```
+
+A declaração:
+
+```yacc
+%left '-'
+```
+
+estabelece que o operador de subtração possui associatividade à esquerda.
+
+Assim, quando o analisador encontra uma situação em que pode deslocar outro operador ou reduzir uma expressão já reconhecida, a informação de associatividade permite selecionar a redução.
+
+A expressão:
+
+$$
+a-a-a
+$$
+
+passa a ser interpretada como:
+
+$$
+(a-a)-a
+$$
+
+Dessa forma, o Bison consegue resolver o conflito deslocamento-redução durante a construção do analisador.
+
+Diferentemente do exemplo anterior, a geração não deverá apresentar conflito deslocamento-redução para essa gramática, pois a declaração de associatividade fornece a informação necessária para determinar a ação.
+
+É importante observar que a declaração `%left` não altera as produções da gramática. Ela fornece informações adicionais ao gerador para que este possa resolver determinadas situações de conflito.
+
+
+### Os parâmetros do Bison
+
+Por padrão, o Bison gera um arquivo C com a implementação do analisador sintático. Entretanto, durante o desenvolvimento de compiladores, é interessante solicitar também a geração de arquivos auxiliares que permitam examinar a estrutura do analisador e identificar eventuais conflitos.
+
+As opções mais utilizadas são:
+
+| Opção | Finalidade |
+|---|---|
+| `-d` | Gera um arquivo de cabeçalho (`.h`) com as definições dos tokens. |
+| `-v` | Gera um relatório com os estados e as ações do analisador. |
+| `-Wcounterexamples` | Solicita exemplos de cadeias que demonstram os conflitos encontrados. |
+| `-Wall` | Habilita um conjunto de avisos adicionais. |
+| `--graph=arquivo.dot` | Gera uma representação do autômato LR no formato Graphviz. |
+| `--report=all` | Solicita informações detalhadas sobre a construção do analisador. |
+
+Um comando que reúne essas opções é:
+
+```
+bison -Wall -Wcounterexamples \
+      --report=all \
+      --report-file=exemplo.output \
+      --graph=exemplo.dot \
+      -d \
+      -o exemplo.tab.c \
+      exemplo.y
+```
+
+Esse comando produz os seguintes arquivos:
+
+| Arquivo | Conteúdo |
+|---|---|
+| `exemplo.tab.c` | Código-fonte C do analisador sintático. |
+| `exemplo.tab.h` | Definições dos tokens e outras declarações públicas do analisador. |
+| `exemplo.output` | Relatório detalhado dos estados, transições e ações da análise sintática. |
+| `exemplo.dot` | Representação do autômato LR no formato Graphviz. |
+
+O arquivo exemplo.tab.c contém a implementação da função yyparse(), responsável pela análise sintática. O arquivo de cabeçalho é particularmente útil quando o analisador léxico está implementado separadamente, pois permite compartilhar as definições dos tokens.
+
+**Compilação do analisador**
+
+Para o exemplo:
+
+```yacc
+// Exemplo completo
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+int yylex(void);
+void yyerror(const char *s);
 %}
 
-%token ENTER
-%token MAIS
-%token MENOS
-%token VEZES
-%token DIV
-%token NUMERO
-%token ABRE
-%token FECHA
-
-%start linha
-
-%left MAIS MENOS 
-%left VEZES DIV
+%%
+// gramatica
+S : 'a' S 'c';
+S : 'b';
 
 %%
+// codigo do usuario
+int yylex(void) {
+    int c;
 
-calculo: calculo expr ENTER { printf ("resultado = %d\n", $2); }
-       | 
-       ;
+    do {
+        c = getchar();
+    } while (c == ' ' || c == '\t' || c == '\n');
 
-expr : expr MAIS expr { $$ = $1 + $3; }
-     | expr MENOS expr { $$ = $1 - $3; }
-     | expr VEZES expr { $$ = $1 * $3; }
-     | expr DIV expr   { $$ = $1 / $3; }
-     | ABRE expr FECHA { $$ = $2; }
-     | NUMERO { $$ = $1; }
-     ;
-
-%%
-
-void yyerror (char *msg) {
-    printf("Erro: %s\n", msg);
-} 
-
-int main() {
-    yyparse();
-    return 0;
+    return c;
 }
-```
 
-A produção `calculo` permite reconhecer uma sequência de expressões, cada uma terminada por uma quebra de linha. Quando uma expressão é reconhecida, seu valor é apresentado na saída.
-
-A produção:
-
-```c
-expr: expr MAIS expr
-```
-
-define uma expressão como a soma de duas outras expressões. Quando essa produção é reduzida, a ação semântica calcula a soma dos valores associados às duas subexpressões.
-
-De maneira análoga:
-
-```c
-expr: expr MENOS expr
-```
-
-calcula a diferença entre os valores das duas expressões.
-
-O uso de ações semânticas dessa forma permite que o analisador não apenas reconheça se uma sequência pertence à linguagem definida pela gramática, mas também **execute operações associadas à estrutura sintática reconhecida**.
-
-Esse processo está ilustrado na árvore de derivação apresentada na @fig-arvore-expressao. As ações semânticas associadas às produções podem ser entendidas como operações executadas durante o processo de análise sintática, à medida que o analisador percorre a árvore de derivação. Quando uma ação semântica é alcançada, ela é executada e os valores associados aos símbolos da árvore são calculados ou atualizados. Dessa forma, as informações semânticas são propagadas pela árvore, permitindo que o valor de uma construção sintática seja determinado a partir dos valores de seus componentes.
-
-![Árvore de Derivação para expressão `2 * 3 + 5`](/chapters/images/arvore-expressao.png){#fig-arvore-expressao width="90%"}
-
-Esse princípio é fundamental para a construção de compiladores. Durante a análise sintática, as reduções podem ser utilizadas para construir árvores sintáticas, verificar informações semânticas, gerar representações intermediárias ou executar ações específicas associadas às construções da linguagem.
-
-Para geração da calculadora devemos executar a seguinte sequência de comandos:
-
-```c
-flex -o lexico.c calc.l
-bison -o calc.c calc.y -v -d;
-gcc lexico.c calc.c -o calc;
-```
-
-### Tratamento de erros sintáticos
-
-Quando o analisador sintático encontra uma sequência de tokens que não pode ser derivada pela gramática, ocorre um **erro sintático**. O Yacc/Bison disponibiliza mecanismos para tratar esses erros, tradicionalmente por meio da função `yyerror()`.
-
-Uma implementação simples pode ser:
-
-```c
-void yyerror(char *s)
-{
-    printf("%s\n", s);
+void yyerror(const char *s) {
+    fprintf(stderr, "Erro sintatico: %s\n", s);
 }
+
+int main(void) {
+    return yyparse();
+}
+
 ```
 
-Essa função recebe uma mensagem associada ao erro detectado pelo analisador sintático e pode ser modificada para produzir mensagens mais informativas, incluindo, por exemplo, a linha e a coluna em que o erro ocorreu, o token encontrado e os tokens esperados.
+Para gerar o analisar (considerando que o código anterior está no arquivo `exemplo.y`):
 
-O tratamento de erros é uma característica importante de analisadores sintáticos utilizados em compiladores reais. Um compilador não deve apenas detectar que uma entrada é inválida, mas também fornecer informações que auxiliem o programador a localizar e corrigir o problema.
-
-### Uso da calculadora de expressões
-
-Com o executável gerado `calc` podemos realizar alguns cálculos:
-
-```c
-$ ./calc
-12 + 4
-resultado = 16
-2 * (3 + 4)
-resultado = 14
-2 + 3 + 4
-resultado = 9
-^C
-$ 
 ```
+bison -v -d -g exemplo.y -o exemplo.c
+```
+
+Para produzir um executável, é necessário compilar o código gerado pelo Bison juntamente com a implementação do analisador léxico e as funções auxiliares.
+
+Quando essas funções estão no próprio arquivo de especificação, após o segundo delimitador %%, a compilação pode ser realizada diretamente:
+
+```
+gcc exemplo.c -o exemplo
+```
+Depois de compilar o programa, sua execução pode ser realizada utilizando:
+
+```{.c}
+./exemplo
+```
+
+O analisador receberá a cadeia pela entrada padrão e verificará se ela pertence à linguagem definida pela gramática.
+
+_Observação:_ quando o analisador léxico é desenvolvido separadamente, por exemplo, utilizando Flex, a compilação deve incluir também o código gerado pelo analisador léxico. Nesse caso, é recomendável utilizar o arquivo de cabeçalho produzido pela opção -d.
+
+Por padrão, o Bison constrói um analisador baseado no método LALR(1). Durante esse processo, são construídos os estados do autômato e as tabelas de ações e transições. 
+
+### Visualização gráfica do autômato LR
+
+Além de gerar o código-fonte do analisador, o Bison permite produzir uma representação gráfica do autômato utilizado na análise sintática.
+
+Essa representação é particularmente útil para compreender como as produções da gramática são transformadas em estados e transições. Cada estado do autômato corresponde a um conjunto de itens LR, que representam produções da gramática em diferentes posições de reconhecimento.
+
+O autômato é construído a partir das produções e das informações de análise utilizadas pelo Bison. Suas transições representam os deslocamentos de símbolos terminais e as transições entre não terminais, utilizadas no processo de análise.
+
+Para gerar a representação gráfica, utiliza-se a opção:
+
+```{.c}
+bison --graph=exemplo.dot exemplo.y
+```
+
+O arquivo exemplo.dot contém a descrição do grafo utilizando a linguagem DOT, interpretada pela ferramenta Graphviz.
+
+O Graphviz permite transformar essa descrição em diferentes formatos gráficos, como PNG, SVG e PDF.
+
+Para gerar uma imagem PNG:
+
+```
+dot -Tpng exemplo.dot -o exemplo.png
+```
+
+Para gerar uma imagem SVG:
+
+```
+dot -Tsvg exemplo.dot -o exemplo.svg
+```
+
+Também é possível visualizar o arquivo diretamente utilizando o visualizador interativo xdot:
+
+```
+xdot exemplo.dot
+```
+
+Caso as ferramentas ainda não estejam instaladas no Ubuntu, podem ser instaladas por meio de:
+
+```
+sudo apt install graphviz xdot
+```
+
+![Representação do autômato gerado](/chapters/images/bison-graph.png){#fig-bison-graph width="60%"}
+
+
+Na representação gráfica do autômato da @fig-bison-graph, os principais elementos são:
+
+- Estados: representados por nós do grafo, contendo os itens LR associados a cada estado.
+- Transições: representadas por arestas que conectam os estados e indicam os símbolos que permitem avançar na análise.
+- Estado inicial: representa a configuração inicial do analisador.
+- Estados de aceitação: representam situações em que a cadeia pode ser reconhecida.
+- Itens LR: indicam o ponto em que o analisador se encontra no reconhecimento de uma produção.
+
+Um item LR pode ser representado, por exemplo, por:
+
+$$
+S\rightarrow a\ S\ \bullet\ c
+$$
+
+O ponto indica a posição atual do reconhecimento da produção. Nesse caso, o analisador já reconheceu a sequência $a\ S\$ e espera reconhecer $c$ para ter esse item completo.
+
+Já o item:
+
+$$
+S\rightarrow a\ S\ c\ \bullet
+$$
+
+indica que todos os símbolos do lado direito da produção foram reconhecidos. Portanto, a produção pode ser candidata a uma redução $R1$, neste caso, dependendo do símbolo de antecipação e das ações definidas na tabela de análise.
+
+### Visualização dos conflitos no relatório
+
+Embora o arquivo DOT permita visualizar o autômato, o relatório textual gerado pela opção -v ou --report é especialmente importante para examinar os conflitos.
+
+Por exemplo, no segundo exemplo, o relatório pode apresentar uma situação semelhante a:
+
+```
+State 4 conflicts: 1 shift/reduce
+
+    1 E: E '-' E •
+    1  | E • '-' E
+
+    '-'  shift, and go to state 3
+
+    '-'  [reduce using rule 1 (E)]
+
+    $default  reduce using rule 1 (E)
+```
+
+A representação mostra que, no estado 4, o analisador possui duas possibilidades para o terminal '-':
+
+- Realizar um deslocamento, avançando para outro estado.
+- Realizar uma redução utilizando a produção \(E\rightarrow E-E\).
+
+A existência dessas duas ações para a mesma situação caracteriza o conflito deslocamento-redução.
+
+No exemplo 3, a declaração %left '-' permite ao Bison resolver essa situação. Consequentemente, o relatório não deverá apresentar o conflito como pendente.
+
+No exemplo 4, por outro lado, a situação envolve o terminal 'e'. A declaração %left '-' não fornece informações para resolver essa situação, razão pela qual o conflito permanece.
+
+É importante distinguir o autômato gerado pelo Bison da tabela de análise sintática. O autômato representa os estados e as transições utilizados pelo analisador, enquanto a tabela de análise associa os estados e os símbolos de antecipação às ações de deslocamento, redução, aceitação ou erro. O relatório textual permite examinar essa relação de maneira mais detalhada.
+Relação entre o autômato e os conflitos
+É interessante observar que a visualização gráfica permite acompanhar a construção do autômato que serve de base ao analisador sintático. Entretanto, a simples observação dos estados e das transições não é suficiente para compreender todos os conflitos.
+
+Para isso, recomenda-se utilizar conjuntamente os três recursos:
+
+1. Arquivo .dot: permite visualizar graficamente os estados e as transições do autômato.
+2. Arquivo .output: permite examinar os itens LR, os símbolos de antecipação e as ações associadas a cada estado.
+3. Opção -Wcounterexamples: apresenta cadeias que demonstram os conflitos e as diferentes possibilidades de análise.
+
+Uma distinção importante para o estudo de compiladores: o autômato gerado pelo Bison não é o AFD que reconhece diretamente as cadeias da linguagem. Ele é o autômato de estados LR utilizado na implementação do analisador sintático.
+
+**Gerar analisador, relatorio e autômato**
+
+```
+bison -Wall -Wcounterexamples \
+      --report=all \
+      --graph=exemplo.dot \
+      -d exemplo.y
+```
+
+**Visualizar o automato**
+
+```
+xdot exemplo.dot
+```
+
+**Gerar imagem SVG**
+
+```
+dot -Tsvg exemplo.dot -o exemplo.svg
+```
+
 
 ## Projeto de Compilador - Parte 2
 

@@ -74,6 +74,10 @@
            attribute="Identifier" context="#stay"/>
 
      </context>
+     <context name="LineComment"
+         attribute="Comment"
+         lineEndContext="#pop">
+    </context>
     </contexts>
     <itemDatas>
       <!-- Texto e identificadores -->
