@@ -1453,6 +1453,7 @@ Além disso, a utilização de endereços relativos, como `-3` e `-4`, permite q
 
 Por fim, observa-se que a tradução de uma função recursiva exige que o compilador trate adequadamente a reserva de memória, a passagem de parâmetros, o armazenamento do resultado e o retorno ao ponto de chamada. Esses mecanismos permitem implementar funções recursivas sem que seja necessário conhecer antecipadamente a quantidade de chamadas que ocorrerão durante a execução do programa.
 
+
 ### Modificações no projeto de compilador
 
 A ampliação do compilador existente exige alterações coordenadas na gramática, na análise semântica, na tabela de símbolos e na geração de código.
@@ -1502,3 +1503,24 @@ A implementação deve ser realizada de maneira incremental, definindo primeiro 
 Ao final, o compilador deverá ser capaz de traduzir programas estruturados em subprogramas, verificar a consistência das declarações e chamadas e gerar código que preserve o comportamento esperado durante a execução. Esse resultado constitui uma base para futuras extensões, como parâmetros opcionais, sobrecarga de funções, tipos estruturados e mecanismos mais sofisticados de gerenciamento de memória.
 
 Observação para a implementação: como os arquivos do projeto apresentados anteriormente não especificam instruções da MVS para chamada e retorno de subprogramas, o texto trata essa parte de forma conceitual, sem atribuir à máquina instruções que ainda não foram definidas. Antes de apresentar o código definitivo do compilador, será necessário estabelecer a convenção de chamada e verificar se a MVS atual oferece os mecanismos necessários ou precisa ser ampliada.
+
+## Simulador do compilador
+
+O simulador a seguir permite experimentar as etapas de compilação
+de programas escritos na linguagem `simples`. O ambiente oferece
+recursos para editar programas, executar as diferentes etapas
+do processo de compilação e observar os resultados produzidos.
+
+```{=html}
+<div style="width: 100%; margin: 1rem 0;">
+  <iframe
+    src="https://luizedsilva.github.io/jsimples/"
+    width="100%"
+    height="800"
+    style="border: 1px solid #ddd; border-radius: 8px;"
+    title="Simulador do compilador da linguagem simples">
+  </iframe>
+</div>
+```
+
+[Abrir o simulador em uma nova aba](https://luizedsilva.github.io/jsimples/).
